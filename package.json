@@ -1,0 +1,50 @@
+{
+  "name": "@rdsslab/agentkit",
+  "version": "0.1.0",
+  "description": "Provider-agnostic agent toolkit: deterministic policies, web search, in-memory documents, media, file artifacts and a single askAgent() entry point.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./ia": "./src/ia.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node ./dev/test/index.js",
+    "test:kit": "node ./dev/test/agentkit_test.js",
+    "test:artifacts": "node ./dev/test/artifacts_test.js"
+  },
+  "keywords": [
+    "agent",
+    "agentkit",
+    "harness",
+    "llm",
+    "mcp",
+    "tools",
+    "openai",
+    "anthropic",
+    "ollama"
+  ],
+  "author": "rdsslab",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdsslab/libAgentKit.git"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@google/genai": "^1.36.0",
+    "@modelcontextprotocol/sdk": "^1.24.3",
+    "openai": "^6.18.0",
+    "pdfjs-dist": "^6.2.108"
+  }
+}
