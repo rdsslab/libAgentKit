@@ -1,0 +1,25 @@
+{
+  "provider": {
+    "provider": "ollama",
+    "baseUrl": "http://127.0.0.1:11434",
+    "model": "qwen3:4b-instruct-8k",
+    "timeout": 900000
+  },
+  "mode": "build",
+  "interactive": true,
+  "capabilities": {
+    "terminal": false,
+    "filesystem": false,
+    "web": true,
+    "mcp": false,
+    "documents": true,
+    "artifacts": false
+  },
+  "tools": {
+    "web_search": true,
+    "write_file": "custom handler in run.mjs (writes to demo/07-jesus-landing-page/output/<model>/)"
+  },
+  "maxToolRounds": 6,
+  "includeDiagnostics": true,
+  "conversation": "2 steps (research who Jesus was, then create and save interactive professional landing page)"
+}

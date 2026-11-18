@@ -173,6 +173,28 @@ const requestHeaders = (provider) => ({
 	...(provider.headers || {}),
 });
 
+const looksLikeSearchAnomalyPage = (html) => {
+	const source = String(html || "");
+	if (!source) return true;
+	const lower = source.toLowerCase();
+	if (lower.includes("anomaly.js") || lower.includes("anomaly-modal") || lower.includes("detected unusual traffic") || lower.includes("unusual traffic from your computer network")) {
+		return true;
+	}
+	// Very small or challenge-like HTML without result markers.
+	const hasResultMarkers = lower.includes("result__a") || lower.includes("result-link") || lower.includes("b_algo");
+	if (!hasResultMarkers && /captcha|challenge|verify you are|enable javascript/i.test(source)) {
+		return true;
+	}
+	return false;
+};
+
+const normalizeSearchQuery = (query) => {
+	let q = String(query || "").trim();
+	// Remove wrapping quotes and excessive whitespace; keep punctuation meaningful to intent.
+	q = q.replace(/^["'¿¡\s]+|["'?!\s]+$/g, "").replace(/\s+/g, " ").trim();
+	return q || String(query || "").trim();
+};
+
 export class WebSearchError extends Error {
 	constructor(message, { code = "WEB_SEARCH_FAILED", userMessage } = {}) {
 		super(message);
@@ -202,6 +224,9 @@ const duckDuckGoSearch = async ({ query, maxResults, provider, signal, fetchImpl
 	}
 
 	const html = await response.text();
+	if (looksLikeSearchAnomalyPage(html)) {
+		throw new WebSearchError("DuckDuckGo returned an anti-bot/challenge page.", { code: "WEB_SEARCH_BLOCKED" });
+	}
 	const results = extractDuckDuckGoResults(html, maxResults);
 
 	if (results.length) {
@@ -230,7 +255,11 @@ const bingSearch = async ({ query, maxResults, provider, signal, fetchImpl }) =>
 		throw new WebSearchError(`Bing HTTP ${response.status}.`, { code: "WEB_SEARCH_HTTP" });
 	}
 
-	const results = extractBingResults(await response.text(), maxResults);
+	const html = await response.text();
+	if (looksLikeSearchAnomalyPage(html)) {
+		throw new WebSearchError("Bing returned an anti-bot/challenge page.", { code: "WEB_SEARCH_BLOCKED" });
+	}
+	const results = extractBingResults(html, maxResults);
 	if (!results.length) {
 		throw new WebSearchError("Bing returned no parsable results.", { code: "WEB_SEARCH_NO_RESULTS" });
 	}
@@ -258,7 +287,10 @@ const httpJsonSearch = async ({ query, maxResults, provider, signal, fetchImpl }
 		target.searchParams.set(provider.limitParam || "limit", String(maxResults));
 		finalUrl = target.toString();
 	} else {
-		body = JSON.stringify({ [provider.queryField || "query"]: query, max_results: maxResults });
+		body = JSON.stringify({
+			[provider.queryField || "query"]: query,
+			[provider.limitField || "max_results"]: maxResults,
+		});
 	}
 
 	if (provider.apiKey) {
@@ -300,7 +332,8 @@ export const listWebSearchEngines = () => Object.keys(engines);
  */
 export const webSearch = async (queryOrOptions, options = {}) => {
 	const config = isPlainObject(queryOrOptions) ? { ...queryOrOptions, ...options } : { ...options, query: queryOrOptions };
-	const query = String(config.query || "").trim();
+	const rawQuery = String(config.query || "").trim();
+	const query = normalizeSearchQuery(rawQuery);
 	const maxResults = Math.max(1, Math.min(10, Number(config.maxResults ?? 5)));
 	const timeoutMs = Number(config.timeoutMs ?? DEFAULT_TIMEOUT);
 
@@ -341,7 +374,19 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 		}
 		chain.push(explicit);
 	} else {
-		for (const name of Object.keys(providers).length ? Object.keys(providers) : ["duckduckgo", "bing"]) {
+		const defaultEngines = ["duckduckgo", "bing"];
+		const configuredNames = Object.keys(providers);
+		const names = configuredNames.length
+			? [...defaultEngines.filter((name) => !Object.prototype.hasOwnProperty.call(providers, name)), ...configuredNames]
+			: defaultEngines;
+
+		const seen = new Set();
+		for (const name of names) {
+			if (seen.has(name)) {
+				continue;
+			}
+			seen.add(name);
+
 			const provider = buildProvider(name);
 			if (provider) {
 				chain.push(provider);
@@ -382,6 +427,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 				source: provider.name || result.engine,
 				results: result.results.slice(0, maxResults),
 				note: provider.note,
+				providersTried: chain.map((p) => p.name || p.type || "unknown"),
 			};
 		} catch (error) {
 			errors.push(`${provider.name || type}: ${error?.message || error}`);
@@ -397,6 +443,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 		results: [],
 		note: "La busqueda web no devolvio resultados utilizables.",
 		errors,
+		providersTried: chain.map((p) => p.name || p.type || "unknown"),
 	};
 };
 

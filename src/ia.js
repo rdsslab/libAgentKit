@@ -295,8 +295,25 @@ const stableStringify = (value) => {
 	return JSON.stringify(value);
 };
 
-const buildToolCallFingerprint = (toolName, toolArguments) => {
-	return `${String(toolName || "").trim()}::${stableStringify(toolArguments ?? {})}`;
+const buildToolCallFingerprint = (toolIdentity, toolArguments) => {
+	let identity = String(toolIdentity || "").trim();
+
+	if (isPlainObject(toolIdentity)) {
+		const server = String(
+			toolIdentity.serverName
+			?? toolIdentity.server
+			?? (toolIdentity.local ? "local" : "unknown"),
+		).trim();
+		const name = String(
+			toolIdentity.alias
+			?? toolIdentity.toolName
+			?? toolIdentity.name
+			?? "",
+		).trim();
+		identity = `${server}::${name}`;
+	}
+
+	return `${identity}::${stableStringify(toolArguments ?? {})}`;
 };
 
 const normalizeOpenAIBaseUrl = (baseUrl, { preservePath = false } = {}) => {
@@ -478,6 +495,111 @@ const buildToolUsageGuidance = (toolEntries) => {
 
 	return lines.join("\n");
 };
+
+
+const toFiniteNumber = (value) => {
+	const n = Number(value);
+	return Number.isFinite(n) ? n : null;
+};
+
+const estimateTokensFromText = (text) => {
+	try {
+		const s = typeof text === "string" ? text : JSON.stringify(text ?? "");
+		if (!s) return 0;
+		// Rough approximation (~4 chars/token), explicitly marked as estimated when used.
+		return Math.max(1, Math.ceil(s.length / 4));
+	} catch {
+		return null;
+	}
+};
+
+const normalizeUsagePayload = (rawUsage, { response, timingMs, messages, contextLimit } = {}) => {
+	const usageObj = isPlainObject(rawUsage) ? rawUsage : (isPlainObject(response?.usage) ? response.usage : {});
+	const prompt = toFiniteNumber(usageObj.prompt_tokens ?? usageObj.input_tokens ?? usageObj.prompt_eval_count ?? response?.prompt_eval_count);
+	const completion = toFiniteNumber(usageObj.completion_tokens ?? usageObj.output_tokens ?? usageObj.eval_count ?? response?.eval_count);
+	let total = toFiniteNumber(usageObj.total_tokens ?? usageObj.totalTokens);
+	if (total == null && (prompt != null || completion != null)) {
+		total = (prompt || 0) + (completion || 0);
+	}
+
+	const evalDurationNs = toFiniteNumber(response?.eval_duration ?? usageObj.eval_duration);
+	const promptEvalDurationNs = toFiniteNumber(response?.prompt_eval_duration ?? usageObj.prompt_eval_duration);
+	const loadDurationNs = toFiniteNumber(response?.load_duration ?? usageObj.load_duration);
+	let tokensPerSecond = null;
+	if (completion != null && evalDurationNs && evalDurationNs > 0) {
+		tokensPerSecond = completion / (evalDurationNs / 1e9);
+	} else if (completion != null && toFiniteNumber(timingMs) && toFiniteNumber(timingMs) > 0) {
+		// Fallback observed rate for providers that don't expose eval durations (e.g. OpenAI-compatible).
+		tokensPerSecond = completion / (toFiniteNumber(timingMs) / 1000);
+	}
+
+	let usedTokens = total;
+	let estimated = false;
+	if (usedTokens == null && Array.isArray(messages)) {
+		const est = estimateTokensFromText(messages);
+		if (est != null) {
+			usedTokens = est;
+			estimated = true;
+		}
+	}
+
+	const limit = toFiniteNumber(contextLimit);
+	const usedPercent = (usedTokens != null && limit && limit > 0) ? (usedTokens / limit) * 100 : null;
+
+	return {
+		prompt_tokens: prompt,
+		completion_tokens: completion,
+		total_tokens: total,
+		tokens_per_second: tokensPerSecond != null ? Number(tokensPerSecond.toFixed(2)) : null,
+		timing_ms: toFiniteNumber(timingMs),
+		context: {
+			used_tokens: usedTokens,
+			limit_tokens: limit,
+			used_percent: usedPercent != null ? Number(usedPercent.toFixed(2)) : null,
+			estimated,
+		},
+	};
+};
+
+const mergeUsageSamples = (samples = []) => {
+	const valid = samples.filter(Boolean);
+	if (!valid.length) return null;
+	const sum = (key) => {
+		let total = 0;
+		let seen = false;
+		for (const sample of valid) {
+			const value = toFiniteNumber(sample[key]);
+			if (value != null) { total += value; seen = true; }
+		}
+		return seen ? total : null;
+	};
+	const prompt = sum('prompt_tokens');
+	const completion = sum('completion_tokens');
+	let total = sum('total_tokens');
+	if (total == null && (prompt != null || completion != null)) total = (prompt || 0) + (completion || 0);
+
+	// Use last sample for rate/context context; rates per-round vary.
+	const last = valid[valid.length - 1];
+	const usedTokens = total != null ? total : (last?.context?.used_tokens ?? null);
+	const limit = last?.context?.limit_tokens ?? null;
+	const usedPercent = (usedTokens != null && limit && limit > 0) ? (usedTokens / limit) * 100 : (last?.context?.used_percent ?? null);
+
+	return {
+		prompt_tokens: prompt,
+		completion_tokens: completion,
+		total_tokens: total,
+		tokens_per_second: last?.tokens_per_second ?? null,
+		timing_ms: sum('timing_ms'),
+		context: {
+			used_tokens: usedTokens,
+			limit_tokens: limit,
+			used_percent: usedPercent != null ? Number(usedPercent.toFixed(2)) : null,
+			estimated: valid.some((sample) => sample?.context?.estimated),
+		},
+		rounds: valid.length,
+	};
+};
+
 
 const normalizePromptMessages = (prompts) => {
 	const values = normalizeArray(prompts);
@@ -1166,25 +1288,41 @@ const resolveProviderConfig = (providerConfig = {}) => {
 	};
 };
 
-const formatToolResult = (result) => {
-	if (typeof result?.content === "string") {
-		return result.content;
-	}
+const DEFAULT_MAX_TOOL_RESULT_CHARS = 16000;
 
-	if (Array.isArray(result?.content)) {
-		return result.content
+const truncateToolText = (text, maxChars = DEFAULT_MAX_TOOL_RESULT_CHARS) => {
+	const value = typeof text === "string" ? text : String(text ?? "");
+	const limit = Number.isFinite(Number(maxChars)) && Number(maxChars) > 0 ? Number(maxChars) : DEFAULT_MAX_TOOL_RESULT_CHARS;
+	if (value.length <= limit) return value;
+	const head = Math.max(0, Math.floor(limit * 0.7));
+	const tail = Math.max(0, limit - head - 80);
+	return `${value.slice(0, head)}\n\n...[tool result truncated: ${value.length} chars total, showing first ${head}${tail ? ` and last ${tail}` : ""}]...\n\n${tail ? value.slice(-tail) : ""}`.slice(0, limit + 120);
+};
+
+const formatToolResult = (result, { maxChars = DEFAULT_MAX_TOOL_RESULT_CHARS } = {}) => {
+	let text;
+	if (typeof result === "string") {
+		text = result;
+	} else if (typeof result?.content === "string") {
+		text = result.content;
+	} else if (Array.isArray(result?.content)) {
+		text = result.content
 			.map((item) => {
 				if (typeof item?.text === "string") {
 					return item.text;
 				}
-
 				return JSON.stringify(item);
 			})
 			.join("\n")
 			.trim();
+	} else {
+		try {
+			text = JSON.stringify(result);
+		} catch {
+			text = String(result);
+		}
 	}
-
-	return JSON.stringify(result);
+	return truncateToolText(text, maxChars);
 };
 
 const createLegacySseRpcClient = (server) => {
@@ -1582,15 +1720,63 @@ class MCPToolRuntime {
 		const executionResults = [];
 
 		for (const toolCall of normalizedCalls) {
-			const toolName = toolCall?.name;
-			const toolEntry = this.toolRegistry.get(toolName);
+			let toolName = toolCall?.name;
+			let effectiveToolCall = toolCall;
+			let toolEntry = this.toolRegistry.get(toolName);
 
+			// Common model mistake: request a binary name as a tool (e.g. "ip")
+			// instead of calling run_command with {command,args}.
 			if (!toolEntry) {
-				throw new Error(`The AI requested an unknown tool: ${toolName}.`);
+				const runCommandEntry = this.toolRegistry.get("run_command");
+				const looksLikeBinary = typeof toolName === "string" && /^[A-Za-z0-9._-]+$/.test(toolName);
+				if (runCommandEntry && looksLikeBinary) {
+					const rawArgs = normalizeToolArguments(toolCall?.arguments);
+					let cmdArgs = [];
+					if (Array.isArray(rawArgs?.args)) {
+						cmdArgs = rawArgs.args.map((v) => String(v));
+					} else if (Array.isArray(rawArgs?.arguments)) {
+						cmdArgs = rawArgs.arguments.map((v) => String(v));
+					} else if (typeof rawArgs?.command === "string" && rawArgs.command.includes(" ")) {
+						// let run_command normalization handle full command line
+						cmdArgs = [];
+					}
+					effectiveToolCall = {
+						...toolCall,
+						name: runCommandEntry.alias || "run_command",
+						arguments: {
+							command: (typeof rawArgs?.command === "string" && rawArgs.command.trim())
+								? rawArgs.command
+								: toolName,
+							...(cmdArgs.length ? { args: cmdArgs } : {}),
+						},
+					};
+					toolName = effectiveToolCall.name;
+					toolEntry = runCommandEntry;
+				}
 			}
 
-			const toolArguments = normalizeToolArguments(toolCall?.arguments);
-			const fingerprint = buildToolCallFingerprint(toolEntry.toolName, toolArguments);
+			if (!toolEntry) {
+				const available = this.toolEntries.map((e) => e.alias).join(", ") || "(none)";
+				const execution = {
+					callId: toolCall?.id,
+					toolAlias: String(toolCall?.name || "unknown_tool"),
+					toolName: String(toolCall?.name || "unknown_tool"),
+					serverName: "local",
+					serverUrl: null,
+					policy: {},
+					arguments: normalizeToolArguments(toolCall?.arguments),
+					textResult: `Unknown tool "${String(toolCall?.name || "")}". Available tools: ${available}. If you need to run a system command, use run_command with {"command":"<binary>","args":["..."]}.`,
+					rawResult: { ok: false, error: "UNKNOWN_TOOL", tool: toolCall?.name, availableTools: this.toolEntries.map((e) => e.alias) },
+					isError: true,
+					deduplicated: false,
+				};
+				this.executionLog.push(execution);
+				executionResults.push(execution);
+				continue;
+			}
+
+			const toolArguments = normalizeToolArguments(effectiveToolCall?.arguments);
+			const fingerprint = buildToolCallFingerprint(toolEntry, toolArguments);
 			const previousExecution = this.executionCache.get(fingerprint);
 
 			// A one-shot tool (web search, for example) answers once per turn. The
@@ -1955,6 +2141,13 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 		let toolCatalogRetryUsed = false;
 		let automaticToolFallbackUsed = false;
 		let lowConfidenceWebRetryUsed = false;
+		const usageSamples = [];
+		const contextLimit = toFiniteNumber(
+			this.providerConfig.contextLength
+			?? this.providerConfig.context_length
+			?? this.providerConfig.num_ctx
+			?? this.providerConfig.maxContextTokens,
+		);
 
 		for (let round = 0; round < roundsLimit; round += 1) {
 			const requestSignal = this.createRequestSignal(signal);
@@ -1967,6 +2160,7 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 				tool_choice: tools.length > 0 ? this.toolChoice : undefined,
 			};
 
+			const requestStartedAt = Date.now();
 			const completion = await this.runProviderRequest(
 				() => this.client.chat.completions.create(
 					completionRequest,
@@ -1974,17 +2168,17 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 				),
 				{ signal },
 			);
+			usageSamples.push(normalizeUsagePayload(completion?.usage, {
+				response: completion,
+				timingMs: Date.now() - requestStartedAt,
+				messages,
+				contextLimit,
+			}));
 
 			const assistantMessage = completion?.choices?.[0]?.message;
 			if (!assistantMessage) {
 				throw new Error("The AI service returned a completion without message.");
 			}
-
-			messages.push({
-				role: "assistant",
-				content: assistantMessage.content ?? "",
-				tool_calls: assistantMessage.tool_calls,
-			});
 
 			const explicitToolCalls = Array.isArray(assistantMessage.tool_calls)
 				? assistantMessage.tool_calls
@@ -2005,6 +2199,29 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 						arguments: syntheticToolIntent.parameters,
 					}]
 					: [];
+
+			if (toolCalls.length > 0 && syntheticToolIntent && explicitToolCalls.length === 0) {
+				messages.push({
+					role: "assistant",
+					content: assistantMessage.content ?? "",
+					tool_calls: toolCalls.map((toolCall) => ({
+						id: toolCall.id,
+						type: "function",
+						function: {
+							name: toolCall.name,
+							arguments: typeof toolCall.arguments === "string"
+								? toolCall.arguments
+								: JSON.stringify(toolCall.arguments ?? {}),
+						},
+					})),
+				});
+			} else {
+				messages.push({
+					role: "assistant",
+					content: assistantMessage.content ?? "",
+					tool_calls: assistantMessage.tool_calls,
+				});
+			}
 
 			if (toolCalls.length === 0) {
 				const assistantText = normalizeMessageContentToString(assistantMessage.content);
@@ -2118,6 +2335,7 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 					assistantDumpedToolCatalog: toolCatalogRetryUsed && assistantLooksLikeToolCatalog,
 					automaticToolFallbackUsed,
 					lowConfidenceWebRetryUsed,
+					usage: mergeUsageSamples(usageSamples),
 				});
 			}
 
@@ -2150,11 +2368,22 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 					toolExecutions: runtime.executionLog,
 					mcpServers: runtime.getDiagnosticsServers(),
 					stoppedAfterToolSuccess: true,
+					usage: mergeUsageSamples(usageSamples),
 				});
 			}
 		}
 
-		throw new Error(`The AI did not finish after ${roundsLimit} tool rounds.`);
+		return this.buildDiagnostics(includeDiagnostics, {
+			text: `The AI did not finish after ${roundsLimit} tool rounds.`,
+			provider: this.provider,
+			model: this.model,
+			messages,
+			toolExecutions: runtime.executionLog,
+			mcpServers: runtime.getDiagnosticsServers(),
+			incomplete: true,
+			reason: "max_tool_rounds_exceeded",
+			usage: mergeUsageSamples(usageSamples),
+		});
 	}
 }
 
@@ -2349,7 +2578,16 @@ class AnthropicAdapter extends BaseProviderAdapter {
 			}
 		}
 
-		throw new Error(`The AI did not finish after ${roundsLimit} tool rounds.`);
+		return this.buildDiagnostics(includeDiagnostics, {
+			text: `The AI did not finish after ${roundsLimit} tool rounds.`,
+			provider: this.provider,
+			model: this.model,
+			messages,
+			toolExecutions: runtime.executionLog,
+			mcpServers: runtime.getDiagnosticsServers(),
+			incomplete: true,
+			reason: "max_tool_rounds_exceeded",
+		});
 	}
 }
 
@@ -2596,7 +2834,16 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 			}
 		}
 
-		throw new Error(`The AI did not finish after ${roundsLimit} tool rounds.`);
+		return this.buildDiagnostics(includeDiagnostics, {
+			text: `The AI did not finish after ${roundsLimit} tool rounds.`,
+			provider: this.provider,
+			model: this.model,
+			contents,
+			toolExecutions: runtime.executionLog,
+			mcpServers: runtime.getDiagnosticsServers(),
+			incomplete: true,
+			reason: "max_tool_rounds_exceeded",
+		});
 	}
 }
 

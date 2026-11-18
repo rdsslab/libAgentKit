@@ -1,0 +1,28 @@
+{
+  "provider": {
+    "provider": "ollama",
+    "baseUrl": "http://127.0.0.1:11434",
+    "model": "qwen3:4b-instruct-8k",
+    "timeout": 600000
+  },
+  "mode": "build",
+  "interactive": true,
+  "capabilities": {
+    "terminal": true,
+    "filesystem": false,
+    "web": false,
+    "mcp": false,
+    "documents": true,
+    "artifacts": false
+  },
+  "tools": {
+    "run_command": true
+  },
+  "terminal": {
+    "allowedBinaries": ["hostname", "ip", "uname", "cat", "echo"],
+    "timeoutMs": 20000,
+    "maxOutputBytes": 65536
+  },
+  "maxToolRounds": 5,
+  "includeDiagnostics": true
+}

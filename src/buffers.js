@@ -13,6 +13,18 @@ const isPlainObject = (value) => value != null && typeof value === "object" && !
 
 const BASE64_RE = /^[A-Za-z0-9+/=\s]+$/;
 
+const looksLikeBase64 = (value) => {
+	const compact = String(value || "").replace(/\s+/g, "");
+	if (compact.length < 16 || compact.length % 4 !== 0 || !BASE64_RE.test(compact)) {
+		return false;
+	}
+
+	// Require padding or base64-specific characters to avoid misclassifying plain
+	// alphanumeric text as a binary payload. This is a heuristic and may be
+	// overridden by passing `{ base64: ... }` or `encoding: "base64"` explicitly.
+	return /=/.test(compact) || /[+/]/.test(compact);
+};
+
 export const guessMimeTypeFromName = (fileName) => {
 	const name = String(fileName || "").toLowerCase();
 	const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : "";
@@ -115,11 +127,8 @@ export const toBuffer = (input, options = {}) => {
 			return Buffer.from(input, encoding);
 		}
 
-		if (allowBase64String) {
-			const compact = input.replace(/\s+/g, "");
-			if (compact.length >= 16 && compact.length % 4 === 0 && BASE64_RE.test(compact)) {
-				return Buffer.from(compact, "base64");
-			}
+		if (allowBase64String && looksLikeBase64(input)) {
+			return Buffer.from(String(input).replace(/\s+/g, ""), "base64");
 		}
 
 		return Buffer.from(input, "utf8");

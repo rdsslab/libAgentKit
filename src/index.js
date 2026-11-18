@@ -132,3 +132,31 @@ export {
 	normalizeMcpServer,
 	normalizeMcpServers,
 } from "./mcp.js";
+
+export {
+	CAPABILITY_CATEGORIES,
+	applyCapabilitiesToToolHandlers,
+	applyCapabilityToToolHandler,
+	capabilityDeniedResult,
+	capabilityEnabled,
+	defaultCapabilitiesFor,
+	normalizeCapabilities,
+	resolveToolCapability,
+} from "./capabilities.js";
+
+export {
+	PROJECT_CONFIG_CANONICAL,
+	PROJECT_CONFIG_LEGACY,
+	defaultConfig,
+	findProjectConfigPath,
+	getGlobalConfigDir,
+	getGlobalConfigPath,
+	loadEffectiveConfig,
+	loadGlobalConfig,
+	loadProjectConfig,
+	readJsonFile,
+	readJsonFileIfExists,
+	saveGlobalConfig,
+	saveProjectConfig,
+	writeJsonFile,
+} from "./config.js";

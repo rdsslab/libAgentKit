@@ -411,6 +411,8 @@ async function main() {
   check("documents-detect", () => {
     assert.equal(detectDocumentKind({ fileName: "a.pdf" }), "pdf");
     assert.equal(detectDocumentKind({ mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), "docx");
+    assert.equal(detectDocumentKind({ fileName: "a.doc" }), "unsupported");
+    assert.equal(detectDocumentKind({ mimeType: "application/msword" }), "unsupported");
     assert.equal(detectDocumentKind({ fileName: "a.md" }), "text");
     assert.equal(detectDocumentKind({ fileName: "a.html" }), "html");
     assert.equal(detectDocumentKind({ fileName: "a.xlsx" }), "unsupported");
@@ -457,6 +459,11 @@ async function main() {
     await assert.rejects(
       () => extractDocumentText({ data: Buffer.from("PK"), fileName: "hoja.xlsx" }),
       (error) => error.code === "DOCUMENT_UNSUPPORTED" && /no esta soportado/.test(error.userMessage),
+    );
+
+    await assert.rejects(
+      () => extractDocumentText({ data: Buffer.from("legacy-doc-binary"), fileName: "viejo.doc" }),
+      (error) => error.code === "DOCUMENT_UNSUPPORTED" && /DOC \(Word antiguo\) no esta soportado/.test(error.userMessage),
     );
 
     await assert.rejects(
@@ -643,7 +650,8 @@ async function main() {
     });
     assert.equal(failed.ok, false);
     assert.deepEqual(failed.results, []);
-    assert.equal(failed.errors.length, 2);
+    // auto mode merges default engines unless explicitly disabled
+    assert.equal(failed.errors.length, 4);
 
     await assert.rejects(() => webSearch(""), /A search query is required/);
 

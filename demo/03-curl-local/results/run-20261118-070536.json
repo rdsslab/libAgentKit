@@ -1,0 +1,125 @@
+{
+  "test": "03-curl-local",
+  "timestamp": "2026-11-18T12:05:36.164Z",
+  "config": {
+    "model": "qwen3:4b-instruct-8k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "timeout": 900000,
+    "mode": "build",
+    "tools": {
+      "run_command": true
+    },
+    "capabilities": {
+      "terminal": true,
+      "filesystem": false,
+      "web": false,
+      "mcp": false,
+      "documents": true,
+      "artifacts": false
+    },
+    "allowedBinaries": [
+      "curl",
+      "cat",
+      "echo"
+    ]
+  },
+  "prompt": "Ejecuta curl hacia http://192.168.100.126:3000 y resume la respuesta (código HTTP, content-type y qué servicio/página es).",
+  "system": "Eres un asistente técnico. Usa run_command para ejecutar curl hacia la URL indicada. Para no exceder el contexto, usa preferentemente `curl -sS -m 8 -I http://192.168.100.126:3000` (headers) o si necesitas más, limita la salida (evita traer todo el HTML). Pasa flags en args como array. Resume brevemente: código HTTP, content-type y qué servicio/página parece ser.",
+  "url": "http://192.168.100.126:3000",
+  "groundTruth": {
+    "ok": true,
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "title": "OpenFusion API | Low-Code, AI-Friendly API Platform",
+    "stdout": "HTTP/1.1 200 OK\r\nvary: Origin\r\nofapi-trace-id: d9aee3f0-e5a9-4529-ab29-6dc45e3dce59\r\naccept-ranges: bytes\r\ncache-control: public, max-age=0\r\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\r\netag: W/\"9796-1a1ed529a00\"\r\ncontent-type: text/html; charset=utf-8\r\ncontent-length: 38806\r\nx-content-type-options: nosniff\r\nx-frame-options: DENY\r\nreferrer-policy: no-referrer\r\npermissions-policy: geolocation=(), microphone=(), camera=()\r\nDate: Wed, 18 Nov 2026 12:05:36 GMT\r\nConnection: keep-alive\r\nKeep-Alive: timeout=72\r\n\r\n<!doctype html>\n<html lang=\"en\">\n\t<head>\n\t\t<title>OpenFusion API | Low-Code, AI-Friendly API Platform</title>\n\t\t<meta charset=\"utf-8\" />\n\t\t<link rel=\"icon\" href=\"./favicon.png\" />\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n\t\t<meta\n\t\t\tname=\"description\"\n\t\t\tcontent=\"OpenFusion API is a production-ready, low-code API platform to build, govern, and deploy endpoints fast for humans and AI agents with MCP support.\"\n\t\t/>\n\t\t<meta\n\t\t\tname=\"keywords\"\n\t\t\tcontent=\"OpenFusion API, low-code API platform, MCP, AI agents, API gateway, SOAP to REST, SQL API, integration platform, universal-fetch\"\n\t\t/>\n\t\t<meta name=\"robots\" content=\"index, follow\" />\n\t\t<meta name=\"author\" content=\"OpenFusion API\" />\n\n\t\t<meta property=\"og:type\" content=\"website\" />\n\t\t<meta\n\t\t\tproperty=\"og:title\"\n\t\t\tcontent=\"OpenFusion API | Production-Ready APIs for Humans and AI Agents\"\n\t\t/>\n\t\t<meta\n\t\t\tproperty=\"og:description\"\n\t\t\tcontent=\"Build and deploy API endpoints in minutes with reusable handlers, JSON Schema, environment isolation, and MCP-ready tooling.\"\n\t\t/>\n\t\t<meta property=\"og:site_name\" content=\"OpenFusion API\" />\n\n\t\t<meta name=\"twitter:card\" content=\"summary_large_image\" />\n\t\t<meta name=\"twitter:title\" content=\"OpenFusion API | Low-Code API Platform\" />\n\t\t<meta\n\t\t\tname=\"twitter:description\"\n\t\t\tcontent=\"A production-tested platform to create integration APIs faster, including AI-agent workflows and MCP tooling.\"\n\t\t/>\n\n\t\t<script type=\"application/ld+json\">\n\t\t\t{\n\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\"@type\": \"SoftwareApplication\",\n\t\t\t\t\"name\": \"OpenFusion API\",\n\t\t\t\t\"applicationCategory\": \"DeveloperApplication\",\n\t\t\t\t\"operatingSystem\": \"Linux, Windows, Docker\",\n\t\t\t\t\"description\": \"Low-code and AI-friendly platform to create, manage, and deploy API endpoints with built-in handlers, schema validation, and MCP integration.\",\n\t\t\t\t\"url\": \"https://www.openfusionapi.com\",\n\t\t\t\t\"softwareVersion\": \"1\"\n\t\t\t}\n\t\t</script>\n\t\t<link href=\"./_app/immutable/entry/start.DlA1J_k_.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/entry/payload.DSmR2FwN.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/DclECHGd.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/BurUKKFF.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/CxgzV46y.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/6HI077Dv.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/5elap2EN.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/B"
+  },
+  "harness": {
+    "ok": true,
+    "durationMs": 121708,
+    "text": "La petición a `http://192.168.100.126:3000` tuvo el siguiente resultado:\n\n- **Código HTTP**: 200 OK (indicando que la página se cargó correctamente).\n- **Content-Type**: `text/html; charset=utf-8` (lo que indica que se trata de una página web en formato HTML).\n- **Servicio/página**: Es una página web, probablemente una interfaz de usuario de un servicio o aplicación web, dado que el contenido es HTML y el servidor responde con un cuerpo de HTML.\n\nEste resultado se obtuvo mediante el uso de `curl` con el flag `-I` (head request) para obtener solo la cabecera, y se confirma que el servidor está funcionando correctamente y sirve contenido HTML.\n\nFuente: [cURL: Tutorial - Detailed Information](https://curl.se/docs/tutorial.html) (información sobre el uso de `-I` para obtener cabeceras).",
+    "usedWeb": true,
+    "webQuery": "Ejecuta curl hacia http://192.168.100.126:3000 y resume la respuesta (código HTTP, content-type y qué servicio/página es).",
+    "webResults": [
+      {
+        "title": "curl - How To Use",
+        "url": "https://curl.se/docs/manpage.html?hl=es&amp;authuser=0",
+        "snippet": "When doing parallel transfers, this option instructs curl to prefer opening up more connections in parallel at once rather than waiting to see if new transfers can be added as multiplexed streams on another connection. By default, without this option set, curl prefers to wait a little and multiplex new transfers over existing connections."
+      },
+      {
+        "title": "Bash curl Command - Transfer a URL",
+        "url": "https://www.w3schools.com/bash/bash_curl.php",
+        "snippet": "The curl command is used to transfer data from or to a server using various protocols like HTTP, HTTPS , FTP, and more."
+      },
+      {
+        "title": "Comando curl en Linux | Guía completa 2026 : Kamilinux",
+        "url": "https://kamilinux.com/comando-curl/",
+        "snippet": "Utilidad del comando curl curl envía una petición al servidor y recibe su respuesta . Puede imprimir el cuerpo en pantalla, guardar la transferencia en un archivo o preparar solicitudes para probar una API. El programa admite más protocolos según cómo se haya compilado, pero los ejemplos de esta guía se centran en HTTP y HTTPS ."
+      },
+      {
+        "title": "curl - Tutorial",
+        "url": "https://curl.se/docs/tutorial.html",
+        "snippet": "Detailed Information Different protocols provide different ways of getting detailed information about specific files/documents. To get curl to show detailed information about a single file, you should use -I / --head option. It displays all available info on a single file for HTTP and FTP. The HTTP information is a lot more extensive."
+      },
+      {
+        "title": "cURL: ejemplos de GET requests - Marc Nuri",
+        "url": "https://blog.marcnuri.com/curl-get-request-ejemplos",
+        "snippet": "Ejemplos de cURL GET request incluyendo autenticación, cabeceras, redirecciones, timeouts y guardar respuesta en fichero. Comandos listos para copiar y pegar."
+      }
+    ],
+    "webSource": "duckduckgo",
+    "webErrors": [],
+    "mode": "build",
+    "hasTools": true,
+    "usage": {
+      "prompt_tokens": 3050,
+      "completion_tokens": 273,
+      "total_tokens": 3323,
+      "tokens_per_second": 2.41,
+      "timing_ms": 118715,
+      "context": {
+        "used_tokens": 3323,
+        "limit_tokens": 262144,
+        "used_percent": 1.27,
+        "estimated": false
+      },
+      "rounds": 2
+    },
+    "toolExecutions": [
+      {
+        "tool": "run_command",
+        "server": "local",
+        "ok": true,
+        "deduplicated": false,
+        "args": {
+          "command": "curl",
+          "args": [
+            "-sS",
+            "-m",
+            "8",
+            "-I",
+            "http://192.168.100.126:3000"
+          ]
+        },
+        "textResult": "{\"ok\":true,\"exitCode\":0,\"timedOut\":false,\"truncated\":false,\"stdout\":\"HTTP/1.1 200 OK\\r\\nvary: Origin\\r\\nofapi-trace-id: 3638b1ab-ffd8-4ef9-b895-24653f0b06ff\\r\\naccept-ranges: bytes\\r\\ncache-control: public, max-age=0\\r\\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\\r\\netag: W/\\\"9796-1a1ed529a00\\\"\\r\\ncontent-type: text/html; charset=utf-8\\r\\ncontent-length: 38806\\r\\nx-content-type-options: nosniff\\r\\nx-frame-options: DENY\\r\\nreferrer-policy: no-referrer\\r\\npermissions-policy: geolocation=(), microphone=(), camera=()\\r\\nDate: Wed, 18 Nov 2026 12:04:08 GMT\\r\\nConnection: keep-alive\\r\\nKeep-Alive: timeout=72\\r\\n\\r\\n\",\"stderr\":\"\",\"durationMs\":229}",
+        "rawResult": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "truncated": false,
+          "durationMs": 229
+        }
+      }
+    ],
+    "documents": []
+  },
+  "comparison": {
+    "groundTruthOk": true,
+    "mentions200": true,
+    "mentionsHtml": true,
+    "mentionsOpenFusion": false,
+    "usedRunCommand": true,
+    "toolOk": true,
+    "coherent": true
+  },
+  "note": "Prompt ajustado para usar headers (-I) y evitar overflow de contexto en modelos 8k con respuestas HTML grandes."
+}

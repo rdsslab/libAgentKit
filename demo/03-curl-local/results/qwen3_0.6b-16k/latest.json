@@ -1,0 +1,207 @@
+{
+  "test": "03-curl-local",
+  "timestamp": "2026-11-18T15:19:24.149Z",
+  "environment": {
+    "timestamp": "2026-11-18T15:19:24.149Z",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.12.115+deb13.1-amd64",
+    "os": {
+      "release": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.7\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"",
+      "prettyName": "Debian GNU/Linux 13 (trixie)"
+    },
+    "cpu": {
+      "model": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "cores": 4,
+      "threadsPerCore": 2,
+      "maxMHz": "4100,0000",
+      "lscpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nModel name:                              11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz\nCPU family:                              6\nModel:                                   140\nThread(s) per core:                      2\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                2\nCPU(s) scaling MHz:                      99%\nCPU max MHz:                             4100,0000\nCPU min MHz:                             400,0000\nBogoMIPS:                                5990,40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l2 cdp_l2 ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               96 KiB (2 instances)\nL1i cache:                               64 KiB (2 instances)\nL2 cache:                                2,5 MiB (2 instances)\nL3 cache:                                6 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Mitigation; Microcode\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop\nVulnerability Srbds:                     Not affected"
+    },
+    "memory": {
+      "total": 8061861888,
+      "free": 1472237568,
+      "totalHuman": "Mem:           7,5Gi       6,1Gi       179Mi       2,5Gi       4,0Gi       1,4Gi",
+      "swapHuman": "Swap:          8,8Gi       4,5Gi       4,3Gi",
+      "freeText": "total        used        free      shared  buff/cache   available\nMem:           7,5Gi       6,1Gi       179Mi       2,5Gi       4,0Gi       1,4Gi\nSwap:          8,8Gi       4,5Gi       4,3Gi"
+    },
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  225G  195G   20G  92% /",
+    "node": "v24.21.0",
+    "npm": "11.19.0",
+    "ollama": {
+      "version": "ollama version is 0.40.16",
+      "list": "NAME                              ID              SIZE      MODIFIED      \nbonsai-2:latest                   c8b5462f8688    3.2 GB    6 days ago       \nlfm3-omni:2b                      4c0ee9400634    2.0 GB    8 days ago       \njaahas/qwen3.5-uncensored:4b      1d79a37040b7    3.5 GB    12 days ago      \nhuihui_ai/qwen3-abliterated:4b    9d803f2de433    2.5 GB    2 weeks ago      \nminicpm-v4.6:16k                  0cd8285f4d1e    1.6 GB    2 weeks ago      \nqwen3:0.6b-16k                    399580955774    522 MB    2 weeks ago      \nlfm2.5-thinking:1.2b-q8_0         10cad872d371    1.2 GB    3 weeks ago      \nminicpm-v4.6:latest               e95583acac77    1.6 GB    3 weeks ago      \nqwen3:4b-instruct-8k              5208f207dd69    2.5 GB    3 weeks ago      \nqwen3:4b-instruct                 0edcdef34593    2.5 GB    3 weeks ago      \ndeepseek-r1:1.5b                  e0979632db5a    1.1 GB    17 months ago    \nqwen3:0.6b                        3bae9c93586b    522 MB    18 months ago"
+    },
+    "gpu": "0000:00:02.0 VGA compatible controller: Intel Corporation Tiger Lake-LP GT2 [UHD Graphics G4] (rev 03)",
+    "hostname": "edwin-hplaptop15dw3xxx"
+  },
+  "config": {
+    "model": "qwen3:0.6b-16k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "timeout": 900000,
+    "mode": "build",
+    "tools": {
+      "run_command": true
+    },
+    "capabilities": {
+      "terminal": true,
+      "filesystem": false,
+      "web": false,
+      "mcp": false,
+      "documents": true,
+      "artifacts": false
+    },
+    "maxToolRounds": 4,
+    "allowedBinaries": [
+      "curl",
+      "cat",
+      "echo"
+    ],
+    "url": "http://192.168.100.126:3000"
+  },
+  "prompt": "Run curl against http://192.168.100.126:3000 and summarize the response (HTTP status code, content-type, and what service/page it appears to be).",
+  "system": "You are a technical assistant. Use run_command to execute curl against the given URL. To avoid exceeding small-model context, prefer `curl -sS -m 8 -I http://192.168.100.126:3000` (headers). Pass flags in args array. Briefly report HTTP status code, content-type, and what service/page it appears to be.",
+  "groundTruth": {
+    "ok": true,
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "title": "OpenFusion API | Low-Code, AI-Friendly API Platform",
+    "stdout": "HTTP/1.1 200 OK\r\nvary: Origin\r\nofapi-trace-id: becc4e07-9106-4f78-9b7b-2d18d466b16a\r\naccept-ranges: bytes\r\ncache-control: public, max-age=0\r\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\r\netag: W/\"9796-1a1ed529a00\"\r\ncontent-type: text/html; charset=utf-8\r\ncontent-length: 38806\r\nx-content-type-options: nosniff\r\nx-frame-options: DENY\r\nreferrer-policy: no-referrer\r\npermissions-policy: geolocation=(), microphone=(), camera=()\r\nDate: Wed, 18 Nov 2026 15:19:23 GMT\r\nConnection: keep-alive\r\nKeep-Alive: timeout=72\r\n\r\n<!doctype html>\n<html lang=\"en\">\n\t<head>\n\t\t<title>OpenFusion API | Low-Code, AI-Friendly API Platform</title>\n\t\t<meta charset=\"utf-8\" />\n\t\t<link rel=\"icon\" href=\"./favicon.png\" />\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n\t\t<meta\n\t\t\tname=\"description\"\n\t\t\tcontent=\"OpenFusion API is a production-ready, low-code API platform to build, govern, and deploy endpoints fast for humans and AI agents with MCP support.\"\n\t\t/>\n\t\t<meta\n\t\t\tname=\"keywords\"\n\t\t\tcontent=\"OpenFusion API, low-code API platform, MCP, AI agents, API gateway, SOAP to REST, SQL API, integration platform, universal-fetch\"\n\t\t/>\n\t\t<meta name=\"robots\" content=\"index, follow\" />\n\t\t<meta name=\"author\" content=\"OpenFusion API\" />\n\n\t\t<meta property=\"og:type\" content=\"website\" />\n\t\t<meta\n\t\t\tproperty=\"og:title\"\n\t\t\tcontent=\"OpenFusion API | Production-Ready APIs for Humans and AI Agents\"\n\t\t/>\n\t\t<meta\n\t\t\tproperty=\"og:description\"\n\t\t\tcontent=\"Build and deploy API endpoints in minutes with reusable handlers, JSON Schema, environment isolation, and MCP-ready tooling.\"\n\t\t/>\n\t\t<meta property=\"og:site_name\" content=\"OpenFusion API\" />\n\n\t\t<meta name=\"twitter:card\" content=\"summary_large_image\" />\n\t\t<meta name=\"twitter:title\" content=\"OpenFusion API | Low-Code API Platform\" />\n\t\t<meta\n\t\t\tname=\"twitter:description\"\n\t\t\tcontent=\"A production-tested platform to create integration APIs faster, including AI-agent workflows and MCP tooling.\"\n\t\t/>\n\n\t\t<script type=\"application/ld+json\">\n\t\t\t{\n\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\"@type\": \"SoftwareApplication\",\n\t\t\t\t\"name\": \"OpenFusion API\",\n\t\t\t\t\"applicationCategory\": \"DeveloperApplication\",\n\t\t\t\t\"operatingSystem\": \"Linux, Windows, Docker\",\n\t\t\t\t\"description\": \"Low-code and AI-friendly platform to create, manage, and deploy API endpoints with built-in handlers, schema validation, and MCP integration.\",\n\t\t\t\t\"url\": \"https://www.openfusionapi.com\",\n\t\t\t\t\"softwareVersion\": \"1\"\n\t\t\t}\n\t\t</script>\n\t\t<link href=\"./_app/immutable/entry/start.DlA1J_k_.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/entry/payload.DSmR2FwN.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/DclECHGd.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/BurUKKFF.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/CxgzV46y.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/6HI077Dv.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/5elap2EN.js\" rel=\"modulepreload\">\n\t\t<link href=\"./_app/immutable/chunks/B"
+  },
+  "harness": {
+    "ok": true,
+    "durationMs": 210898,
+    "text": "",
+    "usedWeb": true,
+    "webQuery": "Run curl against http://192.168.100.126:3000 and summarize the response (HTTP status code, content-type, and what service/page it appears to be).",
+    "webResults": [
+      {
+        "title": "Run - Play it Online at Coolmath Games",
+        "url": "https://www.bing.com/ck/a?!&&p=aba83662eb1c6c2852a4c4ea81218a508406140a8559627ee6dec3a9be22c9a3JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=1b1aa491-4f96-668c-32ed-bc844e2367c9&u=a1aHR0cHM6Ly93d3cuY29vbG1hdGhnYW1lcy5jb20vMC1ydW4&ntb=1",
+        "snippet": "Play Run now at Coolmath Games. This game requires a huge amount of concentration and memorization as you progress through …"
+      },
+      {
+        "title": "Bienvenido al Portal del RUN",
+        "url": "https://www.bing.com/ck/a?!&&p=1d5b8ca3d8cef771ff4f7d434e6d7cef3a1ed0748c3304b1b9fdb6eb3058a0bbJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=1b1aa491-4f96-668c-32ed-bc844e2367c9&u=a1aHR0cHM6Ly9ydW4uZ292LnB5Lw&ntb=1",
+        "snippet": "7 de oct de 2026 · Boletín RUN - Primeros 100 dias Escrito por Administrador Creado: 24 Abril 2026 Última actualización: 28 Abril …"
+      },
+      {
+        "title": "Run - Juega online en Coolmath Games",
+        "url": "https://www.bing.com/ck/a?!&&p=05cc2bf34cbca0b203467c577cf4f0ac9e4cef6ec65fd45caddb0287d9697db8JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=1b1aa491-4f96-668c-32ed-bc844e2367c9&u=a1aHR0cHM6Ly93d3cuY29vbG1hdGhnYW1lcy5jb20vZXMvMC1ydW4&ntb=1",
+        "snippet": "Use the arrow keys or WASD to run through this crazy 3-dimensional course. If you want to turn up the intensity, hit pause (or press …"
+      },
+      {
+        "title": "Run 3 - Play Online for Free! | Poki",
+        "url": "https://www.bing.com/ck/a?!&&p=e03e0e258b7b9c02b1624b64bf41a2a1c46b5dc4727660321a1b705a4290730eJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=1b1aa491-4f96-668c-32ed-bc844e2367c9&u=a1aHR0cHM6Ly9wb2tpLmNvbS9lbi9nL3J1bi0zP21zb2NraWQ9MWIxYWE0OTE0Zjk2NjY4YzMyZWRiYzg0NGUyMzY3Yzk&ntb=1",
+        "snippet": "Run 3 lets you explore an endless runner game within a 3D tunnel. Navigate a gray alien through a constantly shifting maze with …"
+      },
+      {
+        "title": "Run | Play Run on PrimaryGames",
+        "url": "https://www.bing.com/ck/a?!&&p=4d106ef8f27eaf7664b1bd1786833d8f3108f570996133ccd6d81ce55967f3fbJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=1b1aa491-4f96-668c-32ed-bc844e2367c9&u=a1aHR0cHM6Ly93d3cucHJpbWFyeWdhbWVzLmNvbS9hcmNhZGUvYWN0aW9uL3J1bi8&ntb=1",
+        "snippet": "How far can your run? Run, skate, float, bounce, and/or jump your way through space tunnels! Avoid the holes in corridor. Run into …"
+      }
+    ],
+    "webSource": "bing",
+    "webErrors": [],
+    "mode": "build",
+    "hasTools": true,
+    "usage": {
+      "prompt_tokens": 14691,
+      "completion_tokens": 431,
+      "total_tokens": 15122,
+      "tokens_per_second": 0.01,
+      "timing_ms": 207487,
+      "context": {
+        "used_tokens": 15122,
+        "limit_tokens": 40960,
+        "used_percent": 36.92,
+        "estimated": false
+      },
+      "rounds": 2
+    },
+    "toolExecutions": [
+      {
+        "tool": "run_command",
+        "server": "local",
+        "ok": true,
+        "deduplicated": false,
+        "args": {
+          "command": "curl",
+          "args": [
+            "-sS",
+            "-m",
+            "8",
+            "-i",
+            "http://192.168.100.126:3000"
+          ]
+        },
+        "textResult": "{\"ok\":true,\"exitCode\":0,\"timedOut\":false,\"truncated\":false,\"stdout\":\"HTTP/1.1 200 OK\\r\\nvary: Origin\\r\\nofapi-trace-id: 7c978926-ba8d-40c6-9b58-c8b3f2197789\\r\\naccept-ranges: bytes\\r\\ncache-control: public, max-age=0\\r\\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\\r\\netag: W/\\\"9796-1a1ed529a00\\\"\\r\\ncontent-type: text/html; charset=utf-8\\r\\ncontent-length: 38806\\r\\nx-content-type-options: nosniff\\r\\nx-frame-options: DENY\\r\\nreferrer-policy: no-referrer\\r\\npermissions-policy: geolocation=(), microphone=(), camera=()\\r\\nDate: Wed, 18 Nov 2026 15:16:22 GMT\\r\\nConnection: keep-alive\\r\\nKeep-Alive: timeout=72\\r\\n\\r\\n<!doctype html>\\n<html lang=\\\"en\\\">\\n\\t<head>\\n\\t\\t<title>OpenFusion API | Low-Code, AI-Friendly API Platform</title>\\n\\t\\t<meta charset=\\\"utf-8\\\" />\\n\\t\\t<link rel=\\\"icon\\\" href=\\\"./favicon.png\\\" />\\n\\t\\t<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\" />\\n\\t\\t<meta\\n\\t\\t\\tname=\\\"description\\\"\\n\\t\\t\\tcontent=\\\"OpenFusion API is a production-ready, low-code API platform to build, govern, and deploy endpoints fast for humans and AI agents with MCP support.\\\"\\n\\t\\t/>\\n\\t\\t<meta\\n\\t\\t\\tname=\\\"keywords\\\"\\n\\t\\t\\tcontent=\\\"OpenFusion API, low-code API platfor\n...[truncated 14807 chars]",
+        "rawResult": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "truncated": false,
+          "durationMs": 94
+        }
+      },
+      {
+        "tool": "run_command",
+        "server": "local",
+        "ok": true,
+        "deduplicated": true,
+        "args": {
+          "command": "curl",
+          "args": [
+            "-sS",
+            "-m",
+            "8",
+            "-i",
+            "http://192.168.100.126:3000"
+          ]
+        },
+        "textResult": "Duplicate tool call suppressed. Reuse the previous successful result and answer the user unless you need different arguments.\n\n{\"ok\":true,\"exitCode\":0,\"timedOut\":false,\"truncated\":false,\"stdout\":\"HTTP/1.1 200 OK\\r\\nvary: Origin\\r\\nofapi-trace-id: 7c978926-ba8d-40c6-9b58-c8b3f2197789\\r\\naccept-ranges: bytes\\r\\ncache-control: public, max-age=0\\r\\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\\r\\netag: W/\\\"9796-1a1ed529a00\\\"\\r\\ncontent-type: text/html; charset=utf-8\\r\\ncontent-length: 38806\\r\\nx-content-type-options: nosniff\\r\\nx-frame-options: DENY\\r\\nreferrer-policy: no-referrer\\r\\npermissions-policy: geolocation=(), microphone=(), camera=()\\r\\nDate: Wed, 18 Nov 2026 15:16:22 GMT\\r\\nConnection: keep-alive\\r\\nKeep-Alive: timeout=72\\r\\n\\r\\n<!doctype html>\\n<html lang=\\\"en\\\">\\n\\t<head>\\n\\t\\t<title>OpenFusion API | Low-Code, AI-Friendly API Platform</title>\\n\\t\\t<meta charset=\\\"utf-8\\\" />\\n\\t\\t<link rel=\\\"icon\\\" href=\\\"./favicon.png\\\" />\\n\\t\\t<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\" />\\n\\t\\t<meta\\n\\t\\t\\tname=\\\"description\\\"\\n\\t\\t\\tcontent=\\\"OpenFusion API is a production-ready, low-code API platform to build, govern, and deploy endpoints fast for humans and \n...[truncated 14934 chars]",
+        "rawResult": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "truncated": false,
+          "durationMs": 94
+        }
+      },
+      {
+        "tool": "run_command",
+        "server": "local",
+        "ok": true,
+        "deduplicated": true,
+        "args": {
+          "command": "curl",
+          "args": [
+            "-sS",
+            "-m",
+            "8",
+            "-i",
+            "http://192.168.100.126:3000"
+          ]
+        },
+        "textResult": "Duplicate tool call suppressed. Reuse the previous successful result and answer the user unless you need different arguments.\n\n{\"ok\":true,\"exitCode\":0,\"timedOut\":false,\"truncated\":false,\"stdout\":\"HTTP/1.1 200 OK\\r\\nvary: Origin\\r\\nofapi-trace-id: 7c978926-ba8d-40c6-9b58-c8b3f2197789\\r\\naccept-ranges: bytes\\r\\ncache-control: public, max-age=0\\r\\nlast-modified: Wed, 18 Nov 2026 06:22:56 GMT\\r\\netag: W/\\\"9796-1a1ed529a00\\\"\\r\\ncontent-type: text/html; charset=utf-8\\r\\ncontent-length: 38806\\r\\nx-content-type-options: nosniff\\r\\nx-frame-options: DENY\\r\\nreferrer-policy: no-referrer\\r\\npermissions-policy: geolocation=(), microphone=(), camera=()\\r\\nDate: Wed, 18 Nov 2026 15:16:22 GMT\\r\\nConnection: keep-alive\\r\\nKeep-Alive: timeout=72\\r\\n\\r\\n<!doctype html>\\n<html lang=\\\"en\\\">\\n\\t<head>\\n\\t\\t<title>OpenFusion API | Low-Code, AI-Friendly API Platform</title>\\n\\t\\t<meta charset=\\\"utf-8\\\" />\\n\\t\\t<link rel=\\\"icon\\\" href=\\\"./favicon.png\\\" />\\n\\t\\t<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\" />\\n\\t\\t<meta\\n\\t\\t\\tname=\\\"description\\\"\\n\\t\\t\\tcontent=\\\"OpenFusion API is a production-ready, low-code API platform to build, govern, and deploy endpoints fast for humans and \n...[truncated 14934 chars]",
+        "rawResult": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "truncated": false,
+          "durationMs": 94
+        }
+      }
+    ],
+    "documents": []
+  },
+  "comparison": {
+    "groundTruthOk": true,
+    "mentions200": false,
+    "mentionsHtml": false,
+    "mentionsOpenFusion": false,
+    "usedRunCommand": true,
+    "toolOk": true,
+    "coherent": false
+  },
+  "note": "Uses header-only curl (-I) by prompt guidance to avoid context overflow with large HTML responses on small-context models."
+}

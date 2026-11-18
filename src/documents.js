@@ -91,13 +91,15 @@ export const detectDocumentKind = ({ mimeType, fileName } = {}) => {
 		return "pdf";
 	}
 
-	if (
-		mime.includes("wordprocessingml.document")
-		|| mime === "application/msword"
-		|| ext === "docx"
-		|| ext === "doc"
-	) {
+	if (mime.includes("wordprocessingml.document") || ext === "docx") {
 		return "docx";
+	}
+
+	// Legacy binary Word (.doc / application/msword) is not OOXML/ZIP and cannot
+	// be read by the DOCX extractor. Treat it as unsupported instead of failing
+	// later with a misleading ZIP error.
+	if (mime === "application/msword" || ext === "doc") {
+		return "unsupported";
 	}
 
 	if (mime.includes("html") || ext === "html" || ext === "htm") {
@@ -329,11 +331,17 @@ const pdfToText = async (buffer, { maxPages = DEFAULT_MAX_PAGES } = {}) => {
 
 const unsupportedError = (mimeType, fileName) => {
 	const label = fileName || mimeType || "ese archivo";
+	const ext = extensionOf(fileName);
+	const mime = String(mimeType || "").toLowerCase();
+	const isLegacyDoc = ext === "doc" || mime === "application/msword";
+
 	return new DocumentExtractionError(
 		`Unsupported document type for ${label}. Supported: PDF, DOCX and plain-text formats.`,
 		{
 			code: "DOCUMENT_UNSUPPORTED",
-			userMessage: `No puedo leer "${label}": ese formato no esta soportado. Envia PDF, DOCX o texto (TXT, MD, CSV, JSON, HTML, XML).`,
+			userMessage: isLegacyDoc
+				? `No puedo leer "${label}": el formato DOC (Word antiguo) no esta soportado. Conviertelo a DOCX o PDF y vuelve a enviarlo.`
+				: `No puedo leer "${label}": ese formato no esta soportado. Envia PDF, DOCX o texto (TXT, MD, CSV, JSON, HTML, XML).`,
 		},
 	);
 };

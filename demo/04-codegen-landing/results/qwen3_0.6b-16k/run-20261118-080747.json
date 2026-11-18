@@ -1,0 +1,116 @@
+{
+  "test": "04-codegen-landing",
+  "timestamp": "2026-11-18T13:14:07.271Z",
+  "environment": {
+    "timestamp": "2026-11-18T13:14:07.270Z",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.12.115+deb13.1-amd64",
+    "os": {
+      "release": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.7\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"",
+      "prettyName": "Debian GNU/Linux 13 (trixie)"
+    },
+    "cpu": {
+      "model": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "cores": 4,
+      "threadsPerCore": 2,
+      "maxMHz": "4100,0000",
+      "lscpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nModel name:                              11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz\nCPU family:                              6\nModel:                                   140\nThread(s) per core:                      2\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                2\nCPU(s) scaling MHz:                      59%\nCPU max MHz:                             4100,0000\nCPU min MHz:                             400,0000\nBogoMIPS:                                5990,40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l2 cdp_l2 ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               96 KiB (2 instances)\nL1i cache:                               64 KiB (2 instances)\nL2 cache:                                2,5 MiB (2 instances)\nL3 cache:                                6 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Mitigation; Microcode\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop\nVulnerability Srbds:                     Not affected"
+    },
+    "memory": {
+      "total": 8061861888,
+      "free": 3774058496,
+      "totalHuman": "Mem:           7,5Gi       4,2Gi       2,3Gi       407Mi       1,7Gi       3,3Gi",
+      "swapHuman": "Swap:          8,8Gi       6,7Gi       2,1Gi",
+      "freeText": "total        used        free      shared  buff/cache   available\nMem:           7,5Gi       4,2Gi       2,3Gi       407Mi       1,7Gi       3,3Gi\nSwap:          8,8Gi       6,7Gi       2,1Gi"
+    },
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  225G  195G   20G  91% /",
+    "node": "v24.21.0",
+    "npm": "11.19.0",
+    "ollama": {
+      "version": "ollama version is 0.40.16",
+      "list": "NAME                              ID              SIZE      MODIFIED      \nbonsai-2:latest                   c8b5462f8688    3.2 GB    6 days ago       \nlfm3-omni:2b                      4c0ee9400634    2.0 GB    8 days ago       \njaahas/qwen3.5-uncensored:4b      1d79a37040b7    3.5 GB    12 days ago      \nhuihui_ai/qwen3-abliterated:4b    9d803f2de433    2.5 GB    2 weeks ago      \nminicpm-v4.6:16k                  0cd8285f4d1e    1.6 GB    2 weeks ago      \nqwen3:0.6b-16k                    399580955774    522 MB    2 weeks ago      \nlfm2.5-thinking:1.2b-q8_0         10cad872d371    1.2 GB    3 weeks ago      \nminicpm-v4.6:latest               e95583acac77    1.6 GB    3 weeks ago      \nqwen3:4b-instruct-8k              5208f207dd69    2.5 GB    3 weeks ago      \nqwen3:4b-instruct                 0edcdef34593    2.5 GB    3 weeks ago      \ndeepseek-r1:1.5b                  e0979632db5a    1.1 GB    17 months ago    \nqwen3:0.6b                        3bae9c93586b    522 MB    18 months ago"
+    },
+    "gpu": "0000:00:02.0 VGA compatible controller: Intel Corporation Tiger Lake-LP GT2 [UHD Graphics G4] (rev 03)",
+    "hostname": "edwin-hplaptop15dw3xxx"
+  },
+  "config": {
+    "model": "qwen3:0.6b-16k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "timeout": 600000,
+    "mode": "build",
+    "tools": {},
+    "capabilities": {
+      "terminal": false,
+      "filesystem": false,
+      "web": false,
+      "mcp": false,
+      "documents": false,
+      "artifacts": false
+    },
+    "maxToolRounds": 2
+  },
+  "prompt": "Create a simple landing page in a single HTML file. It must include some CSS and JavaScript to animate the buttons (for example on hover or click). Return the complete HTML file code.",
+  "system": "You are a frontend developer. Generate complete, clean, functional code. Respond primarily with the requested HTML file (you can use a ```html block).",
+  "groundTruth": {
+    "type": "automated-validation",
+    "checks": [
+      "hasHtml",
+      "hasHeadOrBody",
+      "hasButton",
+      "hasScript",
+      "hasAnimation",
+      "hasCss",
+      "passed"
+    ]
+  },
+  "harness": {
+    "ok": true,
+    "durationMs": 379889,
+    "text": "```html\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Simple Landing Page</title>\n  <style>\n    * {\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: 'Segoe UI', sans-serif;\n      background: #f4f4f4;\n      display: flex;\n      justify-content: center;\n      height: 100vh;\n      margin: 0;\n    }\n\n    .container {\n      background: #fff;\n      padding: 30px;\n      border-radius: 10px;\n      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);\n    }\n\n    .btn {\n      padding: 15px 25px;\n      font-size: 18px;\n      border: none;\n      border-radius: 5px;\n      cursor: pointer;\n      transition: transform 0.3s;\n    }\n\n    .btn:hover {\n      transform: scale(1.05);\n      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);\n    }\n\n    .btn2 {\n      background-color: #007BFF;\n      color: white;\n      padding: 10px 20px;\n      border: none;\n      border-radius: 5px;\n      cursor: pointer;\n    }\n\n    .btn2:hover {\n      transform: scale(1.1);\n      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);\n    }\n\n    @media (max-width: 600px) {\n      .btn, .btn2 {\n        font-size: 16px;\n      }\n    }\n  </style>\n</head>\n<body>\n\n  <div class=\"container\">\n    <button class=\"btn\" onclick=\"animateBtn('btn')\">Click Me</button>\n    <button class=\"btn2\" onclick=\"animateBtn('btn2')\">Hover Me</button>\n\n    <script>\n      function animateBtn(button) {\n        const element = document.getElementById(button);\n        element.style.display = 'none';\n        setTimeout(() => {\n          element.style.display = 'block';\n          element.classList.add('pulse');\n        }, 100);\n      }\n    </script>\n\n  </div>\n\n</body>\n</html>\n```",
+    "usedWeb": false,
+    "webQuery": "",
+    "webResults": [],
+    "webSource": null,
+    "webErrors": [],
+    "mode": "build",
+    "hasTools": false,
+    "usage": {
+      "prompt_tokens": 80,
+      "completion_tokens": 932,
+      "total_tokens": 1012,
+      "tokens_per_second": 2.46,
+      "timing_ms": 379163,
+      "context": {
+        "used_tokens": 1012,
+        "limit_tokens": 40960,
+        "used_percent": 2.47,
+        "estimated": false
+      },
+      "rounds": 1
+    },
+    "toolExecutions": [],
+    "documents": []
+  },
+  "comparison": {
+    "coherent": true,
+    "notes": "Generated code passes basic checks (HTML, button, JS, animation)."
+  },
+  "artifact": {
+    "extracted": true,
+    "path": "demo/04-codegen-landing/output/qwen3_0.6b-16k/landing-page.html",
+    "resultCopy": "demo/04-codegen-landing/results/qwen3_0.6b-16k/landing-page-20261118-080747.html",
+    "latest": "demo/04-codegen-landing/output/landing-page.html",
+    "bytes": 1704,
+    "preview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Simple Landing Page</title>\n  <style>\n    * {\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: 'Segoe UI', sans-serif;\n      background: #f4f4f4;\n      display: flex;\n      justify-content: center;\n      height: 100vh;\n      margin: 0;\n    }\n\n    .container {\n      background: #fff;\n      padding: 30px;\n      border-radius: 10px;\n      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);\n    }\n\n    .btn {\n      padding: 15px 25px;\n      font-size: 18px;\n      border: none;\n      border-radius: 5px;\n      cursor: pointer;\n      transition: transform 0.3s;\n    }\n\n    .btn:hover {\n      transform: scale(1.05);\n      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);\n    }\n\n    .btn2 {\n      background-color: #007BFF;\n      color: white;\n      padding: 10px 20px;\n      border: none;\n      border-radius: 5px;\n      cursor: pointer;\n    }\n\n    .btn2:hover {\n      transform: scale(1.1);\n      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);\n    }\n\n    @media (max-width: 600px) {\n      .btn, .btn2 {\n        font-size: 16px;\n      }\n    }\n  </style>\n</head>\n<body>\n\n  <div class=\"container\">\n    <button class=\"btn\" onclick=\"animateBtn('btn')\">Click Me</button>\n    <button class=\"btn2\" onclick=\"animateBtn('btn2')\">Hover Me</button>\n\n    <script>\n      function animateBtn(button) {\n        const element = document.getElementById(button);\n        eleme"
+  },
+  "validation": {
+    "hasHtml": true,
+    "hasHeadOrBody": true,
+    "hasButton": true,
+    "hasScript": true,
+    "hasAnimation": true,
+    "hasCss": true,
+    "passed": true
+  }
+}

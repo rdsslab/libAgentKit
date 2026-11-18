@@ -1,0 +1,41 @@
+{
+  "test": "06-current-president-ecuador-ground-truth",
+  "timestamp": "2026-11-18T16:38:53.526Z",
+  "query": "current president of Ecuador 2026",
+  "result": {
+    "ok": true,
+    "query": "current president of Ecuador 2026",
+    "source": "bing",
+    "results": [
+      {
+        "title": "How to get help in Windows - Microsoft Support",
+        "url": "https://www.bing.com/ck/a?!&&p=71d3ac9e683c4a13dce58df47e0cfbc391fb2f8d582785027f65ce8c70a8fbd2JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93cy9ob3ctdG8tZ2V0LWhlbHAtaW4td2luZG93cy03MTFiNjQ5Mi0wNDM1LTAwMzgtODcwNi03YzZiMGZlYjIwMGE&ntb=1",
+        "snippet": "Here are a few different ways to find help for Windows Search for help - Enter a question or keywords in the search box on the …"
+      },
+      {
+        "title": "About Get Help | Microsoft Support",
+        "url": "https://www.bing.com/ck/a?!&&p=74cd7c9d2e86b8047c31b0043a659bd0313a18ff597cf88256bb70e9a8c3cac5JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvc3VwcG9ydC9nZXQtaGVscC9hYm91dC1nZXQtaGVscA&ntb=1",
+        "snippet": "The Windows Get Help app is a centralized hub for accessing a wide range of resources, including tutorials, FAQs, community …"
+      },
+      {
+        "title": "Uninstall Apps in Windows 11",
+        "url": "https://www.bing.com/ck/a?!&&p=551db69a557e3890a50e8d83948af4d32c45f718408b919e88ef446e6ec81bfbJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly93d3cuZWxldmVuZm9ydW0uY29tL3QvdW5pbnN0YWxsLWFwcHMtaW4td2luZG93cy0xMS4yMzQ2Lw&ntb=1",
+        "snippet": "29 de oct de 2021 · This tutorial will show you how to uninstall apps for your account, all users, or new users in Windows 11. If you no …"
+      },
+      {
+        "title": "Remove 'Get Started' | Windows 11 Forum",
+        "url": "https://www.bing.com/ck/a?!&&p=d8a2e9a6db09141a84e06ecb238a56908559d0c949fa6577f31202b7057d31b5JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly93d3cuZWxldmVuZm9ydW0uY29tL3QvcmVtb3ZlLWdldC1zdGFydGVkLjMwNjU0Lw&ntb=1",
+        "snippet": "16 de nov de 2024 · I am trying to remove this with a .bat or .reg file. Anyone know how to do that? If there is a way to not only …"
+      },
+      {
+        "title": "Personalize Your Windows Experience With Themes",
+        "url": "https://www.bing.com/ck/a?!&&p=adae077a1c99f45721e01cea669286cfd148efadc0c8311874b95fd630342531JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93cy9leHBlcmllbmNlL3BlcnNvbmFsaXphdGlvbi9wZXJzb25hbGl6ZS15b3VyLXdpbmRvd3MtZXhwZXJpZW5jZS13aXRoLXRoZW1lcw&ntb=1",
+        "snippet": "Windows 11 Windows 10 Windows themes are a combination of desktop background pictures, window colors, sounds, and other …"
+      }
+    ],
+    "providersTried": [
+      "duckduckgo",
+      "bing"
+    ]
+  }
+}

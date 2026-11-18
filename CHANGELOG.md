@@ -7,6 +7,34 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ---
 
+## [0.4.0] - 2026-11-18
+
+### Added
+
+- **Suite de demos reproducible (`demo/01`–`demo/07`)** con ejecución por modelo, captura de entorno/métricas y documentación de resultados.
+  - Por prueba/corrida se registran duración total y por paso, uso de tokens (`prompt/completion/total`), `tokens_per_second`, `timing_ms`, contexto (`used/limit/percent/estimated`), rondas, diagnósticos de herramientas/web y validación/coherencia.
+  - Artefactos de documentación: `demo/RESULTS.md` (comparación pre/post mejora, por modelo/prueba), `demo/_results/index.json`, `demo/_results/environment.json` y corridas timestamped + `latest.json`.
+
+### Changed
+
+- **Harness de herramientas más genérico y robusto (sin lógica hardcodeada por tarea):**
+  - `src/terminal.js` (`run_command`): normalización/tokenización segura de llamadas mal formadas cuando se pasa la línea completa en `command` (p. ej. `"ip route get 1.1.1.1"`) hacia `{command,args}` **sin shell** (`spawn` con argv). Se preservan allowlist, resolución de binario, restricciones de `cwd/roots`, hooks de aprobación/validación, redacción de secretos, límites de tiempo/salida y auditoría; se expone información de normalización para diagnóstico.
+  - `src/ia.js`: manejo recuperable de herramientas desconocidas (error estructurado con guía y herramientas disponibles en lugar de abortar la ejecución), alias genérico de nombres tipo binario a `run_command` cuando está disponible, truncado de resultados grandes de herramientas para reducir presión de contexto, y en `max_tool_rounds_exceeded` devolución de resultado parcial con diagnósticos/métricas (incluido `usage` cuando está disponible) en rutas soportadas.
+  - `src/agent.js`: presupuesto/truncado de contexto inyectado (recaps de documentos y pre-búsqueda web, configurable) y propagación de señales de diagnóstico/ejecución (p. ej. `incomplete`, `reason`) para mejor observabilidad.
+- **Búsqueda web (`src/websearch.js`)**: normalización de consultas, detección de páginas de anomalía/anti-bot/challenge para mejorar fallback, mejor manejo de proveedores/configuración y reporte de `providersTried`.
+- **API/exportaciones y configuración**: exportaciones adicionales en `src/index.js` y módulos de soporte (`capabilities`, `config`, `clipboard`, `compaction`, `i18n`, `ollama`, `tui`) incluidos en el árbol de trabajo, junto con ajustes en buffers/documentos/artifacts y pruebas.
+
+### Fixed
+
+- Mejor tolerancia a errores de formato en llamadas de herramientas y mejor preservación de evidencia (ejecuciones parciales, uso y diagnósticos) en bucles largos o agotamiento de rondas.
+
+### Verified
+
+- `npm test` (4/4 suites) tras los ajustes del harness.
+- Re-ejecución post-mejora de `demo/01`–`demo/07` (secuencial, 3 modelos locales): `qwen3:0.6b-16k` (2/7 fallos), `lfm3-omni:2b` (1/7), `qwen3:4b-instruct-8k` (1/7), con mejoras puntuales en uso de herramientas/recuperación y variabilidad/regresiones documentadas en `demo/RESULTS.md`.
+
+---
+
 ## [0.3.0] - 2026-11-18
 
 ### Added

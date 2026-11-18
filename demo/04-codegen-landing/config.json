@@ -1,0 +1,21 @@
+{
+  "provider": {
+    "provider": "ollama",
+    "baseUrl": "http://127.0.0.1:11434",
+    "model": "qwen3:4b-instruct-8k",
+    "timeout": 600000
+  },
+  "mode": "build",
+  "interactive": true,
+  "capabilities": {
+    "terminal": false,
+    "filesystem": false,
+    "web": false,
+    "mcp": false,
+    "documents": false,
+    "artifacts": false
+  },
+  "tools": {},
+  "maxToolRounds": 2,
+  "includeDiagnostics": true
+}

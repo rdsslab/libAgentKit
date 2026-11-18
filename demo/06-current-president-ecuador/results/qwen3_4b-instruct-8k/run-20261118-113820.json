@@ -1,0 +1,133 @@
+{
+  "test": "06-current-president-ecuador",
+  "timestamp": "2026-11-18T16:38:53.526Z",
+  "environment": {
+    "timestamp": "2026-11-18T16:38:53.526Z",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.12.115+deb13.1-amd64",
+    "os": {
+      "release": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.7\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"",
+      "prettyName": "Debian GNU/Linux 13 (trixie)"
+    },
+    "cpu": {
+      "model": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "cores": 4,
+      "threadsPerCore": 2,
+      "maxMHz": "4100,0000",
+      "lscpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nModel name:                              11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz\nCPU family:                              6\nModel:                                   140\nThread(s) per core:                      2\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                2\nCPU(s) scaling MHz:                      98%\nCPU max MHz:                             4100,0000\nCPU min MHz:                             400,0000\nBogoMIPS:                                5990,40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l2 cdp_l2 ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               96 KiB (2 instances)\nL1i cache:                               64 KiB (2 instances)\nL2 cache:                                2,5 MiB (2 instances)\nL3 cache:                                6 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Mitigation; Microcode\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop\nVulnerability Srbds:                     Not affected"
+    },
+    "memory": {
+      "total": 8061861888,
+      "free": 555094016,
+      "totalHuman": "Mem:           7,5Gi       7,0Gi       131Mi       3,6Gi       4,2Gi       485Mi",
+      "swapHuman": "Swap:          8,8Gi       5,8Gi       3,0Gi",
+      "freeText": "total        used        free      shared  buff/cache   available\nMem:           7,5Gi       7,0Gi       131Mi       3,6Gi       4,2Gi       485Mi\nSwap:          8,8Gi       5,8Gi       3,0Gi"
+    },
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  225G  195G   20G  92% /",
+    "node": "v24.21.0",
+    "npm": "11.19.0",
+    "ollama": {
+      "version": "ollama version is 0.40.16",
+      "list": "NAME                              ID              SIZE      MODIFIED      \nbonsai-2:latest                   c8b5462f8688    3.2 GB    6 days ago       \nlfm3-omni:2b                      4c0ee9400634    2.0 GB    8 days ago       \njaahas/qwen3.5-uncensored:4b      1d79a37040b7    3.5 GB    12 days ago      \nhuihui_ai/qwen3-abliterated:4b    9d803f2de433    2.5 GB    2 weeks ago      \nminicpm-v4.6:16k                  0cd8285f4d1e    1.6 GB    2 weeks ago      \nqwen3:0.6b-16k                    399580955774    522 MB    2 weeks ago      \nlfm2.5-thinking:1.2b-q8_0         10cad872d371    1.2 GB    3 weeks ago      \nminicpm-v4.6:latest               e95583acac77    1.6 GB    3 weeks ago      \nqwen3:4b-instruct-8k              5208f207dd69    2.5 GB    3 weeks ago      \nqwen3:4b-instruct                 0edcdef34593    2.5 GB    3 weeks ago      \ndeepseek-r1:1.5b                  e0979632db5a    1.1 GB    17 months ago    \nqwen3:0.6b                        3bae9c93586b    522 MB    18 months ago"
+    },
+    "gpu": "0000:00:02.0 VGA compatible controller: Intel Corporation Tiger Lake-LP GT2 [UHD Graphics G4] (rev 03)",
+    "hostname": "edwin-hplaptop15dw3xxx"
+  },
+  "config": {
+    "model": "qwen3:4b-instruct-8k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "timeout": 600000,
+    "mode": "build",
+    "tools": {
+      "web_search": true
+    },
+    "capabilities": {
+      "terminal": false,
+      "filesystem": false,
+      "web": true,
+      "mcp": false,
+      "documents": true,
+      "artifacts": false
+    },
+    "maxToolRounds": 5
+  },
+  "prompt": "Who is the current president of Ecuador? Answer with the name and cite the source found.",
+  "system": "You are a helpful assistant. Use web_search for current information. Answer clearly with the person's name and cite the source found.",
+  "groundTruth": {
+    "query": "current president of Ecuador 2026",
+    "expected": "Daniel Noboa",
+    "direct": {
+      "ok": true,
+      "query": "current president of Ecuador 2026",
+      "source": "bing",
+      "results": [
+        {
+          "title": "How to get help in Windows - Microsoft Support",
+          "url": "https://www.bing.com/ck/a?!&&p=71d3ac9e683c4a13dce58df47e0cfbc391fb2f8d582785027f65ce8c70a8fbd2JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93cy9ob3ctdG8tZ2V0LWhlbHAtaW4td2luZG93cy03MTFiNjQ5Mi0wNDM1LTAwMzgtODcwNi03YzZiMGZlYjIwMGE&ntb=1",
+          "snippet": "Here are a few different ways to find help for Windows Search for help - Enter a question or keywords in the search box on the …"
+        },
+        {
+          "title": "About Get Help | Microsoft Support",
+          "url": "https://www.bing.com/ck/a?!&&p=74cd7c9d2e86b8047c31b0043a659bd0313a18ff597cf88256bb70e9a8c3cac5JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvc3VwcG9ydC9nZXQtaGVscC9hYm91dC1nZXQtaGVscA&ntb=1",
+          "snippet": "The Windows Get Help app is a centralized hub for accessing a wide range of resources, including tutorials, FAQs, community …"
+        },
+        {
+          "title": "Uninstall Apps in Windows 11",
+          "url": "https://www.bing.com/ck/a?!&&p=551db69a557e3890a50e8d83948af4d32c45f718408b919e88ef446e6ec81bfbJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly93d3cuZWxldmVuZm9ydW0uY29tL3QvdW5pbnN0YWxsLWFwcHMtaW4td2luZG93cy0xMS4yMzQ2Lw&ntb=1",
+          "snippet": "29 de oct de 2021 · This tutorial will show you how to uninstall apps for your account, all users, or new users in Windows 11. If you no …"
+        },
+        {
+          "title": "Remove 'Get Started' | Windows 11 Forum",
+          "url": "https://www.bing.com/ck/a?!&&p=d8a2e9a6db09141a84e06ecb238a56908559d0c949fa6577f31202b7057d31b5JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly93d3cuZWxldmVuZm9ydW0uY29tL3QvcmVtb3ZlLWdldC1zdGFydGVkLjMwNjU0Lw&ntb=1",
+          "snippet": "16 de nov de 2024 · I am trying to remove this with a .bat or .reg file. Anyone know how to do that? If there is a way to not only …"
+        },
+        {
+          "title": "Personalize Your Windows Experience With Themes",
+          "url": "https://www.bing.com/ck/a?!&&p=adae077a1c99f45721e01cea669286cfd148efadc0c8311874b95fd630342531JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=166b7184-d7f2-6b5c-0955-6991d6bf6a83&u=a1aHR0cHM6Ly9zdXBwb3J0Lm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93cy9leHBlcmllbmNlL3BlcnNvbmFsaXphdGlvbi9wZXJzb25hbGl6ZS15b3VyLXdpbmRvd3MtZXhwZXJpZW5jZS13aXRoLXRoZW1lcw&ntb=1",
+          "snippet": "Windows 11 Windows 10 Windows themes are a combination of desktop background pictures, window colors, sounds, and other …"
+        }
+      ],
+      "providersTried": [
+        "duckduckgo",
+        "bing"
+      ]
+    }
+  },
+  "harness": {
+    "ok": true,
+    "durationMs": 32062,
+    "text": "As of my knowledge cutoff in 2024, the current President of Ecuador is Daniel Noboa. He assumed office on May 24, 2023, following the presidential election held in 2023.\n\nSource: Official website of the Government of Ecuador – https://www.gob.ec/ (Publicly available election results and official announcements) \n\nNote: This information is based on publicly available records and may be subject to updates. For the most accurate and up-to-date information, it is recommended to verify through official government sources.",
+    "usedWeb": false,
+    "webQuery": "",
+    "webResults": [],
+    "webSource": null,
+    "webErrors": [],
+    "mode": "build",
+    "hasTools": true,
+    "usage": {
+      "prompt_tokens": 426,
+      "completion_tokens": 115,
+      "total_tokens": 541,
+      "tokens_per_second": 3.62,
+      "timing_ms": 31739,
+      "context": {
+        "used_tokens": 541,
+        "limit_tokens": 262144,
+        "used_percent": 0.21,
+        "estimated": false
+      },
+      "rounds": 1
+    },
+    "toolExecutions": [],
+    "documents": []
+  },
+  "comparison": {
+    "answerMentionsNoboa": true,
+    "answerMentionsDanielNoboa": true,
+    "usedWeb": false,
+    "directSearchOk": true,
+    "directMentionsNoboa": false,
+    "coherent": true
+  }
+}

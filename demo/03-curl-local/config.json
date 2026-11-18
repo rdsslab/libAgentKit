@@ -1,0 +1,29 @@
+{
+  "provider": {
+    "provider": "ollama",
+    "baseUrl": "http://127.0.0.1:11434",
+    "model": "qwen3:4b-instruct-8k",
+    "timeout": 900000
+  },
+  "mode": "build",
+  "interactive": true,
+  "capabilities": {
+    "terminal": true,
+    "filesystem": false,
+    "web": false,
+    "mcp": false,
+    "documents": true,
+    "artifacts": false
+  },
+  "tools": {
+    "run_command": true
+  },
+  "terminal": {
+    "allowedBinaries": ["curl", "cat", "echo"],
+    "timeoutMs": 20000,
+    "maxOutputBytes": 65536
+  },
+  "maxToolRounds": 4,
+  "includeDiagnostics": true,
+  "notes": "Para respuestas HTML grandes, preferir curl -I/headers o limitar salida para evitar overflow de contexto en modelos 8k."
+}

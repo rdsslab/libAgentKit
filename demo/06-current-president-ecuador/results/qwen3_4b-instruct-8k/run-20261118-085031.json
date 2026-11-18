@@ -1,0 +1,133 @@
+{
+  "test": "06-current-president-ecuador",
+  "timestamp": "2026-11-18T13:51:10.090Z",
+  "environment": {
+    "timestamp": "2026-11-18T13:51:10.089Z",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.12.115+deb13.1-amd64",
+    "os": {
+      "release": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.7\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"",
+      "prettyName": "Debian GNU/Linux 13 (trixie)"
+    },
+    "cpu": {
+      "model": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "cores": 4,
+      "threadsPerCore": 2,
+      "maxMHz": "4100,0000",
+      "lscpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nModel name:                              11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz\nCPU family:                              6\nModel:                                   140\nThread(s) per core:                      2\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                2\nCPU(s) scaling MHz:                      73%\nCPU max MHz:                             4100,0000\nCPU min MHz:                             400,0000\nBogoMIPS:                                5990,40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l2 cdp_l2 ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               96 KiB (2 instances)\nL1i cache:                               64 KiB (2 instances)\nL2 cache:                                2,5 MiB (2 instances)\nL3 cache:                                6 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Mitigation; Microcode\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop\nVulnerability Srbds:                     Not affected"
+    },
+    "memory": {
+      "total": 8061861888,
+      "free": 996544512,
+      "totalHuman": "Mem:           7,5Gi       6,6Gi       206Mi       3,6Gi       4,6Gi       918Mi",
+      "swapHuman": "Swap:          8,8Gi       4,3Gi       4,5Gi",
+      "freeText": "total        used        free      shared  buff/cache   available\nMem:           7,5Gi       6,6Gi       206Mi       3,6Gi       4,6Gi       918Mi\nSwap:          8,8Gi       4,3Gi       4,5Gi"
+    },
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  225G  195G   20G  91% /",
+    "node": "v24.21.0",
+    "npm": "11.19.0",
+    "ollama": {
+      "version": "ollama version is 0.40.16",
+      "list": "NAME                              ID              SIZE      MODIFIED      \nbonsai-2:latest                   c8b5462f8688    3.2 GB    6 days ago       \nlfm3-omni:2b                      4c0ee9400634    2.0 GB    8 days ago       \njaahas/qwen3.5-uncensored:4b      1d79a37040b7    3.5 GB    12 days ago      \nhuihui_ai/qwen3-abliterated:4b    9d803f2de433    2.5 GB    2 weeks ago      \nminicpm-v4.6:16k                  0cd8285f4d1e    1.6 GB    2 weeks ago      \nqwen3:0.6b-16k                    399580955774    522 MB    2 weeks ago      \nlfm2.5-thinking:1.2b-q8_0         10cad872d371    1.2 GB    3 weeks ago      \nminicpm-v4.6:latest               e95583acac77    1.6 GB    3 weeks ago      \nqwen3:4b-instruct-8k              5208f207dd69    2.5 GB    3 weeks ago      \nqwen3:4b-instruct                 0edcdef34593    2.5 GB    3 weeks ago      \ndeepseek-r1:1.5b                  e0979632db5a    1.1 GB    17 months ago    \nqwen3:0.6b                        3bae9c93586b    522 MB    18 months ago"
+    },
+    "gpu": "0000:00:02.0 VGA compatible controller: Intel Corporation Tiger Lake-LP GT2 [UHD Graphics G4] (rev 03)",
+    "hostname": "edwin-hplaptop15dw3xxx"
+  },
+  "config": {
+    "model": "qwen3:4b-instruct-8k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "timeout": 600000,
+    "mode": "build",
+    "tools": {
+      "web_search": true
+    },
+    "capabilities": {
+      "terminal": false,
+      "filesystem": false,
+      "web": true,
+      "mcp": false,
+      "documents": true,
+      "artifacts": false
+    },
+    "maxToolRounds": 5
+  },
+  "prompt": "Who is the current president of Ecuador? Answer with the name and cite the source found.",
+  "system": "You are a helpful assistant. Use web_search for current information. Answer clearly with the person's name and cite the source found.",
+  "groundTruth": {
+    "query": "current president of Ecuador 2026",
+    "expected": "Daniel Noboa",
+    "direct": {
+      "ok": true,
+      "query": "current president of Ecuador 2026",
+      "source": "bing",
+      "results": [
+        {
+          "title": "Binastra Cochrane Park @ Jalan Cochrane - Lowyat.NET",
+          "url": "https://www.bing.com/ck/a?!&&p=4dfcbdb13bb0267cbae8aad363395d76322f5094a5cebfd86b3b25709b387d51JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=303eb1a2-c9eb-6bc2-2036-a9b7c8ac6af2&u=a1aHR0cHM6Ly9mb3J1bS5sb3d5YXQubmV0L3RvcGljLzU0OTgyNDIvYWxs&ntb=1",
+          "snippet": "6 de dic de 2024 · Are you talking about this:-(The Edge 22 Jun 2023, 02:28 pm).......... On June 21, the Federal Court upheld a COA …"
+        },
+        {
+          "title": "Whatsapp Desktop dah jadi fb app - Lowyat.NET",
+          "url": "https://www.bing.com/ck/a?!&&p=cc510d365ec3c3841bbf0c093cba49f6b7cdd1b9cb63c7a479e0ebb3caa8f4ffJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=303eb1a2-c9eb-6bc2-2036-a9b7c8ac6af2&u=a1aHR0cHM6Ly9mb3J1bS5sb3d5YXQubmV0L3RvcGljLzU1NjUxOTA&ntb=1",
+          "snippet": "20 de may de 2026 · As usual in the morning I'll launch my whatsapp desktop app. Suddenly the app shows itself as below, unlike …"
+        },
+        {
+          "title": "Microsoft Community",
+          "url": "https://www.bing.com/ck/a?!&&p=94086cc3bbdba89c7224b9c123a4cc8f442aa50476e9fb53edf9004b9222056eJmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=303eb1a2-c9eb-6bc2-2036-a9b7c8ac6af2&u=a1aHR0cHM6Ly93d3cuYW5zd2Vycy5taWNyb3NvZnQuY29tL2phLWpwL3dpbmRvd3MvZm9ydW0vYXBwc193aW5kb3dzXzEwLW1zZWRnZS9taWNyb3NvZnQtZWRnZS8yNTJmMzBmYi1hNDZkLTQ4ZjEtOWRmZi00NmYxZWJmN2RkYzHihpHlsJHjgZfpgZXjgYbjgYvjgoLjgafjgZnjgYzjgIHjg57jgqTjgq_jg63jgr3jg5Xjg4jjga7jgrPjg5_jg6Xjg4vjg4bjgqPjgavmm7jjgYTjgabjgYLjgovmlrnms5XjgpLoqabjgZfjgabkuIvjgZXjgYTjgIImZ3Q744Ki44OX44Oq44Gu44OI44Op44OW44Or44K344Ol44O844OG44Kj44Oz44Kw44KS5a6f6KGM44GX44Gm44G_44KL44Go6Imv44GV44Gd44GG44Gn44GZ44CC5omL6aCGOlvjgrPjg7Pjg4jjg63jg7zjg6vjg5Hjg43jg6td4oaSW-OCt-OCueODhuODoOOBqOOCu-OCreODpeODquODhuOCo13ihpJb44K744Kt44Ol44Oq44OG44Kj44Go44Oh44Oz44OG44OK44Oz44K5XeKGklvjg4jjg6njg5bjg6vjgrfjg6Xjg7zjg4bjgqPjg7PjgrBd44Gu6aCG44Gr6ZaL44GN44CBW-OBmeOBueOBpuihqOekul3jgpLpgbjmip7jgZfjgaYmcXVvdDtXaW5kb3dz44K544OI44Ki44Ki44OX44OqJnF1b3Q744Gu6Ki65pat44KS6KGM44Gj44Gm44G_44Gm44GP44Gg44GV44GE44CC44KC44GX44CB5LiK6KiY44Gu5a--5Yem5rOV44KS6Kmm44GX44Gm44G_44Gm44KC44GG44G-44GP44GE44GL44Gq44GE5aC05ZCI44Gv44CB44Gy44Go44G-44Ga44CB5pyJ5Yq544Gq5a--5Yem5rOV44GM6KaL44Gk44GL44KL44G-44Gn44GvSUXjgpLjgYvjgo_jgorjgavkvb_nlKjjgZXjgozjgovjgajoia_jgYTjgajmgJ3jgYTjgb7jgZnjgII&ntb=1",
+          "snippet": "Microsoft Community"
+        },
+        {
+          "title": "Microsoft Community",
+          "url": "https://www.bing.com/ck/a?!&&p=1e6f72e1386bbc91e5fccac7c11f39ade5df3fd154e93abf1752b0f839380ff2JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=303eb1a2-c9eb-6bc2-2036-a9b7c8ac6af2&u=a1aHR0cHM6Ly93d3cuYW5zd2Vycy5taWNyb3NvZnQuY29tL3poLWhhbnMvd2luZG93cy9mb3J1bS9hbGwvw4PGksOG4oCZw4PigKDDouKCrOKEosODxpLDouKCrMWhw4PigJrDgsKlw4PGksOG4oCZw4PCosOi4oCawqzDhcKhw4PGksOi4oKsxaHDg-KAmsOCwqbDg8aSw4bigJnDg-KAmsOCwqLDg8aSw4LCosODwqLDouKAmsKsw4XCocOD4oCaw4LCrMODxpLDouKCrMKmw4PigJrDgsKhw4PGksOG4oCZw4PigKDDouKCrOKEosODxpLDouKCrMWhw4PigJrDgsKkw4PGksOG4oCZw4PCosOi4oCawqzDhcKhw4PGksOi4oKsxaHDg-KAmsOCwr3Dg8aSw4bigJnDg-KAmsOCwqLDg8aSw4LCosODwqLDouKAmsKsw4XCocOD4oCaw4LCrMODxpLDouKCrMWhw4PigJrDgsKiw4PGksOG4oCZw4PigKDDouKCrOKEosODxpLDouKCrMWhw4PigJrDgsKkw4PGksOG4oCZw4PCosOi4oCawqzDhcKhw4PGksOi4oKsxaHDg-KAmsOCwrvDg8aSw4bigJnDg8Kiw6LigJrCrMOCwqbDg8aSw6LigqzFocOD4oCaw4LCvXdpbjjDg8aSw4bigJnDg-KAoMOi4oKs4oSiw4PGksOi4oKsxaHDg-KAmsOCwqbDg8aSw4bigJnDg-KAmsOCwqLDg8aSw4LCosODwqLDouKAmsKsw4XCocOD4oCaw4LCrMODxpLDouKCrMWhw4PigJrDgsK6w4PGksOG4oCZw4PCosOi4oCawqzDhcKhw4PGksOi4oKsxaHDg-KAmsOCwrTDg8aSw4bigJnDg-KAoMOi4oKs4oSiw4PGksOi4oKsxaHDg-KAmsOCwqbDg8aSw4bigJnDg-KAmsOCwqLDg8aSw4LCosODwqLDouKAmsKsw4XCocOD4oCaw4LCrMODxpLDgsKiw4PCosOi4oKsxaHDgsKsw4PigKbDouKCrMWTw4PGksOG4oCZw4PCosOi4oCawqzDhcKhw4PGksOi4oKsxaHDg-KAmsOCwrAvZDhjNTFhYmYtYjg2My00ZGEzLTk1OTYtNzk3ZGVhY2U1OWY3&ntb=1",
+          "snippet": "Microsoft Community"
+        },
+        {
+          "title": "WhatsApp malware - Lowyat.NET",
+          "url": "https://www.bing.com/ck/a?!&&p=071f5fe7d67ebc3a17dbae412f5f8045553a7bd8a978bf6f94046470857e2d85JmltdHM9MTc5NDk2MDAwMA&ptn=3&ver=2&hsh=4&fclid=303eb1a2-c9eb-6bc2-2036-a9b7c8ac6af2&u=a1aHR0cHM6Ly9mb3J1bS5sb3d5YXQubmV0L3RvcGljLzU1ODAyNzI&ntb=1",
+          "snippet": "15 de oct de 2026 · Lowyat.NET -> Kopitiam Bump Topic Add Reply RSS Feed ‹ Bottom Outline · [ Standard ] · Linear+ Chat …"
+        }
+      ],
+      "providersTried": [
+        "duckduckgo",
+        "bing"
+      ]
+    }
+  },
+  "harness": {
+    "ok": true,
+    "durationMs": 37124,
+    "text": "As of my knowledge cutoff in 2024, the current President of Ecuador is Daniel Noboa. He assumed office on May 24, 2023, following the presidential election.\n\nSource: Official website of the Government of Ecuador (https://www.gob.ec) – Presidential Office page. This information is based on publicly available records and official announcements.",
+    "usedWeb": false,
+    "webQuery": "",
+    "webResults": [],
+    "webSource": null,
+    "webErrors": [],
+    "mode": "build",
+    "hasTools": true,
+    "usage": {
+      "prompt_tokens": 426,
+      "completion_tokens": 77,
+      "total_tokens": 503,
+      "tokens_per_second": 2.11,
+      "timing_ms": 36527,
+      "context": {
+        "used_tokens": 503,
+        "limit_tokens": 262144,
+        "used_percent": 0.19,
+        "estimated": false
+      },
+      "rounds": 1
+    },
+    "toolExecutions": [],
+    "documents": []
+  },
+  "comparison": {
+    "answerMentionsNoboa": true,
+    "answerMentionsDanielNoboa": true,
+    "usedWeb": false,
+    "directSearchOk": true,
+    "directMentionsNoboa": false,
+    "coherent": true
+  }
+}

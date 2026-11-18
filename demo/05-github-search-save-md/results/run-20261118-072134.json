@@ -1,0 +1,194 @@
+{
+  "test": "05-github-search-save-md",
+  "timestamp": "2026-11-18T12:24:18.285Z",
+  "config": {
+    "model": "qwen3:4b-instruct-8k",
+    "baseUrl": "http://127.0.0.1:11434",
+    "mode": "build",
+    "tools": {
+      "run_command": true,
+      "web_search": true,
+      "write_file": true
+    },
+    "capabilities": {
+      "terminal": true,
+      "filesystem": false,
+      "web": true,
+      "mcp": false,
+      "documents": true,
+      "artifacts": false
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "prompt": "Busca quién es edwinspire en GitHub. Usa run_command con curl a https://api.github.com/users/edwinspire para obtener su perfil y dame un resumen (usuario, nombre, bio, ubicación, repos públicos, seguidores, enlace).",
+      "harness": {
+        "ok": true,
+        "durationMs": 92289,
+        "text": "Aquí tienes el resumen del perfil de **edwinspire** en GitHub:\n\n- **Usuario**: `edwinspire`  \n- **Nombre**: Edwin De La Cruz  \n- **Bio**: No disponible  \n- **Ubicación**: Quito, Ecuador  \n- **Repos públicos**: 56  \n- **Seguidores**: 4  \n- **Enlace al perfil**: [https://github.com/edwinspire](https://github.com/edwinspire)  \n\nEste dato fue obtenido directamente del API de GitHub mediante una consulta a `https://api.github.com/users/edwinspire`.  \n\n*Fuente: [GitHub API - User Profile](https://api.github.com/users/edwinspire)*",
+        "usedWeb": true,
+        "webQuery": "Busca quién es edwinspire en GitHub. Usa run_command con curl a https://api.github.com/users/edwinspire para obtener su perfil y dame un resumen (usuario, nombre, bio, ubicación, repos públicos, seguidores, enlace).",
+        "webResults": [
+          {
+            "title": "GitHub - sherlock-project/sherlock: Hunt down social media accounts by ...",
+            "url": "https://github.com/sherlock-project/sherlock",
+            "snippet": "Hunt down social media accounts by username across social networks - sherlock-project/sherlock"
+          },
+          {
+            "title": "GitHub - curl/curl: A command line tool and library for transferring ...",
+            "url": "https://github.com/curl/curl",
+            "snippet": "curl is a command-line tool for transferring data from or to a server using URLs. It supports these protocols: DICT, FILE, FTP, FTPS, GOPHER, GOPHERS, HTTP , HTTPS , IMAP, IMAPS, LDAP, LDAPS, MQTT, MQTTS, POP3, POP3S, RTSP, SCP, SFTP, SMTP, SMTPS, TELNET, TFTP, WS and WSS."
+          },
+          {
+            "title": "api.github.com",
+            "url": "https://api.github.com/users",
+            "snippet": "[ { \"login\": \"mojombo\", \"id\": 1, \"node_id\": \"MDQ6VXNlcjE=\", \"avatar_url\": \" https ://avatars.githubusercontent.com/u/1?v=4\", \"gravatar_id\": \"\", \"url\": \"https://api ..."
+          },
+          {
+            "title": "GitHub User Search",
+            "url": "https://simonsmith.github.io/github-user-search/",
+            "snippet": "GitHub User Search Browse users and their profiles via the GitHub API"
+          },
+          {
+            "title": "Run Curl Commands Online",
+            "url": "https://reqbin.com/curl",
+            "snippet": "Run curl commands online in your browser: paste a command, press Run, read the status code, timings and body. Generate Python, PHP, Node.js or C# code. It's free."
+          }
+        ],
+        "webSource": "duckduckgo",
+        "webErrors": [],
+        "mode": "build",
+        "hasTools": true,
+        "usage": {
+          "prompt_tokens": 3551,
+          "completion_tokens": 205,
+          "total_tokens": 3756,
+          "tokens_per_second": 2.63,
+          "timing_ms": 88285,
+          "context": {
+            "used_tokens": 3756,
+            "limit_tokens": 262144,
+            "used_percent": 1.43,
+            "estimated": false
+          },
+          "rounds": 2
+        },
+        "toolExecutions": [
+          {
+            "tool": "run_command",
+            "server": "local",
+            "ok": true,
+            "deduplicated": false,
+            "args": {
+              "command": "curl",
+              "args": [
+                "-sS",
+                "-H",
+                "Accept: application/vnd.github+json",
+                "https://api.github.com/users/edwinspire"
+              ]
+            },
+            "textResult": "{\"ok\":true,\"exitCode\":0,\"timedOut\":false,\"truncated\":false,\"stdout\":\"{\\n  \\\"login\\\": \\\"edwinspire\\\",\\n  \\\"id\\\": 3129446,\\n  \\\"node_id\\\": \\\"MDQ6VXNlcjMxMjk0NDY=\\\",\\n  \\\"avatar_url\\\": \\\"https://avatars.githubusercontent.com/u/3129446?v=4\\\",\\n  \\\"gravatar_id\\\": \\\"\\\",\\n  \\\"url\\\": \\\"https://api.github.com/users/edwinspire\\\",\\n  \\\"html_url\\\": \\\"https://github.com/edwinspire\\\",\\n  \\\"followers_url\\\": \\\"https://api.github.com/users/edwinspire/followers\\\",\\n  \\\"following_url\\\": \\\"https://api.github.com/users/edwinspire/following{/other_user}\\\",\\n  \\\"gists_url\\\": \\\"https://api.github.com/users/edwinspire/gists{/gist_id}\\\",\\n  \\\"starred_url\\\": \\\"https://api.github.com/users/edwinspire/starred{/owner}{/repo}\\\",\\n  \\\"subscriptions_url\\\": \\\"https://api.github.com/users/edwinspire/subscriptions\\\",\\n  \\\"organizations_url\\\": \\\"https://api.github.com/users/edwinspire/orgs\\\",\\n  \\\"repos_url\\\": \\\"https://api.github.com/users/edwinspire/repos\\\",\\n  \\\"events_url\\\": \\\"https://api.github.com/users/edwinspire/events{/privacy}\\\",\\n  \\\"received_events_url\\\": \\\"https://api.github.com/users/edwinspire/received_events\\\",\\n  \\\"type\\\": \\\"User\\\",\\n  \\\"user_view_type\\\": \\\"public\\\",\\n  \\\"site_admin\\\": false,\\n  \\\"nam\n...[truncated 413 chars]",
+            "rawResult": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "truncated": false,
+              "durationMs": 1874
+            }
+          }
+        ],
+        "documents": []
+      }
+    },
+    {
+      "step": 2,
+      "prompt": "Con la información que encontraste sobre edwinspire en GitHub, guarda un archivo Markdown en disco llamado `edwinspire-github.md` con esa información (incluye usuario, nombre, bio, ubicación, repos públicos, seguidores y enlace). Usa write_file.",
+      "historyTurns": 2,
+      "harness": {
+        "ok": true,
+        "durationMs": 65657,
+        "text": "El archivo `edwinspire-github.md` ha sido creado correctamente en el sistema. Contiene el resumen del perfil de edwinspire en GitHub y está disponible en la ruta:\n\n**/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github.md**\n\nSi necesitas acceder al contenido o realizar alguna otra acción con el archivo, ¡avísame! 😊",
+        "usedWeb": false,
+        "webQuery": "",
+        "webResults": [],
+        "webSource": null,
+        "webErrors": [],
+        "mode": "build",
+        "hasTools": true,
+        "usage": {
+          "prompt_tokens": 2812,
+          "completion_tokens": 220,
+          "total_tokens": 3032,
+          "tokens_per_second": 3.23,
+          "timing_ms": 65637,
+          "context": {
+            "used_tokens": 3032,
+            "limit_tokens": 262144,
+            "used_percent": 1.16,
+            "estimated": false
+          },
+          "rounds": 2
+        },
+        "toolExecutions": [
+          {
+            "tool": "write_file",
+            "server": "local",
+            "ok": true,
+            "deduplicated": false,
+            "args": {
+              "filename": "edwinspire-github.md",
+              "content": "# Resumen de perfil de edwinspire en GitHub\n\n- **Usuario**: `edwinspire`\n- **Nombre**: Edwin De La Cruz\n- **Bio**: No disponible\n- **Ubicación**: Quito, Ecuador\n- **Repos públicos**: 56\n- **Seguidores**: 4\n- **Enlace al perfil**: [https://github.com/edwinspire](https://github.com/edwinspire)\n"
+            },
+            "textResult": "{\"ok\":true,\"filename\":\"edwinspire-github.md\",\"target\":\"/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github.md\",\"stamped\":\"/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github-20261118-072134.md\",\"bytes\":295,\"message\":\"Archivo guardado: /home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github.md\"}",
+            "rawResult": {
+              "ok": true
+            }
+          }
+        ],
+        "documents": []
+      }
+    }
+  ],
+  "groundTruth": {
+    "ok": true,
+    "status": 200,
+    "summary": {
+      "login": "edwinspire",
+      "name": "Edwin De La Cruz",
+      "bio": null,
+      "location": "Quito, Ecuador",
+      "public_repos": 56,
+      "followers": 4,
+      "html_url": "https://github.com/edwinspire"
+    }
+  },
+  "writeOperations": [
+    {
+      "filename": "edwinspire-github.md",
+      "target": "/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github.md",
+      "stamped": "/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github-20261118-072134.md",
+      "bytes": 295
+    }
+  ],
+  "savedFile": {
+    "path": "/home/edwinspire/Desarrollo/libAgentKit/demo/05-github-search-save-md/output/edwinspire-github.md",
+    "exists": true,
+    "bytes": 295,
+    "preview": "# Resumen de perfil de edwinspire en GitHub\n\n- **Usuario**: `edwinspire`\n- **Nombre**: Edwin De La Cruz\n- **Bio**: No disponible\n- **Ubicación**: Quito, Ecuador\n- **Repos públicos**: 56\n- **Seguidores**: 4\n- **Enlace al perfil**: [https://github.com/edwinspire](https://github.com/edwinspire)\n"
+  },
+  "savedFilePreview": "# Resumen de perfil de edwinspire en GitHub\n\n- **Usuario**: `edwinspire`\n- **Nombre**: Edwin De La Cruz\n- **Bio**: No disponible\n- **Ubicación**: Quito, Ecuador\n- **Repos públicos**: 56\n- **Seguidores**: 4\n- **Enlace al perfil**: [https://github.com/edwinspire](https://github.com/edwinspire)\n",
+  "comparison": {
+    "step1MentionsLogin": true,
+    "step1MentionsName": true,
+    "step1MentionsProfile": true,
+    "step1UsedRunCommand": true,
+    "step1Coherent": true,
+    "step2UsedWriteFile": true,
+    "fileSaved": true,
+    "fileMentionsEdwinspire": true,
+    "fileHasKeyInfo": true,
+    "coherent": true
+  }
+}

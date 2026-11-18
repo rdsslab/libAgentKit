@@ -260,20 +260,36 @@ export const loadDefaultRenderer = async () => {
 	}
 
 	let browser = null;
+	let browserPromise = null;
 	const getBrowser = async () => {
 		if (browser) {
 			return browser;
 		}
-		const executablePath = chromium
-			? await chromium.executablePath()
-			: process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || undefined;
-		browser = await puppeteer.launch({
-			executablePath,
-			args: chromium ? chromium.args : ["--no-sandbox", "--disable-dev-shm-usage"],
-			headless: chromium ? chromium.headless : true,
-			defaultViewport: chromium ? chromium.defaultViewport : { width: 1280, height: 900 },
-		});
-		return browser;
+		if (browserPromise) {
+			return browserPromise;
+		}
+
+		browserPromise = (async () => {
+			const executablePath = chromium
+				? await chromium.executablePath()
+				: process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || undefined;
+			const launched = await puppeteer.launch({
+				executablePath,
+				args: chromium ? chromium.args : ["--no-sandbox", "--disable-dev-shm-usage"],
+				headless: chromium ? chromium.headless : true,
+				defaultViewport: chromium ? chromium.defaultViewport : { width: 1280, height: 900 },
+			});
+			browser = launched;
+			return launched;
+		})();
+
+		try {
+			return await browserPromise;
+		} finally {
+			if (!browser) {
+				browserPromise = null;
+			}
+		}
 	};
 
 	const render = async (html, { type, format = "A4" } = {}) => {
@@ -295,9 +311,12 @@ export const loadDefaultRenderer = async () => {
 		renderPdf: (html) => render(html, {}),
 		renderImage: (html, { type } = {}) => render(html, { type: type || "png" }),
 		close: async () => {
-			if (browser) {
-				await browser.close().catch(() => {});
-				browser = null;
+			const current = browser || browserPromise;
+			browser = null;
+			browserPromise = null;
+			const instance = current ? await current.catch?.(() => null) ?? await current : null;
+			if (instance) {
+				await instance.close().catch(() => {});
 			}
 		},
 	};

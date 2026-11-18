@@ -1,6 +1,6 @@
 {
   "name": "@rdsslab/agentkit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Provider-agnostic agent toolkit: deterministic policies, web search, in-memory documents, media, file artifacts and a single askAgent() entry point.",
   "type": "module",
   "main": "./src/index.js",
@@ -23,7 +23,8 @@
     "test:kit": "node ./dev/test/agentkit_test.js",
     "test:artifacts": "node ./dev/test/artifacts_test.js",
     "test:terminal": "node ./dev/test/terminal_test.js",
-    "test:mcp": "node ./dev/test/mcp_test.js"
+    "test:mcp": "node ./dev/test/mcp_test.js",
+    "tui": "node ./src/tui.js"
   },
   "keywords": [
     "agent",
@@ -46,7 +47,13 @@
     "@anthropic-ai/sdk": "^0.110.0",
     "@google/genai": "^1.36.0",
     "@modelcontextprotocol/sdk": "^1.24.3",
+    "ink": "^5.2.1",
+    "ink-box": "^2.0.0",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
     "openai": "^6.18.0",
-    "pdfjs-dist": "^6.2.108"
+    "pdfjs-dist": "^6.2.108",
+    "react": "^18.3.1"
   }
 }

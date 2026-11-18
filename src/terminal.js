@@ -42,15 +42,94 @@ export const TERMINAL_TOOL_PARAMETERS = {
 	properties: {
 		command: {
 			type: "string",
-			description: "Binario a ejecutar, sin argumentos (por ejemplo: git). No uses una linea de comandos completa.",
+			description: "Binario a ejecutar, sin argumentos (por ejemplo: uname, ip, curl, df). Preferiblemente sin espacios; si envías una línea completa puede normalizarse a {command,args} sin usar shell.",
 		},
 		args: {
 			type: "array",
 			items: { type: "string" },
-			description: "Argumentos del binario, cada uno como un elemento (por ejemplo: [\"status\", \"--short\"])",
+			description: "Argumentos del binario, cada uno como un elemento. Ejemplos: uname -> [\"-a\"] o [\"-r\"], ip -> [\"-4\",\"addr\",\"show\"] o [\"route\",\"get\",\"1.1.1.1\"], hostname -> [\"-I\"], df -> [\"-h\"], curl -> [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].",
 		},
 	},
 	required: ["command"],
+};
+
+/**
+ * Best-effort split of a simple command line into [binary, ...args].
+ * No shell execution: only tokenization (whitespace + basic single/double quotes).
+ * Used to recover from common model tool-call mistakes.
+ */
+export const splitCommandLine = (input) => {
+	const text = String(input ?? "").trim();
+	if (!text) return [];
+	const tokens = [];
+	let current = "";
+	let quote = null;
+
+	for (let i = 0; i < text.length; i += 1) {
+		const ch = text[i];
+
+		if (quote) {
+			if (ch === quote) {
+				quote = null;
+				continue;
+			}
+			if (ch === "\\" && quote === '"' && i + 1 < text.length) {
+				current += text[i + 1];
+				i += 1;
+				continue;
+			}
+			current += ch;
+			continue;
+		}
+
+		if (ch === '"' || ch === "'") {
+			quote = ch;
+			continue;
+		}
+		if (/\s/.test(ch)) {
+			if (current) {
+				tokens.push(current);
+				current = "";
+			}
+			continue;
+		}
+		if (ch === "\\" && i + 1 < text.length) {
+			current += text[i + 1];
+			i += 1;
+			continue;
+		}
+		current += ch;
+	}
+
+	if (quote) {
+		// Unterminated quote: fallback to simple whitespace split to avoid dropping input.
+		return text.split(/\s+/).filter(Boolean);
+	}
+	if (current) tokens.push(current);
+	return tokens;
+};
+
+export const normalizeRunCommandArgs = ({ command, args } = {}) => {
+	const rawCommand = String(command ?? "").trim();
+	const rawArgs = Array.isArray(args) ? args.map((v) => String(v)) : null;
+	const hasArgs = Array.isArray(rawArgs) && rawArgs.length > 0;
+
+	if (rawCommand && /\s/.test(rawCommand) && !hasArgs) {
+		const parts = splitCommandLine(rawCommand);
+		if (parts.length > 0) {
+			return {
+				command: parts[0],
+				args: parts.slice(1),
+				normalizedFrom: rawCommand,
+			};
+		}
+	}
+
+	return {
+		command: rawCommand,
+		args: rawArgs ?? [],
+		normalizedFrom: null,
+	};
 };
 
 const SECRET_PATTERNS = [
@@ -261,9 +340,10 @@ export const createTerminalTool = (options = {}) => {
 	let calls = 0;
 
 	const description = allowed.length > 0
-		? `Ejecuta un comando en la terminal. Solo puedes ejecutar estos binarios: ${allowed.join(", ")}. `
-			+ "Pasa el binario en `command` y los argumentos en `args` (un array de strings). "
-			+ "No se usa un shell: no valen pipes, redirecciones ni operadores de shell."
+		? `Ejecuta un comando en la terminal (sin shell). Binarios permitidos: ${allowed.join(", ")}. `
+			+ "Pasa el binario en `command` y los argumentos en `args` como array de strings (no una línea completa). "
+			+ "Ejemplos: {\"command\":\"uname\",\"args\":[\"-a\"]}, {\"command\":\"hostname\",\"args\":[\"-I\"]}, {\"command\":\"ip\",\"args\":[\"route\",\"get\",\"1.1.1.1\"]}, {\"command\":\"df\",\"args\":[\"-h\"]}, {\"command\":\"curl\",\"args\":[\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"]}. "
+			+ "No se permiten pipes, redirecciones, &&, ; ni expansiones de shell."
 		: "Ejecuta un comando en la terminal (este servidor no tiene binarios permitidos).";
 
 	const audit = (entry) => {
@@ -277,15 +357,21 @@ export const createTerminalTool = (options = {}) => {
 		}
 	};
 
+	const resetCalls = () => {
+		calls = 0;
+	};
+
 	return {
 		name: TERMINAL_TOOL_NAME,
 		description,
 		parameters: TERMINAL_TOOL_PARAMETERS,
+		resetCalls,
 		handler: async (args = {}) => {
-			const command = String(args?.command || "").trim();
-			const argv = (Array.isArray(args?.args) ? args.args : [])
-				.map((value) => String(value))
-				.filter((value) => value !== "");
+			const normalized = normalizeRunCommandArgs(args);
+			const command = normalized.command;
+			const argv = Array.isArray(normalized.args)
+				? normalized.args.map((value) => String(value))
+				: [];
 
 			if (calls >= maxCallsPerTurn) {
 				return {
@@ -297,8 +383,20 @@ export const createTerminalTool = (options = {}) => {
 
 			const resolved = resolveBinary(command, { allowedBinaries: allowed, searchPath });
 			if (resolved.error) {
-				audit({ command, args: argv, cwd, allowed: false, reason: resolved.code, at: new Date().toISOString() });
-				return { ok: false, error: resolved.error, code: resolved.code, allowedBinaries: allowed };
+				audit({
+					command,
+					args: argv,
+					cwd,
+					allowed: false,
+					reason: resolved.code,
+					normalizedFrom: normalized.normalizedFrom,
+					at: new Date().toISOString(),
+				});
+				const out = { ok: false, error: resolved.error, code: resolved.code, allowedBinaries: allowed };
+				if (normalized.normalizedFrom) {
+					out.normalized = { command, args: argv, from: normalized.normalizedFrom };
+				}
+				return out;
 			}
 
 			const workingDirectory = path.resolve(cwd);
@@ -306,7 +404,15 @@ export const createTerminalTool = (options = {}) => {
 				.filter(Boolean)
 				.some((root) => !isInsideRoot(workingDirectory, root));
 			if (outside) {
-				audit({ command, args: argv, cwd: workingDirectory, allowed: false, reason: "CWD_NOT_ALLOWED", at: new Date().toISOString() });
+				audit({
+					command,
+					args: argv,
+					cwd: workingDirectory,
+					allowed: false,
+					reason: "CWD_NOT_ALLOWED",
+					normalizedFrom: normalized.normalizedFrom,
+					at: new Date().toISOString(),
+				});
 				return {
 					ok: false,
 					error: "El directorio de trabajo no esta dentro de las rutas permitidas.",
@@ -317,7 +423,15 @@ export const createTerminalTool = (options = {}) => {
 			if (typeof validateArgs === "function") {
 				const verdict = await validateArgs({ command, args: argv, cwd: workingDirectory, binary: resolved.path });
 				if (verdict === false) {
-					audit({ command, args: argv, cwd: workingDirectory, allowed: false, reason: "ARGS_NOT_ALLOWED", at: new Date().toISOString() });
+					audit({
+						command,
+						args: argv,
+						cwd: workingDirectory,
+						allowed: false,
+						reason: "ARGS_NOT_ALLOWED",
+						normalizedFrom: normalized.normalizedFrom,
+						at: new Date().toISOString(),
+					});
 					return { ok: false, error: "Los argumentos de ese comando no estan permitidos.", code: "ARGS_NOT_ALLOWED" };
 				}
 			}
@@ -328,9 +442,18 @@ export const createTerminalTool = (options = {}) => {
 					args: argv,
 					cwd: workingDirectory,
 					binary: resolved.path,
+					normalizedFrom: normalized.normalizedFrom,
 				});
 				if (!approved) {
-					audit({ command, args: argv, cwd: workingDirectory, allowed: false, reason: "NOT_APPROVED", at: new Date().toISOString() });
+					audit({
+						command,
+						args: argv,
+						cwd: workingDirectory,
+						allowed: false,
+						reason: "NOT_APPROVED",
+						normalizedFrom: normalized.normalizedFrom,
+						at: new Date().toISOString(),
+					});
 					return {
 						ok: false,
 						error: "El comando no fue aprobado.",
@@ -361,10 +484,13 @@ export const createTerminalTool = (options = {}) => {
 					ok: false,
 					error: error?.message || String(error),
 					durationMs: Date.now() - startedAt,
+					normalizedFrom: normalized.normalizedFrom,
 					at: new Date().toISOString(),
 				};
 				audit(entry);
-				return { ok: false, error: entry.error, code: "COMMAND_FAILED" };
+				const out = { ok: false, error: entry.error, code: "COMMAND_FAILED" };
+				if (normalized.normalizedFrom) out.normalized = { command, args: argv, from: normalized.normalizedFrom };
+				return out;
 			}
 
 			const stdoutBuffer = result.stdout || Buffer.alloc(0);
@@ -382,11 +508,12 @@ export const createTerminalTool = (options = {}) => {
 				exitCode: result.code,
 				timedOut: Boolean(result.timedOut),
 				durationMs: Date.now() - startedAt,
+				normalizedFrom: normalized.normalizedFrom,
 				at: new Date().toISOString(),
 			};
 			audit(entry);
 
-			return {
+			const response = {
 				ok: Boolean(result.ok),
 				exitCode: result.code,
 				timedOut: Boolean(result.timedOut),
@@ -395,6 +522,25 @@ export const createTerminalTool = (options = {}) => {
 				stderr,
 				durationMs: entry.durationMs,
 			};
+			if (normalized.normalizedFrom) {
+				response.normalized = { command, args: argv, from: normalized.normalizedFrom };
+			}
+
+			if (!response.ok) {
+				const stderrText = String(stderr || "");
+				const cmdName = path.basename(resolved.path);
+				if (cmdName === "uname" && /extra operand|invalid option|uso:|usage:/i.test(stderrText)) {
+					response.hint = "Usa flags válidos para uname, por ejemplo args [\"-a\"] (todo), [\"-r\"] (release kernel) o [\"-srm\"]. No pases palabras como 'release' como argumento posicional.";
+				} else if (cmdName === "ip" && /either "dev" is duplicate|command ".+" is unknown|unknown/i.test(stderrText)) {
+					response.hint = "Revisa argumentos de ip. Ejemplos: [\"-4\",\"addr\",\"show\"], [\"route\",\"get\",\"1.1.1.1\"].";
+				} else if (cmdName === "curl" && /option .*: is unknown|unrecognized option/i.test(stderrText)) {
+					response.hint = "Revisa flags de curl. Ejemplo: [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].";
+				} else if (response.timedOut) {
+					response.hint = "El comando excedió el tiempo límite. Reduce el trabajo, usa timeout menor en curl (-m) o verifica conectividad.";
+				}
+			}
+
+			return response;
 		},
 	};
 };

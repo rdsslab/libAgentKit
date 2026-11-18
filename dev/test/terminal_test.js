@@ -81,8 +81,17 @@ const main = async () => {
 		assert.match(result.stdout, /\| cat/);
 	});
 
-	await check("a full command line is rejected", async () => {
-		const tool = createTerminalTool({ allowedBinaries: ["echo"] });
+	await check("a full command line is normalized and executed safely (no shell)", async () => {
+		const tool = createTerminalTool({ allowedBinaries: [NODE] });
+		const result = await tool.handler({ command: `${NODE} -e "console.log('hola-normalizado')"`, args: [] });
+		assert.equal(result.ok, true);
+		assert.equal(result.normalized?.command, NODE);
+		assert.deepEqual(result.normalized?.args, ["-e", "console.log('hola-normalizado')"]);
+		assert.match(result.stdout, /hola-normalizado/);
+	});
+
+	await check("a full command line with disallowed binary is still refused", async () => {
+		const tool = createTerminalTool({ allowedBinaries: [NODE] });
 		const result = await tool.handler({ command: "echo hola" });
 		assert.equal(result.ok, false);
 		assert.equal(result.code, "COMMAND_NOT_ALLOWED");

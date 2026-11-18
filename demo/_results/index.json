@@ -1,0 +1,181 @@
+{
+  "generatedAt": "2026-11-18T16:58:55-05:00",
+  "environment": "demo/_results/environment.json",
+  "report": "demo/RESULTS.md",
+  "rerunLog": "/tmp/demo_rerun_all.log",
+  "harnessChanges": {
+    "summary": "Generic, post-improvement rerun of demo/01-07 with harness adjustments (no task-specific hardcoded tools).",
+    "files": [
+      "src/terminal.js",
+      "src/ia.js",
+      "src/agent.js",
+      "dev/test/terminal_test.js"
+    ],
+    "notes": [
+      "run_command: safe normalization of full command-line strings into {command,args} without shell; allowlist/audit/timeout/output-cap/secret-scrubbing preserved.",
+      "Tool-call recovery: unknown tools return recoverable structured errors with available-tools guidance; generic binary-name -> run_command aliasing when run_command is available.",
+      "Context/robustness: truncation of large tool results and injected document/web recaps; max_tool_rounds_exceeded returns partial diagnostics/usage instead of hard failure where supported.",
+      "Observability: propagation of execution/diagnostic flags (e.g. incomplete/reason) through agent results."
+    ],
+    "verification": "npm test passing (4/4 suites) after changes."
+  },
+  "models": [
+    "qwen3:4b-instruct-8k",
+    "qwen3:0.6b-16k",
+    "lfm3-omni:2b"
+  ],
+  "tests": [
+    {
+      "id": "01-web-search",
+      "groundTruth": "demo/01-web-search/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/01-web-search/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/01-web-search/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/01-web-search/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/01-web-search/results/run-20261118-064735.json",
+        "qwen3:0.6b-16k": "demo/01-web-search/results/qwen3_0.6b-16k/run-20261118-080606.json",
+        "lfm3-omni:2b": "demo/01-web-search/results/lfm3-omni_2b/run-20261118-082334.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/01-web-search/results/qwen3_4b-instruct-8k/run-20261118-112038.json",
+        "qwen3:0.6b-16k": "demo/01-web-search/results/qwen3_0.6b-16k/run-20261118-101431.json",
+        "lfm3-omni:2b": "demo/01-web-search/results/lfm3-omni_2b/run-20261118-105700.json"
+      }
+    },
+    {
+      "id": "02-get-ip",
+      "groundTruth": "demo/02-get-ip/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/02-get-ip/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/02-get-ip/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/02-get-ip/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/02-get-ip/results/run-20261118-064741.json",
+        "qwen3:0.6b-16k": "demo/02-get-ip/results/qwen3_0.6b-16k/run-20261118-080625.json",
+        "lfm3-omni:2b": "demo/02-get-ip/results/lfm3-omni_2b/run-20261118-082347.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/02-get-ip/results/qwen3_4b-instruct-8k/run-20261118-112248.json",
+        "qwen3:0.6b-16k": "demo/02-get-ip/results/qwen3_0.6b-16k/run-20261118-101504.json",
+        "lfm3-omni:2b": "demo/02-get-ip/results/lfm3-omni_2b/run-20261118-105726.json"
+      }
+    },
+    {
+      "id": "03-curl-local",
+      "groundTruth": "demo/03-curl-local/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/03-curl-local/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/03-curl-local/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/03-curl-local/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/03-curl-local/results/run-20261118-070536.json",
+        "qwen3:0.6b-16k": "demo/03-curl-local/results/qwen3_0.6b-16k/run-20261118-080654.json",
+        "lfm3-omni:2b": "demo/03-curl-local/results/lfm3-omni_2b/run-20261118-082353.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/03-curl-local/results/qwen3_4b-instruct-8k/run-20261118-112316.json",
+        "qwen3:0.6b-16k": "demo/03-curl-local/results/qwen3_0.6b-16k/run-20261118-101553.json",
+        "lfm3-omni:2b": "demo/03-curl-local/results/lfm3-omni_2b/run-20261118-105757.json"
+      },
+      "notes": "Historical baseline prior to context-aware prompting failed with context overflow: demo/03-curl-local/results/run-20261118-065839.json."
+    },
+    {
+      "id": "04-codegen-landing",
+      "groundTruth": "Automated artifact validation in run results",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/04-codegen-landing/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/04-codegen-landing/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/04-codegen-landing/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/04-codegen-landing/results/run-20261118-071629.json",
+        "qwen3:0.6b-16k": "demo/04-codegen-landing/results/qwen3_0.6b-16k/run-20261118-080747.json",
+        "lfm3-omni:2b": "demo/04-codegen-landing/results/lfm3-omni_2b/run-20261118-082411.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/04-codegen-landing/results/qwen3_4b-instruct-8k/run-20261118-112545.json",
+        "qwen3:0.6b-16k": "demo/04-codegen-landing/results/qwen3_0.6b-16k/run-20261118-101924.json",
+        "lfm3-omni:2b": "demo/04-codegen-landing/results/lfm3-omni_2b/run-20261118-105916.json"
+      },
+      "artifacts": [
+        "demo/04-codegen-landing/output/"
+      ]
+    },
+    {
+      "id": "05-github-search-save-md",
+      "groundTruth": "demo/05-github-search-save-md/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/05-github-search-save-md/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/05-github-search-save-md/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/05-github-search-save-md/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/05-github-search-save-md/results/run-20261118-072134.json",
+        "qwen3:0.6b-16k": "demo/05-github-search-save-md/results/qwen3_0.6b-16k/run-20261118-081407.json",
+        "lfm3-omni:2b": "demo/05-github-search-save-md/results/lfm3-omni_2b/run-20261118-083014.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/05-github-search-save-md/results/qwen3_4b-instruct-8k/run-20261118-113536.json",
+        "qwen3:0.6b-16k": "demo/05-github-search-save-md/results/qwen3_0.6b-16k/run-20261118-101925.json",
+        "lfm3-omni:2b": "demo/05-github-search-save-md/results/lfm3-omni_2b/run-20261118-111420.json"
+      },
+      "artifacts": [
+        "demo/05-github-search-save-md/output/"
+      ],
+      "notes": "Historical baseline qwen3:4b-instruct-8k initial attempt run-20261118-071838.json was not coherent; guided run succeeded. Post-improvement: lfm3-omni:2b completed end-to-end and saved correct profile data; qwen3:0.6b-16k timed out in both steps but a prior file remained present in output."
+    },
+    {
+      "id": "06-current-president-ecuador",
+      "groundTruth": "demo/06-current-president-ecuador/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/06-current-president-ecuador/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/06-current-president-ecuador/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/06-current-president-ecuador/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/06-current-president-ecuador/results/qwen3_4b-instruct-8k/run-20261118-085031.json",
+        "qwen3:0.6b-16k": "demo/06-current-president-ecuador/results/qwen3_0.6b-16k/run-20261118-081603.json",
+        "lfm3-omni:2b": "demo/06-current-president-ecuador/results/lfm3-omni_2b/run-20261118-083238.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/06-current-president-ecuador/results/qwen3_4b-instruct-8k/run-20261118-113820.json",
+        "qwen3:0.6b-16k": "demo/06-current-president-ecuador/results/qwen3_0.6b-16k/run-20261118-104935.json",
+        "lfm3-omni:2b": "demo/06-current-president-ecuador/results/lfm3-omni_2b/run-20261118-111518.json"
+      },
+      "notes": "Time-sensitive question; expected Daniel Noboa as of 2026 (verify per run)."
+    },
+    {
+      "id": "07-jesus-landing-page",
+      "groundTruth": "demo/07-jesus-landing-page/results/ground-truth.json",
+      "runs": {
+        "qwen3:4b-instruct-8k": "demo/07-jesus-landing-page/results/qwen3_4b-instruct-8k/latest.json",
+        "qwen3:0.6b-16k": "demo/07-jesus-landing-page/results/qwen3_0.6b-16k/latest.json",
+        "lfm3-omni:2b": "demo/07-jesus-landing-page/results/lfm3-omni_2b/latest.json"
+      },
+      "preImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/07-jesus-landing-page/results/qwen3_4b-instruct-8k/run-20261118-085256.json",
+        "qwen3:0.6b-16k": "demo/07-jesus-landing-page/results/qwen3_0.6b-16k/run-20261118-081630.json",
+        "lfm3-omni:2b": "demo/07-jesus-landing-page/results/lfm3-omni_2b/run-20261118-083327.json"
+      },
+      "postImprovementRuns": {
+        "qwen3:4b-instruct-8k": "demo/07-jesus-landing-page/results/qwen3_4b-instruct-8k/run-20261118-113853.json",
+        "qwen3:0.6b-16k": "demo/07-jesus-landing-page/results/qwen3_0.6b-16k/run-20261118-105444.json",
+        "lfm3-omni:2b": "demo/07-jesus-landing-page/results/lfm3-omni_2b/run-20261118-111534.json"
+      },
+      "artifacts": [
+        "demo/07-jesus-landing-page/output/"
+      ],
+      "notes": "Post-improvement: qwen3:0.6b-16k completed and saved a validated artifact; lfm3-omni:2b saved an artifact but validation/coherence checks did not fully pass; qwen3:4b-instruct-8k step 2 timed out (no artifact)."
+    }
+  ],
+  "status": {
+    "rerun": "completed (2026-11-18, sequential, demo/01-07 x 3 models, generic harness adjustments applied)",
+    "qwen3:0.6b-16k": "completed post-improvement rerun (run-all reported Failures: 2/7)",
+    "lfm3-omni:2b": "completed post-improvement rerun (run-all reported Failures: 1/7)",
+    "qwen3:4b-instruct-8k": "completed post-improvement rerun (run-all reported Failures: 1/7; 07 step 2 timed out)"
+  }
+}
