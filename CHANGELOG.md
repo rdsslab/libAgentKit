@@ -7,6 +7,42 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ---
 
+## [0.2.0] - 2026-11-17
+
+### Added
+
+- **Tool `run_command`**: ejecuta un binario en el terminal. Inerte por defecto: sin
+  lista de binarios permitidos, toda llamada se rechaza.
+  - **Nunca hay shell**: `spawn(bin, args, { shell: false })`. `;`, `|`, `&&` y los
+    acentos graves llegan como argumentos literales, no como sintaxis.
+  - **Lista de binarios**: un nombre permite ese binario; una ruta absoluta permite
+    exactamente ese fichero. Los nombres se resuelven por un PATH restringido
+    (`/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`).
+  - **El entorno no se filtra**: el hijo no hereda `process.env`; recibe un PATH
+    restringido, `HOME` y el locale, mas lo que el host pase explicitamente. Las
+    credenciales del host nunca llegan al comando.
+  - **Aprobacion**: `approve()` puede vetar cada comando.
+  - **Limites**: timeout (30 s por defecto, luego SIGKILL), tope de salida (256 KB) y
+    maximo de comandos por turno (10).
+  - **Redaccion de secretos** en la salida: `sk-…`, `ghp_…`, `github_pat_…`,
+    `AKIA…`, tokens Bearer, JWT, bloques de clave privada y asignaciones del tipo
+    `*_TOKEN=…`, mas los literales que registre el host.
+  - **Auditoria**: `onAudit()` recibe cada decision, incluidas las denegadas.
+  - Validacion de argumentos (`validateArgs`) y restriction del directorio de
+    trabajo (`allowedRoots`).
+- **`runProcess` acepta `env` y `cwd`**: el envoltorio de bajo nivel deja de
+  depender de heredar el entorno del proceso.
+
+### Verified
+
+- `dev/test/terminal_test.js`: 21 comprobaciones (tool inerte sin lista, binario no
+  permitido, ruta absoluta nominal, ausencia de shell, linea de comandos completa
+  rechazada, secretos del host ausentes en el hijo, timeout, tope de salida,
+  redaccion, hook de aprobacion, hook de validacion, hook de auditoria, limite por
+  turno, directorio de trabajo restringido).
+
+---
+
 ## [0.1.0] - 2026-11-17
 
 ### Added

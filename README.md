@@ -134,6 +134,38 @@ const renderer = await loadDefaultRenderer();   // null when Chromium is not ins
 const tool = createFileTool(renderer);
 ```
 
+## Terminal
+
+`run_command` runs a binary. It is **inert until the host says which binaries may
+run**: with no allowlist every command is refused.
+
+```js
+import { createTerminalTool } from "@rdsslab/agentkit";
+
+const tool = createTerminalTool({
+  allowedBinaries: ["git", "ls"],        // names, or absolute paths
+  cwd: "/srv/project",
+  allowedRoots: ["/srv/project"],
+  approve: async ({ command, args }) => askTheUser(command, args),   // optional
+  onAudit: (entry) => logger.info(entry),                            // optional
+});
+
+const result = await tool.handler({ command: "git", args: ["status", "--short"] });
+```
+
+| Guard | Detail |
+| --- | --- |
+| **No shell** | `spawn(bin, args, { shell: false })`. `;`, `\|`, `&&` and backticks are literal arguments, never syntax. |
+| **Allowlist** | Empty by default. A name allows that binary; an absolute path allows exactly that file. A name is resolved through a restricted PATH, so an absolute path in the allowlist is the strict form. |
+| **Environment** | The child does **not** inherit `process.env`: it gets a restricted PATH, `HOME` and the locale, plus whatever the host passes explicitly. The API keys of the host never reach the command. |
+| **Approval** | `approve()` can veto each command. Without it, the allowlist is the only gate. |
+| **Limits** | Timeout (default 30 s, then SIGKILL), output cap (default 256 KB) and a maximum number of commands per turn (default 10). |
+| **Scrubbing** | Tokens in the output (`sk-…`, `ghp_…`, `AKIA…`, JWTs, private keys, `*_TOKEN=…`) are redacted, plus any literal the host registers. |
+| **Audit** | `onAudit()` receives every decision, including the refusals. |
+
+`runProcess` (the low-level wrapper) now accepts `env` and `cwd` too, for hosts that
+need to drive a process directly.
+
 ## Relationship with OpenFusionAPI
 
 `libOpenFusionAPI` (the API platform) depends on this package and exposes it through

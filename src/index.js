@@ -105,3 +105,17 @@ export {
 	looksLikeHtml,
 	safeFileName,
 } from "./artifacts.js";
+
+export {
+	DEFAULT_MAX_CALLS_PER_TURN,
+	DEFAULT_MAX_OUTPUT_BYTES,
+	DEFAULT_SEARCH_PATH,
+	DEFAULT_TIMEOUT_MS,
+	TERMINAL_TOOL_NAME,
+	TERMINAL_TOOL_PARAMETERS,
+	buildChildEnv,
+	createTerminalTool,
+	isInsideRoot,
+	resolveBinary,
+	scrubSecrets,
+} from "./terminal.js";

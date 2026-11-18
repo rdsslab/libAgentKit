@@ -664,15 +664,26 @@ class ProcessError extends Error {
  * Runs a binary with an argument array (`shell:false`) and buffer stdin/stdout.
  * stdin errors are swallowed on purpose: ffmpeg/ffprobe exit before consuming the
  * whole pipe, and an unhandled EPIPE used to take the whole worker down.
+ *
+ * `env` and `cwd` are optional: when `env` is not given the child inherits
+ * `process.env` (the historical behaviour), and the terminal tool always passes
+ * an explicit environment so secrets do not leak into the child.
  */
 export const runProcess = (command, args, {
 	stdin,
 	timeoutMs = DEFAULT_FFMPEG_TIMEOUT,
 	maxStdoutBytes = 16 * 1024 * 1024,
+	env,
+	cwd,
 } = {}) => new Promise((resolve, reject) => {
 	let child;
 	try {
-		child = spawn(command, Array.isArray(args) ? args : [], { shell: false, stdio: ["pipe", "pipe", "pipe"] });
+		child = spawn(command, Array.isArray(args) ? args : [], {
+			shell: false,
+			stdio: ["pipe", "pipe", "pipe"],
+			...(env ? { env } : {}),
+			...(cwd ? { cwd } : {}),
+		});
 	} catch (error) {
 		reject(new ProcessError(`${command} could not start: ${error?.message || error}`, { code: error?.code }));
 		return;
