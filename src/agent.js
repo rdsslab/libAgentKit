@@ -189,6 +189,7 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  * @param {object} [options.toolHandlers] Extra local tool handlers (same shape as ia.js).
  * @param {Function} [options.documentResolver] Optional `async ({name,id}) => document` for `read_document`.
  * @param {Array<object>} [options.mcpServers]
+ * @param {Function} [options.approveToolCall] Approval hook for the tools of untrusted MCP servers.
  * @param {boolean|"auto"|"always"} [options.preSearch] Deterministic web search before the model.
  * @param {object} [options.webSearch] Options forwarded to `webSearch()` (providers, maxResults...).
  * @param {number} [options.maxToolRounds]
@@ -208,6 +209,7 @@ export const askAgent = async ({
 	toolHandlers = {},
 	documentResolver,
 	mcpServers = [],
+	approveToolCall,
 	preSearch = "auto",
 	webSearch: webSearchOptions = {},
 	maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
@@ -354,6 +356,7 @@ export const askAgent = async ({
 		provider,
 		mcpServers,
 		toolHandlers: handlers,
+		approveToolCall,
 		prompts: promptMessages,
 		images,
 		maxToolRounds,

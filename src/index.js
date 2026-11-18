@@ -119,3 +119,16 @@ export {
 	resolveBinary,
 	scrubSecrets,
 } from "./terminal.js";
+
+export {
+	DEFAULT_TRUST_LEVEL,
+	MCP_TRUST_LEVELS,
+	PROJECT_CONFIG_FILES,
+	USER_CONFIG_FILE,
+	describeTrust,
+	findMcpConfig,
+	loadMcpConfig,
+	loadMcpServers,
+	normalizeMcpServer,
+	normalizeMcpServers,
+} from "./mcp.js";

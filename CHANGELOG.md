@@ -7,6 +7,70 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ---
 
+## [0.3.0] - 2026-11-18
+
+### Added
+
+- **Transporte MCP por stdio**: un servidor MCP local arranca como proceso hijo y se
+  habla con el por stdin/stdout. El transporte se importa bajo demanda, de modo que
+  un despliegue que solo usa HTTP no paga por el.
+  - Entrada: `{ command, args, env, cwd }`. El entorno del hijo es el del transporte
+    (`getDefaultEnvironment`) mas el que declara la configuracion, no el del host.
+  - El stderr del hijo se ignora: un servidor MCP ruidoso no ensucia el log del host.
+- **Niveles de confianza por servidor**: `trusted` (por defecto), `untrusted` y
+  `disabled`.
+  - `trusted`: las tools se ofrecen al modelo y se ejecutan automaticamente.
+  - `untrusted`: las tools se ofrecen, pero **cada llamada** necesita la decision del
+    host mediante `approveToolCall`. Sin hook de aprobacion la llamada se rechaza:
+    falla cerrado, porque "nadie vigila" no es una decision.
+  - `disabled`: el servidor no se conecta y sus tools nunca se exponen.
+- **Hook `approveToolCall`**: recibe `{ serverName, toolName, toolAlias, arguments }` y
+  devuelve `true`/`false` (o `{ approved: true }`). Cableado en `askAgent`,
+  `askIAWithMCP`, `askIAWithProviderMCP` y `AIProviderMCPClient`.
+  - Una llamada rechazada no llega al servidor: se registra como ejecucion fallida
+    (`TOOL_CALL_NOT_APPROVED`) y el modelo recibe el motivo.
+- **Modulo `src/mcp.js`**: configuracion de servidores MCP.
+  - `normalizeMcpServer` / `normalizeMcpServers`: normalizan nombre, transporte, URL,
+    comando, argumentos, entorno, cabeceras y nivel de confianza. Una entrada sin
+    nombre recibe el hostname de la URL o el basename del comando.
+  - `findMcpConfig` / `loadMcpConfig` / `loadMcpServers`: lectura del fichero de
+    configuracion.
+  - `describeTrust`: descripcion legible de cada nivel.
+- **Fichero de configuracion** (`~/.config/agentkit/config.json` por defecto):
+  ```json
+  {
+    "mcpServers": {
+      "files": { "url": "http://127.0.0.1:8931/mcp", "trust": "trusted" },
+      "git": { "command": "mcp-server-git", "args": ["--repo", "/srv/repo"], "trust": "untrusted" },
+      "old": { "url": "http://127.0.0.1:8932/mcp", "trust": "disabled" }
+    },
+    "terminal": { "allowedBinaries": ["git", "ls"] }
+  }
+  ```
+  - El config del proyecto (`agentkit.config.json` o `.agentkit/config.json`) **no** se
+    carga salvo que el host lo pida con `allowProjectConfig: true`: un repositorio
+    puede traerlo, y un repositorio no es una frontera de confianza.
+  - Un JSON invalido informa de la ruta exacta del fichero.
+
+### Changed
+
+- `ia.js` delega la normalizacion de servidores en `mcp.js`: una sola regla para
+  nombre, transporte y confianza, en lugar de dos que podrian divergir.
+- El catalogo y los diagnosticos de servidores incluyen ahora `command` y `trust`,
+  para que un servidor stdio no aparezca con `url: null` y sin nivel de confianza.
+
+### Verified
+
+- `dev/test/mcp_test.js`: 15 comprobaciones (niveles de confianza, normalizacion de
+  entradas y de mapas, lectura del config, JSON invalido, config del proyecto
+  ignorado por defecto y con opt-in explicito, config de usuario, servidor stdio real
+  conectado y con sus tools listadas, servidor `disabled` no conectado, entrada http
+  sin URL con error claro, y cuatro comprobaciones de llamada a tool via modelo:
+  `trusted` ejecuta, `untrusted` sin hook falla cerrado, `untrusted` aprobado ejecuta y
+  `untrusted` rechazado no ejecuta).
+
+---
+
 ## [0.2.0] - 2026-11-17
 
 ### Added

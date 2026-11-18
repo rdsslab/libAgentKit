@@ -22,6 +22,8 @@ import {
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
+import { normalizeMcpServer } from "./mcp.js";
+
 const DEFAULT_CLIENT_NAME = "agentkit-runtime";
 const DEFAULT_CLIENT_VERSION = "1.0.0";
 const DEFAULT_TIMEOUT = 60000;
@@ -1238,11 +1240,43 @@ const createLegacySseRpcClient = (server) => {
 	};
 };
 
+/**
+ * Creates the transport of an MCP server.
+ *
+ * Two shapes are supported:
+ *   - `{ url }`: Streamable HTTP, with a legacy SSE fallback.
+ *   - `{ command, args }`: a local server over stdio.
+ *
+ * The stdio transport is imported on demand so a deployment that only speaks
+ * HTTP does not pay for it.
+ */
 const createTransport = async (server) => {
+	const command = typeof server.command === "string" ? server.command.trim() : "";
+
+	if (command !== "") {
+		const { StdioClientTransport, getDefaultEnvironment } = await import("@modelcontextprotocol/sdk/client/stdio.js");
+		const env = {
+			...getDefaultEnvironment(),
+			...(isPlainObject(server.env) ? server.env : {}),
+		};
+
+		return {
+			transport: new StdioClientTransport({
+				command,
+				args: normalizeArray(server.args).map((value) => String(value)),
+				env,
+				...(server.cwd ? { cwd: String(server.cwd) } : {}),
+				// the child must not write into the parent's stderr
+				stderr: server.stderr || "ignore",
+			}),
+			transportType: "stdio",
+		};
+	}
+
 	const serverUrl = server.url ?? server.serverUrl ?? server.server_url;
 
 	if (typeof serverUrl !== "string" || serverUrl.trim() === "") {
-		throw new Error("Each MCP server requires a non-empty `url`.");
+		throw new Error("Each MCP server requires a non-empty `url` or a `command` for stdio.");
 	}
 
 	const baseUrl = new URL(serverUrl);
@@ -1324,11 +1358,13 @@ class MCPToolRuntime {
 		toolHandlers = {},
 		clientName = DEFAULT_CLIENT_NAME,
 		clientVersion = DEFAULT_CLIENT_VERSION,
+		approveToolCall,
 	} = {}) {
 		this.mcpServers = normalizeArray(mcpServers).filter((item) => isPlainObject(item));
 		this.toolHandlers = isPlainObject(toolHandlers) ? toolHandlers : {};
 		this.clientName = clientName;
 		this.clientVersion = clientVersion;
+		this.approveToolCall = typeof approveToolCall === "function" ? approveToolCall : null;
 		this.serverBundles = [];
 		this.toolEntries = [];
 		this.toolRegistry = new Map();
@@ -1343,12 +1379,12 @@ class MCPToolRuntime {
 			return this;
 		}
 
-		for (const server of this.mcpServers) {
-			const normalizedServer = {
-				...server,
-				name: server.name || new URL(server.url ?? server.serverUrl ?? server.server_url).hostname,
-				url: server.url ?? server.serverUrl ?? server.server_url,
-			};
+		for (const [index, server] of this.mcpServers.entries()) {
+			const normalizedServer = normalizeMcpServer(server, index);
+			// A disabled server is not connected at all: its tools are never exposed.
+			if (normalizedServer.enabled === false || normalizedServer.trust === "disabled") {
+				continue;
+			}
 
 			const connection = await connectMcpServer(normalizedServer, {
 				clientName: this.clientName,
@@ -1431,20 +1467,25 @@ class MCPToolRuntime {
 
 		for (const bundle of this.serverBundles) {
 			const serverKey = sanitizeToolNamePart(bundle.server.name, "mcp");
+			const untrusted = bundle.server.trust === "untrusted";
 
 			for (const tool of bundle.tools) {
 				const alias = `${serverKey}__${sanitizeToolNamePart(tool.name, "tool")}`;
 				const shortName = sanitizeToolNamePart(tool.name, "tool");
+				const description = untrusted
+					? `[untrusted server] ${tool.description || `Tool ${tool.name} from server ${bundle.server.name}.`}`
+					: tool.description;
 
 				entries.push({
 					alias,
 					shortName,
 					toolName: tool.name,
 					title: tool.title,
-					description: tool.description,
+					description,
 					inputSchema: normalizeToolSchema(tool.inputSchema),
 					serverName: bundle.server.name,
 					serverUrl: bundle.server.url,
+					trust: bundle.server.trust || "trusted",
 					client: bundle.client,
 				});
 			}
@@ -1517,7 +1558,9 @@ class MCPToolRuntime {
 			server: {
 				name: bundle.server.name,
 				url: bundle.server.url,
+				command: bundle.server.command ?? null,
 				transport: bundle.transportType,
+				trust: bundle.server.trust || "trusted",
 			},
 			tools: bundle.tools,
 		}));
@@ -1527,7 +1570,9 @@ class MCPToolRuntime {
 		return this.serverBundles.map((bundle) => ({
 			name: bundle.server.name,
 			url: bundle.server.url,
+			command: bundle.server.command ?? null,
 			transport: bundle.transportType,
+			trust: bundle.server.trust || "trusted",
 			tools: bundle.tools.map((tool) => tool.name),
 		}));
 	}
@@ -1596,6 +1641,34 @@ class MCPToolRuntime {
 				continue;
 			}
 
+			// An untrusted server needs a decision from the host before its tool
+			// runs. Without an approval hook the call is refused: it fails
+			// closed, because "no one is watching" is not a decision.
+			if (toolEntry.trust === "untrusted") {
+				const approved = await this.approveUntrustedCall(toolEntry, toolArguments);
+
+				if (!approved.approved) {
+					const execution = {
+						callId: toolCall.id,
+						toolAlias: toolEntry.alias,
+						toolName: toolEntry.toolName,
+						serverName: toolEntry.serverName,
+						serverUrl: toolEntry.serverUrl,
+						policy: toolEntry.policy,
+						arguments: toolArguments,
+						textResult: approved.error,
+						rawResult: { error: approved.error, code: "TOOL_CALL_NOT_APPROVED" },
+						isError: true,
+						deduplicated: false,
+						approved: false,
+					};
+
+					this.executionLog.push(execution);
+					executionResults.push(execution);
+					continue;
+				}
+			}
+
 			try {
 				const rawResult = await toolEntry.client.callTool({
 					name: toolEntry.toolName,
@@ -1647,6 +1720,46 @@ class MCPToolRuntime {
 		}
 
 		return executionResults;
+	}
+
+	/**
+	 * Asks the host whether a tool of an untrusted server may run.
+	 *
+	 * @returns {Promise<{approved: boolean, error?: string}>}
+	 */
+	async approveUntrustedCall(toolEntry, toolArguments) {
+		const request = {
+			serverName: toolEntry.serverName,
+			toolName: toolEntry.toolName,
+			toolAlias: toolEntry.alias,
+			arguments: toolArguments,
+		};
+
+		if (!this.approveToolCall) {
+			return {
+				approved: false,
+				error: `The tool "${toolEntry.toolName}" comes from the untrusted server "${toolEntry.serverName}" and its call was not approved: this host does not define an approval hook for untrusted servers.`,
+			};
+		}
+
+		try {
+			const verdict = await this.approveToolCall(request);
+			if (verdict === true) {
+				return { approved: true };
+			}
+			if (verdict && typeof verdict === "object" && verdict.approved === true) {
+				return { approved: true };
+			}
+			return {
+				approved: false,
+				error: `The call to "${toolEntry.toolName}" (server "${toolEntry.serverName}") was not approved.`,
+			};
+		} catch (error) {
+			return {
+				approved: false,
+				error: `The approval of "${toolEntry.toolName}" (server "${toolEntry.serverName}") failed: ${error?.message || error}`,
+			};
+		}
 	}
 
 	/**
@@ -2550,6 +2663,7 @@ export class AIProviderMCPClient {
 		clientVersion = DEFAULT_CLIENT_VERSION,
 		maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
 		includeDiagnostics = false,
+		approveToolCall,
 	} = {}) {
 		this.provider = provider;
 		this.maxToolRounds = maxToolRounds;
@@ -2559,6 +2673,7 @@ export class AIProviderMCPClient {
 			toolHandlers,
 			clientName: provider?.clientName ?? clientName,
 			clientVersion: provider?.clientVersion ?? clientVersion,
+			approveToolCall,
 		});
 		this.adapter = createAIProviderAdapter(provider);
 	}
@@ -2606,12 +2721,14 @@ export const listMcpToolsForProvider = async ({
 	mcpServers = [],
 	clientName = DEFAULT_CLIENT_NAME,
 	clientVersion = DEFAULT_CLIENT_VERSION,
+	approveToolCall,
 } = {}) => {
 	const client = new AIProviderMCPClient({
 		provider,
 		mcpServers,
 		clientName,
 		clientVersion,
+		approveToolCall,
 	});
 
 	try {
@@ -2650,6 +2767,7 @@ export const askIAWithProviderMCP = async ({
 	clientVersion = DEFAULT_CLIENT_VERSION,
 	maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
 	includeDiagnostics = false,
+	approveToolCall,
 	signal,
 } = {}) => {
 	const client = new AIProviderMCPClient({
@@ -2660,6 +2778,7 @@ export const askIAWithProviderMCP = async ({
 		clientVersion,
 		maxToolRounds,
 		includeDiagnostics,
+		approveToolCall,
 	});
 
 	try {
@@ -2687,12 +2806,14 @@ export const askIAWithMCP = async ({
 	clientVersion = DEFAULT_CLIENT_VERSION,
 	maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
 	includeDiagnostics = false,
+	approveToolCall,
 	signal,
 } = {}) => {
 	return askIAWithProviderMCP({
 		provider: ai,
 		mcpServers,
 		toolHandlers,
+		approveToolCall,
 		prompts,
 		images,
 		clientName,

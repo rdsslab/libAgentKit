@@ -1,6 +1,6 @@
 {
   "name": "@rdsslab/agentkit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Provider-agnostic agent toolkit: deterministic policies, web search, in-memory documents, media, file artifacts and a single askAgent() entry point.",
   "type": "module",
   "main": "./src/index.js",
@@ -21,7 +21,9 @@
   "scripts": {
     "test": "node ./dev/test/index.js",
     "test:kit": "node ./dev/test/agentkit_test.js",
-    "test:artifacts": "node ./dev/test/artifacts_test.js"
+    "test:artifacts": "node ./dev/test/artifacts_test.js",
+    "test:terminal": "node ./dev/test/terminal_test.js",
+    "test:mcp": "node ./dev/test/mcp_test.js"
   },
   "keywords": [
     "agent",

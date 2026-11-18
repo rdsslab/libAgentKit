@@ -64,8 +64,10 @@ demand, the first time a provider is used or the first PDF is extracted.
 | `documents` | In-memory PDF, DOCX, HTML and text extraction (no filesystem writes). | `pdfjs-dist` |
 | `media` | Images, STT/TTS provider registries, video frames and metadata via ffmpeg. | `ffmpeg` (system) |
 | `artifacts` | The `create_file` contract: PDF, image, HTML, text, JSON, Markdown, CSV. | none (renderer injected) |
+| `terminal` | The `run_command` tool: allowlist of binaries, approval, limits, secret scrubbing. | none (`ffmpeg` not required) |
+| `mcp` | MCP configuration: servers, transports, trust levels, config discovery. | none |
 | `agent` | `askAgent()` orchestration: pre-search, local tools, documents, one envelope. | loads `./ia` on demand |
-| `ia` | Provider layer: OpenAI-compatible family, Anthropic, Google GenAI, plus remote MCP servers. | `openai`, `@anthropic-ai/sdk`, `@google/genai`, `@modelcontextprotocol/sdk` |
+| `ia` | Provider layer: OpenAI-compatible family, Anthropic, Google GenAI, plus remote MCP servers (HTTP and stdio). | `openai`, `@anthropic-ai/sdk`, `@google/genai`, `@modelcontextprotocol/sdk` |
 
 ### The provider layer is loaded on demand
 
@@ -82,7 +84,7 @@ from the environment or from a config file: you pass `{ provider, model, apiKey,
 ## Tools
 
 `askAgent` accepts local tools (a plain object with a `handler`) and remote MCP
-servers (Streamable HTTP). Both are offered to the model in the same turn.
+servers (Streamable HTTP or stdio). Both are offered to the model in the same turn.
 
 ```js
 const result = await askAgent({
@@ -166,6 +168,80 @@ const result = await tool.handler({ command: "git", args: ["status", "--short"] 
 `runProcess` (the low-level wrapper) now accepts `env` and `cwd` too, for hosts that
 need to drive a process directly.
 
+## MCP
+
+An MCP server is code that runs somewhere else. The package therefore treats the
+*config file* as a trust decision, and says so explicitly.
+
+### Transports
+
+| Transport | Entry | Notes |
+| --- | --- | --- |
+| Streamable HTTP | `{ url }` | With a legacy SSE fallback. |
+| stdio | `{ command, args, env, cwd }` | A local server started as a child process. The stdio transport is imported on demand. |
+
+### Trust levels
+
+| Level | Behaviour |
+| --- | --- |
+| `trusted` (default) | The tools are offered to the model and called automatically. |
+| `untrusted` | The tools are offered, but **every call** needs the host's approval (`approveToolCall`). Without an approval hook the call is refused: it fails closed, because "nobody is watching" is not a decision. |
+| `disabled` | The server is not connected and its tools are never exposed. |
+
+```js
+const result = await askAgent({
+  provider,
+  messages,
+  mcpServers: [
+    { name: "files", url: "http://127.0.0.1:8931/mcp", trust: "trusted" },
+    { name: "git", command: "mcp-server-git", args: ["--repo", "/srv/repo"], trust: "untrusted" },
+    { name: "old", url: "http://127.0.0.1:8932/mcp", trust: "disabled" },
+  ],
+  approveToolCall: async ({ serverName, toolName, arguments }) => {
+    // return true to allow, false to refuse
+    return askTheUser(`${serverName}.${toolName}`, arguments);
+  },
+});
+```
+
+The approval hook receives `{ serverName, toolName, toolAlias, arguments }` and may
+return `true`/`false` or `{ approved: true }`. A refused call is reported in the
+envelope as a failed tool execution (`TOOL_CALL_NOT_APPROVED`) instead of reaching
+the server.
+
+### Configuration file
+
+By default only the **user-level** config is read:
+
+```
+~/.config/agentkit/config.json
+```
+
+A config file inside the project (`agentkit.config.json` or `.agentkit/config.json`)
+is **not** loaded unless the host opts in with `allowProjectConfig: true`: a
+repository can carry one, and a repository is not a trust boundary.
+
+```json
+{
+  "mcpServers": {
+    "files": { "url": "http://127.0.0.1:8931/mcp", "trust": "trusted" },
+    "git": { "command": "mcp-server-git", "args": ["--repo", "/srv/repo"], "trust": "untrusted" },
+    "old": { "url": "http://127.0.0.1:8932/mcp", "trust": "disabled" }
+  },
+  "terminal": { "allowedBinaries": ["git", "ls"] }
+}
+```
+
+```js
+import { loadMcpServers, findMcpConfig } from "@rdsslab/agentkit";
+
+const servers = loadMcpServers({ allowProjectConfig: false });   // user config only
+const configPath = findMcpConfig({ allowProjectConfig: true });  // explicit opt-in
+```
+
+A server entry without a `name` gets one: the hostname of the URL, or the basename
+of the stdio command.
+
 ## Relationship with OpenFusionAPI
 
 `libOpenFusionAPI` (the API platform) depends on this package and exposes it through
@@ -177,9 +253,9 @@ internal move.
 ## Roadmap
 
 - **v0.2** — terminal tool: `run_command` with an allowlist of binaries, a working
-  directory, timeouts, output limits, secret scrubbing and an approval hook.
+  directory, timeouts, output limits, secret scrubbing and an approval hook. *Done.*
 - **v0.3** — MCP over stdio, a configuration file for servers and tools, per-server
-  trust levels.
+  trust levels. *Done.*
 - **v1.0** — frozen public API.
 
 ## License
