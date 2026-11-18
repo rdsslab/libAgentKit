@@ -262,6 +262,18 @@ const truncateText = (text, maxChars) => {
 };
 
 const pdfToText = async (buffer, { maxPages = DEFAULT_MAX_PAGES } = {}) => {
+	// pdfjs-dist v6 uses `Promise.withResolvers`, which only exists in Node 22
+	// and later. Without this check the failure surfaces as "the PDF looks
+	// broken", which sends the caller (and the user) looking in the wrong place.
+	if (typeof Promise.withResolvers !== "function") {
+		throw new DocumentExtractionError(
+			"This runtime cannot read PDFs: Promise.withResolvers is missing (Node 22 or newer is required).",
+			{
+				code: "PDF_RUNTIME_UNSUPPORTED",
+				userMessage: "Este servidor no puede leer PDF: necesita Node 22 o superior.",
+			},
+		);
+	}
 	const pdfjs = await loadPdfjs();
 	const loadingTask = pdfjs.getDocument({
 		data: new Uint8Array(buffer),

@@ -46,7 +46,8 @@ to npm):
 npm install
 ```
 
-Requires Node.js 20 or newer. The install pulls five dependencies (the provider SDKs
+Requires Node.js 22 or newer (`pdfjs-dist` v6 uses `Promise.withResolvers`, which
+does not exist in Node 20). The install pulls five dependencies (the provider SDKs
 and `pdfjs-dist`); Chromium is **not** required unless you want the built-in PDF/image
 renderer (see [Artifacts](#artifacts)).
 

@@ -426,10 +426,17 @@ async function main() {
     assert.match(docxResult.text, /Segunda linea con & entidad/);
     assert.match(docxResult.text, /Texto\tcon tab/);
 
-    const pdfResult = await extractDocumentText({ data: pdf, fileName: "test.pdf" });
-    assert.equal(pdfResult.kind, "pdf");
-    assert.equal(pdfResult.pages, 1);
-    assert.match(pdfResult.text, /Hola desde PDF/);
+    // pdfjs-dist v6 needs Promise.withResolvers (Node 22+). On an older
+    // runtime the PDF check is skipped instead of failing with a misleading
+    // "the PDF looks broken" error.
+    if (typeof Promise.withResolvers !== "function") {
+      checks.pdf = "skipped (requires Node 22)";
+    } else {
+      const pdfResult = await extractDocumentText({ data: pdf, fileName: "test.pdf" });
+      assert.equal(pdfResult.kind, "pdf");
+      assert.equal(pdfResult.pages, 1);
+      assert.match(pdfResult.text, /Hola desde PDF/);
+    }
 
     const md = await extractDocumentText({ data: Buffer.from("# Titulo\n\nContenido"), fileName: "nota.md" });
     assert.equal(md.kind, "text");

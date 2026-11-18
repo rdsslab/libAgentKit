@@ -46,6 +46,11 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
   los concatenaba con un directorio, la escritura salia de el.
 - **Nombres de cliente del protocolo MCP** ajustados al paquete (`agentkit-runtime` en
   lugar de `openfusion-ia-runtime`).
+- **Requisito de Node.js aclarado: 22 o superior**. `pdfjs-dist` v6 usa
+  `Promise.withResolvers`, que no existe en Node 20; en ese runtime la lectura de PDF
+  fallaba con un mensaje que señalaba al PDF ("parece danado o protegido") y no al
+  runtime. Ahora el error dice exactamente que falta Node 22
+  (`PDF_RUNTIME_UNSUPPORTED`).
 
 ### Verified
 
