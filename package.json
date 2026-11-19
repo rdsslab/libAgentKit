@@ -1,19 +1,14 @@
 {
   "name": "@rdsslab/agentkit",
   "version": "0.4.0",
-  "description": "Provider-agnostic agent toolkit with Web GUI",
+  "description": "Provider-agnostic agent toolkit - core API only",
   "type": "module",
-  "main": "packages/agentkit-core/src/index.js",
-  "workspaces": [
-    "packages/agentkit-core",
-    "packages/agentkit-gui"
+  "main": "src/index.js",
+  "files": [
+    "src/"
   ],
   "scripts": {
-    "test": "node ./dev/test/index.js",
-    "api": "node packages/agentkit-core/src/index.js",
-    "agentkit": "node packages/agentkit-gui/server.js",
-    "gui:dev": "vit dev -c packages/agentkit-gui",
-    "gui:build": "vit build -c packages/agentkit-gui"
+    "test": "node --test"
   },
   "keywords": [
     "agent",
