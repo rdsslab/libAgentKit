@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import express from "express";
 import { createWebSocketServer } from "./websocket.js";
-import { askAgent, loadEffectiveConfig, saveGlobalConfig } from "/home/edwinspire/Desarrollo/libAgentKit/packages/agentkit-core/src/index.js";
-import { listOllamaModels } from "/home/edwinspire/Desarrollo/libAgentKit/packages/agentkit-core/src/ollama.js";
+import { askAgent, loadEffectiveConfig, saveGlobalConfig } from "agentkit-core/src/index.js";
+import { listOllamaModels } from "agentkit-core/src/ollama.js";
 import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
