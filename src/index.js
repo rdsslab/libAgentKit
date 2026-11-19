@@ -145,6 +145,7 @@ export {
 } from "./capabilities.js";
 
 export {
+	GLOBAL_CONFIG_MODE,
 	PROJECT_CONFIG_CANONICAL,
 	PROJECT_CONFIG_LEGACY,
 	defaultConfig,
@@ -156,6 +157,8 @@ export {
 	loadProjectConfig,
 	readJsonFile,
 	readJsonFileIfExists,
+	resolveConfigSecrets,
+	resolveSecretReference,
 	saveGlobalConfig,
 	saveProjectConfig,
 	writeJsonFile,

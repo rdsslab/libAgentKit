@@ -425,6 +425,140 @@ const runWithAbortSignal = async (run, { signal, timeoutMessage } = {}) => {
 	});
 };
 
+/** Optional streaming observers are best-effort and never change the response. */
+const emitTextDelta = (onTextDelta, delta, meta = {}) => {
+	if (typeof onTextDelta !== "function" || typeof delta !== "string" || delta.length === 0) {
+		return false;
+	}
+	try {
+		onTextDelta(delta, meta);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const shouldFallbackStreaming = (error, emitted, signal) => {
+	if (emitted) return false;
+	if (signal?.aborted) return false;
+	return error?.name !== "AbortError";
+};
+
+/** Rebuilds the plain completion shape from an OpenAI-compatible SSE stream. */
+const collectOpenAIStream = async (stream, onTextDelta, meta = {}) => {
+	let text = "";
+	let usage;
+	let emitted = false;
+	const calls = new Map();
+
+	for await (const chunk of stream) {
+		if (chunk?.usage) usage = chunk.usage;
+		const delta = chunk?.choices?.[0]?.delta;
+		if (typeof delta?.content === "string" && delta.content.length > 0) {
+			text += delta.content;
+			emitted = emitTextDelta(onTextDelta, delta.content, meta) || emitted;
+		}
+		for (const call of delta?.tool_calls || []) {
+			const index = Number(call.index ?? 0);
+			const current = calls.get(index) || { id: "", type: "function", function: { name: "", arguments: "" } };
+			if (call.id) current.id = call.id;
+			if (call.type) current.type = call.type;
+			if (call.function?.name) current.function.name += call.function.name;
+			if (call.function?.arguments) current.function.arguments += call.function.arguments;
+			calls.set(index, current);
+		}
+	}
+
+	const toolCalls = [...calls.values()];
+	return {
+		completion: {
+			choices: [{
+				index: 0,
+				message: {
+					role: "assistant",
+					content: text,
+					tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
+				},
+				finish_reason: "stop",
+			}],
+			usage,
+		},
+		emitted,
+	};
+};
+
+/** Rebuilds an Anthropic message from its streaming events. */
+const collectAnthropicStream = async (stream, onTextDelta, meta = {}) => {
+	const content = [];
+	let usage;
+	let emitted = false;
+
+	for await (const event of stream) {
+		if (event?.type === "message_start" && event.message?.usage) {
+			usage = event.message.usage;
+		}
+		if (event?.type === "content_block_start" && event.content_block) {
+			content[event.index ?? content.length] = {
+				...event.content_block,
+				...(event.content_block.type === "tool_use" ? { input: undefined } : {}),
+			};
+		}
+		if (event?.type === "content_block_delta") {
+			const block = content[event.index ?? 0];
+			if (event.delta?.type === "text_delta") {
+				const text = event.delta.text || "";
+				if (block?.type === "text") block.text = `${block.text || ""}${text}`;
+				emitted = emitTextDelta(onTextDelta, text, meta) || emitted;
+			}
+			if (event.delta?.type === "input_json_delta" && block?.type === "tool_use") {
+				block.partialJson = `${block.partialJson || ""}${event.delta.partial_json || ""}`;
+			}
+		}
+		if (event?.type === "message_delta" && event.usage) {
+			usage = { ...(usage || {}), ...event.usage };
+		}
+	}
+
+	for (const block of content) {
+		if (block?.type === "tool_use" && typeof block.partialJson === "string") {
+			try {
+				block.input = JSON.parse(block.partialJson);
+			} catch {
+				block.input = {};
+			}
+			delete block.partialJson;
+		}
+	}
+
+	return { response: { content, usage }, emitted };
+};
+
+const getGeminiChunkText = (chunk) => {
+	try {
+		return typeof chunk?.text === "string" ? chunk.text : "";
+	} catch {
+		return "";
+	}
+};
+
+/** Rebuilds a Gemini response from `generateContentStream()` chunks. */
+const collectGeminiStream = async (stream, onTextDelta, meta = {}) => {
+	let text = "";
+	let emitted = false;
+	const functionCalls = [];
+
+	for await (const chunk of stream) {
+		const part = getGeminiChunkText(chunk);
+		if (part) {
+			text += part;
+			emitted = emitTextDelta(onTextDelta, part, meta) || emitted;
+		}
+		if (Array.isArray(chunk?.functionCalls)) functionCalls.push(...chunk.functionCalls);
+	}
+
+	return { response: { text, functionCalls }, emitted };
+};
+
 const sanitizeToolNamePart = (value, fallbackValue) => {
 	const sanitized = String(value || fallbackValue)
 		.trim()
@@ -2113,7 +2247,7 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? (isAzure ? "azure-openai" : DEFAULT_PROVIDER);
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal } = {}) {
+	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
 		const messages = appendImagesToMessages(normalizePromptMessages(prompts), images);
 
 		if (messages.length === 0) {
@@ -2161,13 +2295,40 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 			};
 
 			const requestStartedAt = Date.now();
-			const completion = await this.runProviderRequest(
-				() => this.client.chat.completions.create(
-					completionRequest,
-					requestSignal ? { signal: requestSignal } : undefined,
-				),
-				{ signal },
-			);
+			const requestOptions = requestSignal ? { signal: requestSignal } : undefined;
+			let streamEmitted = false;
+			let completion;
+			if (typeof onTextDelta !== "function") {
+				completion = await this.runProviderRequest(
+					() => this.client.chat.completions.create(completionRequest, requestOptions),
+					{ signal },
+				);
+			} else {
+				try {
+					const stream = await this.runProviderRequest(
+						() => this.client.chat.completions.create({
+							...completionRequest,
+							stream: true,
+							stream_options: { include_usage: true },
+						}, requestOptions),
+						{ signal },
+					);
+					const meta = { provider: this.provider, model: this.model, round: round + 1 };
+					const collected = await collectOpenAIStream(stream, (delta, eventMeta) => {
+						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
+						emitTextDelta(onTextDelta, delta, eventMeta);
+					}, meta);
+					completion = collected.completion;
+				} catch (error) {
+					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
+					// Some OpenAI-compatible servers advertise but do not implement
+					// SSE. Retry once without streaming, as if no observer existed.
+					completion = await this.runProviderRequest(
+						() => this.client.chat.completions.create(completionRequest, requestOptions),
+						{ signal },
+					);
+				}
+			}
 			usageSamples.push(normalizeUsagePayload(completion?.usage, {
 				response: completion,
 				timingMs: Date.now() - requestStartedAt,
@@ -2500,7 +2661,7 @@ class AnthropicAdapter extends BaseProviderAdapter {
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? "anthropic";
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal } = {}) {
+	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
 		const normalizedMessages = appendImagesToMessages(normalizePromptMessages(prompts), images);
 
 		if (normalizedMessages.length === 0) {
@@ -2515,7 +2676,7 @@ class AnthropicAdapter extends BaseProviderAdapter {
 			: DEFAULT_MAX_TOOL_ROUNDS;
 
 		for (let round = 0; round < roundsLimit; round += 1) {
-			const response = await this.runProviderRequest(() => this.client.messages.create({
+			const params = {
 				model: this.model,
 				max_tokens: this.maxTokens,
 				temperature: this.temperature,
@@ -2523,7 +2684,30 @@ class AnthropicAdapter extends BaseProviderAdapter {
 				messages,
 				tools: tools.length > 0 ? tools : undefined,
 				tool_choice: tools.length > 0 ? this.toolChoice : undefined,
-			}), { signal });
+			};
+			const requestSignal = this.createRequestSignal(signal);
+			const requestOptions = requestSignal ? { signal: requestSignal } : undefined;
+			let streamEmitted = false;
+			let response;
+			if (typeof onTextDelta !== "function") {
+				response = await this.runProviderRequest(() => this.client.messages.create(params), { signal });
+			} else {
+				try {
+					const stream = await this.runProviderRequest(
+						() => this.client.messages.stream(params, requestOptions),
+						{ signal },
+					);
+					const meta = { provider: this.provider, model: this.model, round: round + 1 };
+					const collected = await collectAnthropicStream(stream, (delta, eventMeta) => {
+						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
+						emitTextDelta(onTextDelta, delta, eventMeta);
+					}, meta);
+					response = collected.response;
+				} catch (error) {
+					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
+					response = await this.runProviderRequest(() => this.client.messages.create(params), { signal });
+				}
+			}
 
 			const assistantContent = Array.isArray(response?.content) ? response.content : [];
 			messages.push({
@@ -2732,7 +2916,7 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? "google-gemini";
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal } = {}) {
+	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
 		const normalizedMessages = appendImagesToMessages(normalizePromptMessages(prompts), images);
 
 		if (normalizedMessages.length === 0) {
@@ -2754,7 +2938,7 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 			: DEFAULT_MAX_TOOL_ROUNDS;
 
 		for (let round = 0; round < roundsLimit; round += 1) {
-			const response = await this.runProviderRequest(() => this.client.models.generateContent({
+			const params = {
 				model: this.model,
 				contents,
 				config: {
@@ -2765,7 +2949,28 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 					tools: tools.length > 0 ? tools : undefined,
 					toolConfig: tools.length > 0 ? toolConfig : undefined,
 				},
-			}), { signal });
+			};
+			let streamEmitted = false;
+			let response;
+			if (typeof onTextDelta !== "function") {
+				response = await this.runProviderRequest(() => this.client.models.generateContent(params), { signal });
+			} else {
+				try {
+					const stream = await this.runProviderRequest(
+						() => this.client.models.generateContentStream(params),
+						{ signal },
+					);
+					const meta = { provider: this.provider, model: this.model, round: round + 1 };
+					const collected = await collectGeminiStream(stream, (delta, eventMeta) => {
+						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
+						emitTextDelta(onTextDelta, delta, eventMeta);
+					}, meta);
+					response = collected.response;
+				} catch (error) {
+					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
+					response = await this.runProviderRequest(() => this.client.models.generateContent(params), { signal });
+				}
+			}
 
 			const functionCalls = Array.isArray(response?.functionCalls) ? response.functionCalls : [];
 			const modelParts = [];
@@ -2941,6 +3146,7 @@ export class AIProviderMCPClient {
 		maxToolRounds = this.maxToolRounds,
 		includeDiagnostics = this.includeDiagnostics,
 		signal,
+		onTextDelta,
 	} = {}) {
 		await this.connect();
 
@@ -2951,6 +3157,7 @@ export class AIProviderMCPClient {
 			maxToolRounds,
 			includeDiagnostics,
 			signal,
+			onTextDelta,
 		});
 	}
 
@@ -3016,6 +3223,7 @@ export const askIAWithProviderMCP = async ({
 	includeDiagnostics = false,
 	approveToolCall,
 	signal,
+	onTextDelta,
 } = {}) => {
 	const client = new AIProviderMCPClient({
 		provider,
@@ -3035,6 +3243,7 @@ export const askIAWithProviderMCP = async ({
 			maxToolRounds,
 			includeDiagnostics,
 			signal,
+			onTextDelta,
 		});
 	} finally {
 		await client.close();

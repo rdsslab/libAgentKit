@@ -83,11 +83,41 @@ export const readJsonFileIfExists = (filePath) => {
 	return readJsonFile(resolved);
 };
 
-export const writeJsonFile = (filePath, data) => {
+export const GLOBAL_CONFIG_MODE = 0o600;
+
+export const writeJsonFile = (filePath, data, { mode } = {}) => {
 	const resolved = path.resolve(filePath);
 	ensureDir(path.dirname(resolved));
-	fs.writeFileSync(resolved, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+	fs.writeFileSync(resolved, `${JSON.stringify(data, null, 2)}\n`, {
+		encoding: "utf8",
+		...(Number.isInteger(mode) ? { mode } : {}),
+	});
+	if (Number.isInteger(mode)) fs.chmodSync(resolved, mode);
 	return resolved;
+};
+
+/**
+ * Resolves `env:VAR` references to their value. A missing variable resolves to
+ * `undefined` so the provider layer can report the failure clearly. Everything
+ * else is returned untouched, which keeps existing literal tokens working.
+ */
+export const resolveSecretReference = (value, env = process.env) => {
+	if (typeof value !== "string") return value;
+	const match = /^env:([A-Za-z_][A-Za-z0-9_]*)$/.exec(value.trim());
+	if (!match) return value;
+	const resolved = env[match[1]];
+	return typeof resolved === "string" && resolved.length > 0 ? resolved : undefined;
+};
+
+/** Deep copy of a config with every `env:VAR` secret reference resolved. */
+export const resolveConfigSecrets = (config, env = process.env) => {
+	if (Array.isArray(config)) return config.map((item) => resolveConfigSecrets(item, env));
+	if (!isPlainObject(config)) return resolveSecretReference(config, env);
+	const out = {};
+	for (const [key, value] of Object.entries(config)) {
+		out[key] = resolveConfigSecrets(value, env);
+	}
+	return out;
 };
 
 export const findProjectConfigPath = ({ cwd = process.cwd(), stopAt } = {}) => {
@@ -181,7 +211,9 @@ export const saveGlobalConfig = (config, options = {}) => {
 	const configPath = getGlobalConfigPath(options);
 	const base = defaultConfig();
 	const merged = deepMerge(base, isPlainObject(config) ? config : {});
-	writeJsonFile(configPath, merged);
+	// The global config can hold provider tokens: keep it owner-only, even when
+	// the file already existed with looser permissions.
+	writeJsonFile(configPath, merged, { mode: GLOBAL_CONFIG_MODE });
 	return { path: configPath, config: merged };
 };
 

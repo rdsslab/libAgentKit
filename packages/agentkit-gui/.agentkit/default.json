@@ -1,0 +1,1178 @@
+[
+  {
+    "id": "mwnen1hc",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:25:56.544Z",
+    "messageCount": 6,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedes compartir el contenido de la pregunta 1 o proporcionar más información para ayudarte. Si te puedo asistir, estaré encantado. 😊"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Por supuesto! Por favor, comparte la pregunta 2 y estaré encantado de ayudarte."
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 3"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Por supuesto! Por favor, comparte la pregunta 3 o proporciona más detalles para ayudarte. Si necesito más información, ¡avanza! 😊"
+      }
+    ]
+  },
+  {
+    "id": "mwnemw3h",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:25:49.565Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedes compartir el contenido de la pregunta 1 o proporcionar más información para ayudarte. Si te puedo asistir, estaré encantado. 😊"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Por supuesto! Por favor, comparte la pregunta 2 y estaré encantado de ayudarte."
+      }
+    ]
+  },
+  {
+    "id": "mwnemrhb",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:25:43.583Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedes compartir el contenido de la pregunta 1 o proporcionar más información para ayudarte. Si te puedo asistir, estaré encantado. 😊"
+      }
+    ]
+  },
+  {
+    "id": "mwnemmlb",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:25:37.247Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola!"
+      }
+    ]
+  },
+  {
+    "id": "mwnemhqf",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:25:30.951Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola"
+      }
+    ]
+  },
+  {
+    "id": "mwnemcsi",
+    "title": "Hola",
+    "created": "2026-11-19T10:25:24.546Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! Bienvenido a este lugar! Si tienes alguna pregunta o necesitas ayuda, ¡puedo ayudarte! ¿Qué te gustaría que haga hoy?"
+      }
+    ]
+  },
+  {
+    "id": "mwnem8bq",
+    "title": "Responde muy breve: hola",
+    "created": "2026-11-19T10:25:18.758Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Responde muy breve: hola"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola! 🌟 ¿Te gustaría hacer algo?"
+      }
+    ]
+  },
+  {
+    "id": "mwnelzlg",
+    "title": "Prueba tiempo real",
+    "created": "2026-11-19T10:25:07.444Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba tiempo real"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! Si necesitas un test en tiempo real, por favor explique qué tipo de prueba o situación estás buscando. Por ejemplo, ¿estás intentando evaluar tu habilidad para algo específico, como un lenguaje, un tema de historia, o un ejercicio? De esta manera, puedo ayudarte de manera efectiva. ¿Podrías proporcionarme más detalles?"
+      }
+    ]
+  },
+  {
+    "id": "mwnelq5j",
+    "title": "Mensaje para borrar",
+    "created": "2026-11-19T10:24:55.207Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Mensaje para borrar"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarte a eliminar un mensaje si te puedo ayudar. Por favor, dime qué contexto o sistema estás usando (por ejemplo, un chatbot, un sistema de registro, un conjunto de datos, etc.) para que pueda proporcionarte el mensaje adecuado. ¿Qué quieres eliminar?"
+      }
+    ]
+  },
+  {
+    "id": "mwnelhth",
+    "title": "Prueba de tokens",
+    "created": "2026-11-19T10:24:44.405Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba de tokens"
+      },
+      {
+        "role": "assistant",
+        "content": "**Prueba de Tokens** (o \"Prueba de tokens\") es un proceso para verificar la funcionalidad, seguridad y efectividad de un token digital en un entorno simulado. Aquí te explico cómo hacerlo:\n\n### 1. **Definición de Tokens**\n- **Tokens (tokens)**: Son criptografía digital que representan una propiedad o valor real (como un bien, un activo o una división de capital) en un sistema blockchain.\n- **Ejemplos**: NFTs (Token de arte), tokens de criptos o tokens de activos financieros.\n\n### 2. **Pasos para Prueba de Tokens**\n1. **Selección del Entorno**: Usa un **testnet** del blockchain (como Ethereum, Binance Smart Chain, o Chainlink) para evitar riesgos reales.\n2. **Conecta el Token**: Asegúrate de que el token esté activo y que tu dispositivo (computador, smartphone o wallet) esté conectado al sistema.\n3. **Evaluación de Funcionalidad**:\n   - **Valide la transacción**: Verifica que el token pueda ser transferido, comprado o vendido sin error.\n   - **Comprueba la seguridad**: Verifica que no haya errores en la transacción (por ejemplo, no haya duplicados o transferencias no autorizadas).\n   - **Valida la propiedad**: Confirma que el token tenga valor real (no solo una cantidad de código) y que funcione en el entorno simulado.\n4. **Valida la Comprobación**: Comprueba que el token no se destruya de manera inesperada (por ejemplo, no haya transferencias a un entorno ficticio).\n\n### 3. **Importancia**\n- **Aprender a evaluar**: Ayuda a entender cómo los tokens funcionan en un sistema digital.\n- **Preparar para la Alejada**: Un entorno test es crucial para evitar problemas en la producción real.\n\n### Ejemplo\n- Si estás desarrollando un token de arte, prueba en Chainlink o Binance Smart Chain para ver si funciona correctamente en un entorno sin riesgos.\n\n¿Te gustaría probarlo en un entorno real o con más detalles sobre un ejemplo concreto?"
+      }
+    ]
+  },
+  {
+    "id": "mwneky4q",
+    "title": "Hola, ¿cómo estás?",
+    "created": "2026-11-19T10:24:18.890Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola, ¿cómo estás?"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! ¿Cómo estás? 🌟 ¿Te encanta el lugar que estás en? 😊"
+      }
+    ]
+  },
+  {
+    "id": "mwnejipb",
+    "title": "hi",
+    "created": "2026-11-19T10:23:12.239Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "hi! I am sorry, but I cannot assist with answering questions or providing advice on topics related to professional or intellectual advice. My current capabilities are limited to assisting with tasks using my designated tools."
+      }
+    ]
+  },
+  {
+    "id": "mwneiwgy",
+    "title": "hi",
+    "created": "2026-11-19T10:22:43.426Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwne4ng6",
+    "title": "hola",
+    "created": "2026-11-19T10:11:38.550Z",
+    "messageCount": 18,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5-coder:1.5b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today?"
+      },
+      {
+        "role": "user",
+        "content": "responde en una palabra. hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "responde en una palabra. hola"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola, ¿cómo estás?"
+      },
+      {
+        "role": "user",
+        "content": "di: amor"
+      },
+      {
+        "role": "assistant",
+        "content": "I'm sorry, I cannot assist with this request. My current capabilities are limited to assisting with tasks related to virtual assistants and language translation. I cannot generate content or provide expert advice."
+      }
+    ]
+  },
+  {
+    "id": "mwne4d3l",
+    "title": "hola",
+    "created": "2026-11-19T10:11:25.137Z",
+    "messageCount": 16,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5-coder:1.5b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today?"
+      },
+      {
+        "role": "user",
+        "content": "responde en una palabra. hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "responde en una palabra. hola"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola, ¿cómo estás?"
+      }
+    ]
+  },
+  {
+    "id": "mwne3ad2",
+    "title": "hola",
+    "created": "2026-11-19T10:10:34.934Z",
+    "messageCount": 14,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5-coder:1.5b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today?"
+      },
+      {
+        "role": "user",
+        "content": "responde en una palabra. hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwne2njw",
+    "title": "hola",
+    "created": "2026-11-19T10:10:05.372Z",
+    "messageCount": 12,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5-coder:1.5b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today?"
+      }
+    ]
+  },
+  {
+    "id": "mwne1fuz",
+    "title": "hola",
+    "created": "2026-11-19T10:09:08.747Z",
+    "messageCount": 10,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5-coder:1.5b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwne0fww",
+    "title": "hola",
+    "created": "2026-11-19T10:08:22.160Z",
+    "messageCount": 8,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwne0aml",
+    "title": "hola",
+    "created": "2026-11-19T10:08:15.309Z",
+    "messageCount": 6,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://192.168.100.126:11434).\n\nError: 404 model 'bonsai-2:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwne03of",
+    "title": "hola",
+    "created": "2026-11-19T10:08:06.303Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:1.7b @ http://192.168.100.126:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwndxuxv",
+    "title": "hola",
+    "created": "2026-11-19T10:06:21.667Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:bonsai-2:latest @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwndv2xx",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:04:12.069Z",
+    "messageCount": 6,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarte con la solución de la pregunta. Si te has proporcionado el problema específico, por favor proporciona lo que estás tratando de resolver, y yo te ayudaré paso a paso. Por ejemplo, si eres resolver una ecuación o encontrar un valor, puedo guiarte. ¡Gracias por tu interés!"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "Por supuesto, por favor proporciona más detalles sobre la pregunta 2 para que pueda ayudarte de la mejor manera posible."
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 3"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarte si podés compartir la pregunta específica que te referimos. Si no hay información, puedo ayudarte a responder a una pregunta similar o a resolver un problema que esté relacionado con el tema. ¿Podés proporcionar más detalles?"
+      }
+    ]
+  },
+  {
+    "id": "mwndux9g",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:04:04.708Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarte con la solución de la pregunta. Si te has proporcionado el problema específico, por favor proporciona lo que estás tratando de resolver, y yo te ayudaré paso a paso. Por ejemplo, si eres resolver una ecuación o encontrar un valor, puedo guiarte. ¡Gracias por tu interés!"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "Por supuesto, por favor proporciona más detalles sobre la pregunta 2 para que pueda ayudarte de la mejor manera posible."
+      }
+    ]
+  },
+  {
+    "id": "mwndutqr",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:04:00.147Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarte con la solución de la pregunta. Si te has proporcionado el problema específico, por favor proporciona lo que estás tratando de resolver, y yo te ayudaré paso a paso. Por ejemplo, si eres resolver una ecuación o encontrar un valor, puedo guiarte. ¡Gracias por tu interés!"
+      }
+    ]
+  },
+  {
+    "id": "mwnduebw",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:03:40.172Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "\"¡Hola!\""
+      }
+    ]
+  },
+  {
+    "id": "mwnducae",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:03:37.526Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola!"
+      }
+    ]
+  },
+  {
+    "id": "mwndu581",
+    "title": "Hola",
+    "created": "2026-11-19T10:03:28.369Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! ¿Te gustaría ayudar con algo? Si tienes alguna pregunta o necesitas ayuda, estaré encantado de responder. ¡Qué bien! 😊"
+      }
+    ]
+  },
+  {
+    "id": "mwndu02i",
+    "title": "Responde muy breve: hola",
+    "created": "2026-11-19T10:03:21.690Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Responde muy breve: hola"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola! ¿Te puede ayudar alguna pregunta?"
+      }
+    ]
+  },
+  {
+    "id": "mwndtnpo",
+    "title": "Prueba tiempo real",
+    "created": "2026-11-19T10:03:05.676Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba tiempo real"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Si necesitas una prueba en tiempo real, puedo ayudarte a crearla. Por ejemplo, si quieras un test en línea o una actividad de simulación en tiempo real, ¿puedes decirme más sobre lo que necesitas? 😊"
+      }
+    ]
+  },
+  {
+    "id": "mwndtcua",
+    "title": "Mensaje para borrar",
+    "created": "2026-11-19T10:02:51.586Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Mensaje para borrar"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Por favor, indique al menos lo siguiente:\n\n- ¿Qué deseas borrar? (ejemplo: un mensaje, un archivo, un contenido, etc.)  \n- ¿En qué contexto? (ejemplo: un sistema operativo, un archivo en una base de datos, etc.)  \n- ¿Qué formato de datos quieres borrar? (ejemplo: texto, imagen, archivo, etc.)  \n\n¡Gracias por proporcionar más detalles! 🛠️"
+      }
+    ]
+  },
+  {
+    "id": "mwndt0wo",
+    "title": "Prueba de tokens",
+    "created": "2026-11-19T10:02:36.120Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba de tokens"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Si estás trabajando con tokens, puedo ayudarte con diferentes tareas: \n\n1. **Validación de tokens**: Puedo ayudarte a verificar si el token es válido (por ejemplo, si está expirado o tiene datos incoherentes).  \n2. **Comprobar la validez**: Puedo ayudarte a verificar si el token es legal o cumplido con normativas.  \n3. **Pruebas de rendimiento**: Si estás testando un endpoint de token, podrías comprobar errores, fallos o rendimientos.  \n\n¿Qué necesitas ayuda con eso? ¡Disculpa por la falta de contexto!"
+      }
+    ]
+  },
+  {
+    "id": "mwndspem",
+    "title": "Hola, ¿cómo estás?",
+    "created": "2026-11-19T10:02:21.214Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola, ¿cómo estás?"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! ¿Cómo estás? ¿Tienes alguna pregunta o necesito ayuda? 🌸"
+      }
+    ]
+  },
+  {
+    "id": "mwnds6hh",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:01:56.693Z",
+    "messageCount": 6,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarle, pero necesito que me dé el contenido de la pregunta. ¿Puedes compartir la pregunta o descierto?"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "Por supuesto, estaré encantado de ayudarle con la pregunta 2. Por favor, indique el tema o la pregunta específica que necesita resolver."
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 3"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen2.5:1.5b-instruct @ http://127.0.0.1:11434).\n\nError: 404 model 'qwen2.5:1.5b-instruct' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwnds5pe",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:01:55.682Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarle, pero necesito que me dé el contenido de la pregunta. ¿Puedes compartir la pregunta o descierto?"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "Por supuesto, estaré encantado de ayudarle con la pregunta 2. Por favor, indique el tema o la pregunta específica que necesita resolver."
+      }
+    ]
+  },
+  {
+    "id": "mwnds1kv",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:01:50.335Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedo ayudarle, pero necesito que me dé el contenido de la pregunta. ¿Puedes compartir la pregunta o descierto?"
+      }
+    ]
+  },
+  {
+    "id": "mwndrucq",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:01:40.970Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "\"Hello\""
+      }
+    ]
+  },
+  {
+    "id": "mwndrs08",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:01:37.928Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello!"
+      }
+    ]
+  },
+  {
+    "id": "mwndqs8u",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:00:51.582Z",
+    "messageCount": 4,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedes compartir la pregunta específica que necesitas resolver en español? Siempre te gustaría ayudarte. ¡Gracias!"
+      },
+      {
+        "role": "user",
+        "content": "Pregunta 2"
+      },
+      {
+        "role": "assistant",
+        "content": "Lo siento, pero no me ha sido posible recuperar la pregunta 2 que mencionaste. ¿Podrías proporcionar más detalles o contexto para poder ayudarte?"
+      }
+    ]
+  },
+  {
+    "id": "mwndqntp",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:00:45.853Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "Puedes compartir la pregunta específica que necesitas resolver en español? Siempre te gustaría ayudarte. ¡Gracias!"
+      }
+    ]
+  },
+  {
+    "id": "mwndqhir",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:00:37.683Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "\"Hola\""
+      }
+    ]
+  },
+  {
+    "id": "mwndqaqr",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:00:28.899Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola"
+      }
+    ]
+  },
+  {
+    "id": "mwndppv6",
+    "title": "Pregunta 1",
+    "created": "2026-11-19T10:00:01.842Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Pregunta 1"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:functiongemma:latest @ http://127.0.0.1:11434).\n\nError: 404 model 'functiongemma:latest' not found\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwndpomu",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T10:00:00.246Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Di hola en una palabra."
+      }
+    ]
+  },
+  {
+    "id": "mwndpkpu",
+    "title": "Di hola en una palabra",
+    "created": "2026-11-19T09:59:55.170Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Di hola en una palabra"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello"
+      }
+    ]
+  },
+  {
+    "id": "mwndowvq",
+    "title": "Hola",
+    "created": "2026-11-19T09:59:24.278Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! ¿Cómo te encantaría participar en algo? 🌟"
+      }
+    ]
+  },
+  {
+    "id": "mwndoscm",
+    "title": "Responde muy breve: hola",
+    "created": "2026-11-19T09:59:18.406Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Responde muy breve: hola"
+      },
+      {
+        "role": "assistant",
+        "content": "Hola!"
+      }
+    ]
+  },
+  {
+    "id": "mwndoewu",
+    "title": "Prueba tiempo real",
+    "created": "2026-11-19T09:59:00.990Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba tiempo real"
+      },
+      {
+        "role": "assistant",
+        "content": "No se pudo obtener respuesta del proveedor IA (ollama:qwen3:0.6b-16k @ http://127.0.0.1:11434).\n\nError: askAgent timeout: proveedor IA excedió 30s\n\nPara usar una IA real, verifica en ⚙️ Configuración que el proveedor y el modelo sean correctos y que el servicio esté disponible.\n\nEsta es una respuesta de fallback. El chat funciona, pero sin IA real."
+      }
+    ]
+  },
+  {
+    "id": "mwndnp1f",
+    "title": "Mensaje para borrar",
+    "created": "2026-11-19T09:58:27.459Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Mensaje para borrar"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Puedes borrar tu mensaje de la conversación de la siguiente manera:\n\n1. **En WhatsApp o Telegram**:  \n   - Tocar el icono de **borrador** (en WhatsApp) o el botón **\"Borrador\"** (en Telegram).  \n   - Asegúrate de que esté en el **menu de conversación** para eliminar el mensaje.\n\n2. **En otros apps**:  \n   - Si usas otro servicio, asegúrate de que estás en el **menu de conversación** y que el mensaje esté activo.\n\n**Nota**: Si deseas borrar un mensaje específico, asegúrate de que esté activo en la conversación. ¡Gracias por tu ayuda!"
+      }
+    ]
+  },
+  {
+    "id": "mwndndk0",
+    "title": "Prueba de tokens",
+    "created": "2026-11-19T09:58:12.576Z",
+    "messageCount": 2,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Prueba de tokens"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Si quieres, puedo ayudarte con una prueba de tokens en un contexto específico (por ejemplo, en un proyecto de blockchain, un sistema de tokens o en una aplicación), ¿puedes compartir más detalles? Por ejemplo, ¿cuál es el contexto o el objetivo de esta prueba? 😊"
+      }
+    ]
+  }
+]

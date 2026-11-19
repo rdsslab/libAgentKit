@@ -7,6 +7,33 @@ proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **TUI interactiva (`npm run tui`)** sobre el motor existente (`askAgent`), sin nuevo runtime: encabezado con `cwd`/rama reales, historial con scroll, editor multilínea, paleta `Ctrl+P` y comandos `/`, estados de turno, cancelación con `Esc`/`Ctrl+C`, restauración de terminal y guard de TTY (sin TTY sale con código 2 y mensaje plano).
+- **Ajustes editables desde la terminal**: proveedores (`ollama`, `openrouter`, `openai`, `openai-compatible`), modelo, base URL, token, modo, idioma, tema, capacidades, compactación y servidores MCP remotos (alta, edición, confianza y borrado). Guardado global (`0600`, tokens enmascarados o `env:VAR`) y guardado de proyecto (`stripSecrets()`).
+- **Dos temas**, claro y oscuro, y panel lateral opcional con uso, herramientas y archivos recientes.
+- **`@` para adjuntar archivos** dentro de `cwd` y aprobaciones/preguntas del motor resueltas desde la TUI.
+- **Streaming opcional**: `onTextDelta` en `askAgent`, `askIAWithProviderMCP` y adaptadores OpenAI-compatible/Anthropic/Google, con fallback a la ruta no-streaming. Sin callback, el camino embebido permanece intacto. `onToolStart`/`onToolFinish` son observadores adicionales.
+- **Nuevas suites**: `tui_test.js`, `tui_engine_test.js`, `streaming_test.js` y `tui_pty_test.js`; script `test:tui`.
+
+### Changed
+
+- `writeJsonFile` acepta `mode`; `saveGlobalConfig` escribe el config global con `0600`.
+- `src/index.js` exporta `GLOBAL_CONFIG_MODE`, `resolveSecretReference` y `resolveConfigSecrets`.
+
+### Notas
+
+- No se implementa gestión de agentes ni visor de diffs: quedan como solicitudes futuras en [issue #1](https://github.com/rdsslab/libAgentKit/issues/1) e [issue #2](https://github.com/rdsslab/libAgentKit/issues/2).
+- `Esc` aborta la petición al modelo; un hijo ya iniciado por `run_command` sigue sujeto a su propio timeout.
+
+### Verified
+
+- `npm test` (8/8 suites).
+
+---
+
 ## [0.4.0] - 2026-11-18
 
 ### Added

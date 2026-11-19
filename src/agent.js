@@ -43,6 +43,14 @@ const DEFAULT_MAX_TOOL_ROUNDS = 4;
 const DEFAULT_MAX_INJECTED_CONTEXT_CHARS = 12000;
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
 
+/** Observers are best-effort: a broken UI callback must never break a turn. */
+const notify = (callback, event) => {
+	if (typeof callback !== "function") return;
+	try {
+		callback(event);
+	} catch {}
+};
+
 const truncateInjectedText = (text, maxChars = DEFAULT_MAX_INJECTED_CONTEXT_CHARS, label = "context") => {
 	const value = typeof text === "string" ? text : String(text ?? "");
 	const limit = Number.isFinite(Number(maxChars)) && Number(maxChars) > 0 ? Number(maxChars) : DEFAULT_MAX_INJECTED_CONTEXT_CHARS;
@@ -220,6 +228,9 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  * @param {number} [options.maxToolRounds]
  * @param {boolean} [options.includeDiagnostics]
  * @param {AbortSignal} [options.signal]
+ * @param {(delta: string, meta: object) => void} [options.onTextDelta] Optional streaming callback. When absent the provider uses its non-streaming path.
+ * @param {(event: object) => void} [options.onToolStart] Optional tool-start notification.
+ * @param {(event: object) => void} [options.onToolFinish] Optional tool-finish notification.
  * @returns {Promise<{text: string, usedWeb: boolean, webQuery: string, webResults: Array, webSource: string|null, documents: Array, toolExecutions: Array, diagnostics: object}>}
  */
 export const askAgent = async ({
@@ -244,6 +255,9 @@ export const askAgent = async ({
 	interactive = false,
 	mode = "build",
 	onUserInputRequest,
+	onTextDelta,
+	onToolStart,
+	onToolFinish,
 	usage = true,
 } = {}) => {
 	if (!provider) {
@@ -554,6 +568,53 @@ export const askAgent = async ({
 	// Apply generic capability enforcement to all handlers.
 	const securedHandlers = applyCapabilitiesToToolHandlers(handlers, caps);
 
+	// Minimal presentation hooks. They observe the already-secured handlers and
+	// never change a tool's verdict, arguments or result.
+	const observedHandlers = (() => {
+		if (typeof onToolStart !== "function" && typeof onToolFinish !== "function") {
+			return securedHandlers;
+		}
+		const observed = {};
+		for (const [name, definition] of Object.entries(securedHandlers)) {
+			const fn = typeof definition === "function"
+				? definition
+				: (definition?.handler ?? definition?.run ?? definition?.execute);
+			if (typeof fn !== "function") {
+				observed[name] = definition;
+				continue;
+			}
+			const base = { tool: name, server: definition?.serverName || "local" };
+			const wrapped = async (args, context) => {
+				const startedAt = Date.now();
+				notify(onToolStart, { ...base, arguments: args });
+				try {
+					const result = await fn(args, context);
+					notify(onToolFinish, {
+						...base,
+						arguments: args,
+						ok: result?.ok !== false && result?.isError !== true,
+						durationMs: Date.now() - startedAt,
+						result,
+					});
+					return result;
+				} catch (error) {
+					notify(onToolFinish, {
+						...base,
+						arguments: args,
+						ok: false,
+						durationMs: Date.now() - startedAt,
+						error,
+					});
+					throw error;
+				}
+			};
+			observed[name] = typeof definition === "function"
+				? wrapped
+				: { ...definition, handler: wrapped };
+		}
+		return observed;
+	})();
+
 	const effectiveMcpServers = caps.mcp === false ? [] : mcpServers;
 
 	const hasTools = Object.keys(securedHandlers).length > 0;
@@ -582,8 +643,9 @@ export const askAgent = async ({
 	const result = await askIAWithProviderMCP({
 		provider: effectiveProvider,
 		mcpServers: effectiveMcpServers,
-		toolHandlers: securedHandlers,
+		toolHandlers: observedHandlers,
 		approveToolCall,
+		onTextDelta,
 		prompts: promptMessages,
 		images,
 		maxToolRounds,

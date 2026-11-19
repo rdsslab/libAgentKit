@@ -68,6 +68,7 @@ demand, the first time a provider is used or the first PDF is extracted.
 | `mcp` | MCP configuration: servers, transports, trust levels, config discovery. | none |
 | `agent` | `askAgent()` orchestration: pre-search, local tools, documents, one envelope. | loads `./ia` on demand |
 | `ia` | Provider layer: OpenAI-compatible family, Anthropic, Google GenAI, plus remote MCP servers (HTTP and stdio). | `openai`, `@anthropic-ai/sdk`, `@google/genai`, `@modelcontextprotocol/sdk` |
+| `tui` | Interactive terminal shell: history, menus, settings editor, themes and streaming. | `ink`, `react` |
 
 ### The provider layer is loaded on demand
 
@@ -80,6 +81,57 @@ import { askIAWithProviderMCP } from "@rdsslab/agentkit/ia";
 
 The provider is always explicit. This package never reads credentials from a database,
 from the environment or from a config file: you pass `{ provider, model, apiKey, baseUrl }`.
+The **TUI** is the only exception: it reads the global/project config files so settings
+can be edited from the terminal (see below). The library API stays explicit.
+
+## Interactive TUI
+
+```bash
+npm run tui          # from a real terminal (TTY)
+```
+
+The TUI uses the same `askAgent()` engine as the library; it does not add a second
+runtime. Without a TTY it exits with code 2 and a plain message instead of writing
+ANSI sequences into a pipe or log.
+
+**Layout.** Header with the real `cwd` (and git branch when available), scrollable
+history with minimal Markdown, a multiline editor, footer with turn state, and an
+optional side panel (usage, tool count, recent files). Only two themes exist:
+`dark` and `light`.
+
+**Keys**
+
+| Key | Action |
+| --- | --- |
+| `Enter` | Send the draft |
+| `Ctrl+J` / `Shift+Enter` | Newline inside the editor |
+| `Ctrl+P` or `/` (empty draft) | Command palette |
+| `/settings`, `/models`, `/help`, … | Slash commands (same registry as the palette) |
+| `Ctrl+S`, `Ctrl+M`, `Ctrl+T`, `Ctrl+N`, `Ctrl+H`, `Ctrl+B` | Settings, models, last tool, new session, help, side panel |
+| `@` | Attach a file from `cwd` (relative path only) |
+| `PgUp` / `PgDn`, `↑` / `↓` | Scroll history |
+| `Esc` | Close a menu, or interrupt the active turn |
+| `Ctrl+C` | Interrupt the turn; when idle, exit and restore the terminal |
+
+Tool approvals and agent questions appear inline: arrows select, `Enter` confirms,
+`1`–`9` picks an option, `Esc` rejects. The terminal tool is created with
+`cwd` and `allowedRoots: [cwd]`; a command already started keeps its own timeout,
+so `Esc` aborts the model call but does not kill that child process.
+
+**Settings** (`/settings` → `Enter`) are editable in the terminal and saved to disk:
+
+- provider preset (`ollama`, `openrouter`, `openai` or `openai-compatible`), model,
+  base URL and API token;
+- mode (`build`/`plan`), language, theme, capabilities and compaction;
+- remote MCP servers: add, edit name/URL, toggle trust, remove;
+- "Save global settings" and "Save project settings".
+
+The global file is `~/.config/agentkit/config.json` (or the platform equivalent) and
+is written with mode `0600`. Tokens are masked in the UI and may be stored as
+`env:NOMBRE_VAR` so the secret itself lives in the environment. Project config is
+shareable: `stripSecrets()` removes tokens and authorization headers before saving.
+There is no "OpenCode" preset: OpenCode-style endpoints are configured as generic
+`openai-compatible` with a custom base URL and token.
 
 ## Tools
 
@@ -104,6 +156,28 @@ const result = await askAgent({
 
 The envelope is always the same shape: `text`, `usedWeb`, `webQuery`, `webResults`,
 `documents`, `toolExecutions`, `hasTools` and (optionally) `diagnostics`.
+
+### Streaming (opt-in)
+
+`askAgent()` accepts an optional `onTextDelta(delta, meta)` observer. Without it,
+the provider uses exactly the same non-streaming request path as before, so an
+embedded deployment is unaffected.
+
+```js
+const answer = await askAgent({
+  provider: { provider: "ollama", model: "qwen3.5:4b", baseUrl: "http://127.0.0.1:11434" },
+  messages: [{ role: "user", content: "Escribe un poema corto" }],
+  onTextDelta: (delta) => process.stdout.write(delta),
+  onToolStart: (event) => console.error("tool", event.tool),
+  onToolFinish: (event) => console.error("done", event.tool, event.durationMs),
+});
+```
+
+Streaming is supported for the OpenAI-compatible family (including Ollama and
+OpenRouter), Anthropic and Google GenAI. A server that advertises but fails to
+deliver SSE is retried once without streaming. Observers are best-effort: a
+throwing callback never changes the answer. The TUI uses these hooks to render
+tokens as they arrive.
 
 ## Artifacts
 
@@ -257,6 +331,16 @@ internal move.
 - **v0.3** — MCP over stdio, a configuration file for servers and tools, per-server
   trust levels. *Done.*
 - **v1.0** — frozen public API.
+
+### Future work (not in this release)
+
+- Agent management in the TUI: named agents with their own instructions, tools,
+  model and history — [issue #1](https://github.com/rdsslab/libAgentKit/issues/1).
+- Read-only diff viewer (`/diff`) with file selection and attribution of changes —
+  [issue #2](https://github.com/rdsslab/libAgentKit/issues/2).
+
+Explicitly out of scope for the TUI in this release: `/diff` and patch panels, file
+undo/redo, tabs/subagents/background queues, shell `!` mode and external editors.
 
 ## License
 
