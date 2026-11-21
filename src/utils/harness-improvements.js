@@ -110,14 +110,46 @@ function temperaturaParaRetry(provider) {
   return 0.35;
 }
 
+function maxTokensDe(provider) {
+  const valor = Number(provider?.maxTokens ?? provider?.max_tokens);
+  return Number.isFinite(valor) && valor > 0 ? valor : null;
+}
+
+/**
+ * Post-procesamiento usado por el camino de calidad. La reparación es
+ * determinista y genérica; se activa salvo que el llamador la desactive
+ * explícitamente.
+ */
+function processingParaCalidad(askAgentOptions = {}, { taskType, lenguaje } = {}) {
+  const base = askAgentOptions.postProcess ?? askAgentOptions.responseProcessing;
+  const config = base === true ? { extractCodeBlocks: true } : (base && typeof base === "object" ? base : {});
+  return {
+    ...config,
+    repair: config.repair ?? config.repairResponse ?? true,
+    // Sin esta pista, askAgent infiere "chat" de prompts como "genera una
+    // función" y la reparación se salta justo en las tareas de código.
+    language: config.language || lenguaje || taskType || undefined,
+  };
+}
+
 /**
  * Un reintento con la misma semilla y la misma temperatura suele repetir el
  * error. Se baja la temperatura y se retira la semilla fija solo en reintentos.
+ * Si la salida se cortó por el límite de tokens, además se amplía ese límite:
+ * pedir lo mismo con el mismo techo reproduce el truncamiento.
  */
-function providerParaRetry(provider) {
+function providerParaRetry(provider, { truncado = false } = {}) {
   const siguiente = { ...provider, temperature: temperaturaParaRetry(provider) };
   delete siguiente.seed;
   delete siguiente.seed_alias;
+  if (truncado) {
+    const actual = maxTokensDe(provider);
+    if (actual) {
+      const ampliado = Math.min(Math.round(actual * 1.6), 16000);
+      siguiente.maxTokens = ampliado;
+      siguiente.max_tokens = ampliado;
+    }
+  }
   return siguiente;
 }
 
@@ -231,21 +263,35 @@ export async function enhancedAskAgent(options = {}) {
 
   // Paso 1: Enriquecer mensajes con system prompt y few-shot si se especifica taskType
   if (taskType && taskType !== 'chat') {
-    mensajes = enriquecerMensajes(mensajes, taskType, lenguaje, idiomaEfectivo);
+    // El idioma de las instrucciones y el de la respuesta se deciden con el
+    // mismo detecting: un prompt en inglés no debe pedir una respuesta en
+    // español solo porque el system prompt venga en inglés.
+    mensajes = enriquecerMensajes(mensajes, taskType, lenguaje, idiomaEfectivo, idiomaEfectivo);
     mejorasAplicadas.push(`system_prompt_${taskType}_${idiomaEfectivo}`);
     if (lenguaje) mejorasAplicadas.push(`fewshot_${lenguaje}`);
   }
+
+  const postProcessCalidad = processingParaCalidad(askAgentOptions, { taskType, lenguaje });
 
   // Paso 2: Llamada inicial
   let resultado = await askAgent({
     ...askAgentOptions,
     messages: mensajes,
     includeDiagnostics: true,
+    postProcess: postProcessCalidad,
   });
   intentos++;
 
   let texto = resultado.text;
   const diagnosticosIniciales = resultado.diagnostics || {};
+  let truncadoActual = Boolean(diagnosticosIniciales.respuestaTruncada?.length);
+  const reparacionesIniciales = diagnosticosIniciales.reparacionesAplicadas || [];
+  if (reparacionesIniciales.length) {
+    mejorasAplicadas.push(`reparacion_determinista:${reparacionesIniciales.join("+")}`);
+  }
+  if (truncadoActual) {
+    mejorasAplicadas.push(`truncamiento_detectado:${diagnosticosIniciales.respuestaTruncada.join("+")}`);
+  }
 
   // Paso 3: Auto-corrección si está habilitada y hay problemas.
   // Cada reintento se puntúa con el mismo validador y solo se acepta si
@@ -305,10 +351,17 @@ export async function enhancedAskAgent(options = {}) {
         ...askAgentOptions,
         messages: construirMensajesRetry(mensajes, promptCorreccion, contextoHerramientas),
         includeDiagnostics: true,
-        provider: providerParaRetry(askAgentOptions.provider),
+        postProcess: postProcessCalidad,
+        provider: providerParaRetry(askAgentOptions.provider, { truncado: truncadoActual }),
       });
       intentos++;
       intentosCorreccion++;
+
+      const diagnosticosRetry = resultadoRetry.diagnostics || {};
+      if (diagnosticosRetry.reparacionesAplicadas?.length) {
+        mejorasAplicadas.push(`reparacion_retry:${diagnosticosRetry.reparacionesAplicadas.join("+")}`);
+      }
+      truncadoActual = Boolean(diagnosticosRetry.respuestaTruncada?.length);
 
       const textoRetry = extractCodeBlock(resultadoRetry.text, lenguaje || undefined);
       const evaluacionRetry = await evaluarTexto({

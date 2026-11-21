@@ -1,0 +1,781 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T10:26:36.002Z",
+    "coreVersion": "0.4.0",
+    "commit": "6b822d1",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "web-complex",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "webComplex": {
+      "exito": true,
+      "bloquesCompletos": true,
+      "modoGeneracion": "por-archivo",
+      "deadlineAlcanzado": false,
+      "duracionMs": 36416,
+      "duracionTotalMs": 502090,
+      "duracionParedMs": 502149,
+      "faltantesFinales": [],
+      "llamadas": [
+        {
+          "archivo": "index.html",
+          "etiqueta": "html-index",
+          "ok": true,
+          "duracionMs": 36416,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1306,
+          "fences": 2,
+          "reparaciones": [],
+          "senalesTruncamiento": [],
+          "usage": {
+            "prompt_tokens": 346,
+            "completion_tokens": 413,
+            "total_tokens": 759,
+            "tokens_per_second": 11.41,
+            "timing_ms": 36209,
+            "context": {
+              "used_tokens": 759,
+              "limit_tokens": 16384,
+              "used_percent": 4.63,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": false
+        },
+        {
+          "archivo": "servicios.html",
+          "etiqueta": "html-servicios",
+          "ok": true,
+          "duracionMs": 45784,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1517,
+          "fences": 2,
+          "reparaciones": [],
+          "senalesTruncamiento": [],
+          "usage": {
+            "prompt_tokens": 335,
+            "completion_tokens": 504,
+            "total_tokens": 839,
+            "tokens_per_second": 11.01,
+            "timing_ms": 45782,
+            "context": {
+              "used_tokens": 839,
+              "limit_tokens": 16384,
+              "used_percent": 5.12,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": false
+        },
+        {
+          "archivo": "precios.html",
+          "etiqueta": "html-precios",
+          "ok": true,
+          "duracionMs": 22929,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 695,
+          "fences": 2,
+          "reparaciones": [],
+          "senalesTruncamiento": [],
+          "usage": {
+            "prompt_tokens": 340,
+            "completion_tokens": 245,
+            "total_tokens": 585,
+            "tokens_per_second": 10.69,
+            "timing_ms": 22928,
+            "context": {
+              "used_tokens": 585,
+              "limit_tokens": 16384,
+              "used_percent": 3.57,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": false
+        },
+        {
+          "archivo": "contacto.html",
+          "etiqueta": "html-contacto",
+          "ok": true,
+          "duracionMs": 25743,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 954,
+          "fences": 2,
+          "reparaciones": [],
+          "senalesTruncamiento": [],
+          "usage": {
+            "prompt_tokens": 342,
+            "completion_tokens": 278,
+            "total_tokens": 620,
+            "tokens_per_second": 10.8,
+            "timing_ms": 25742,
+            "context": {
+              "used_tokens": 620,
+              "limit_tokens": 16384,
+              "used_percent": 3.78,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": false
+        },
+        {
+          "archivo": "style.css",
+          "etiqueta": "css",
+          "ok": true,
+          "duracionMs": 49714,
+          "maxTokens": 1400,
+          "error": null,
+          "longitudTexto": 1517,
+          "fences": 2,
+          "reparaciones": [],
+          "senalesTruncamiento": [],
+          "usage": {
+            "prompt_tokens": 337,
+            "completion_tokens": 560,
+            "total_tokens": 897,
+            "tokens_per_second": 11.26,
+            "timing_ms": 49712,
+            "context": {
+              "used_tokens": 897,
+              "limit_tokens": 16384,
+              "used_percent": 5.47,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 1400,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": false
+        },
+        {
+          "archivo": "script.js",
+          "etiqueta": "js",
+          "ok": true,
+          "duracionMs": 122126,
+          "maxTokens": 1400,
+          "error": null,
+          "longitudTexto": 5762,
+          "fences": 2,
+          "reparaciones": [
+            "cola_incompleta_recortada",
+            "cerco_cerrado"
+          ],
+          "senalesTruncamiento": [
+            "cerco_sin_cerrar",
+            "identificador_repetido",
+            "declaracion_incompleta"
+          ],
+          "usage": {
+            "prompt_tokens": 351,
+            "completion_tokens": 1400,
+            "total_tokens": 1751,
+            "tokens_per_second": 11.46,
+            "timing_ms": 122122,
+            "context": {
+              "used_tokens": 1751,
+              "limit_tokens": 16384,
+              "used_percent": 10.69,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 1400,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": true
+        },
+        {
+          "archivo": "script.js",
+          "etiqueta": "js",
+          "ok": true,
+          "duracionMs": 199378,
+          "maxTokens": 2240,
+          "error": null,
+          "longitudTexto": 9070,
+          "fences": 2,
+          "reparaciones": [
+            "cerco_cerrado"
+          ],
+          "senalesTruncamiento": [
+            "cerco_sin_cerrar",
+            "llaves_sin_cerrar"
+          ],
+          "usage": {
+            "prompt_tokens": 377,
+            "completion_tokens": 2240,
+            "total_tokens": 2617,
+            "tokens_per_second": 11.24,
+            "timing_ms": 199375,
+            "context": {
+              "used_tokens": 2617,
+              "limit_tokens": 16384,
+              "used_percent": 15.97,
+              "estimated": false
+            },
+            "rounds": 1
+          },
+          "config": {
+            "model": "lfm3-omni:2b",
+            "baseUrl": "http://localhost:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 2240,
+            "timeoutMs": 329520,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path",
+          "truncado": true
+        }
+      ],
+      "respuestasPorLlamada": [
+        {
+          "archivo": "index.html",
+          "texto": "```html-index\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <header>\n    <nav>\n      <ul>\n        <li><a href=\"#\">Inicio</a></li>\n        <li><a href=\"#\">Servicios</a></li>\n        <li><a href=\"#\">Precios</a></li>\n        <li><a href=\"#\">Contacto</a></li>\n      </ul>\n    </nav>\n  </header>\n\n  <main>\n    <h1>Bienvenidos a Patitas Felices</h1>\n    <div class=\"hero\">\n      <div class=\"asymhero\">\n        <div class=\"hero-left\">\n          <h2>¡Bienvenidos a Patitas Felices!</h2>\n          <p>Nuestra clínica veterinaria ofrece un cuidado de alta calidad para tu animal.</p>\n        </div>\n        <div class=\"hero-right\">\n          <h2>Busca un veterinario</h2>\n          <a href=\"#\" class=\"cta-btn\">Buscar un veterinario</a>\n        </div>\n      </div>\n    </div>\n\n    <section class=\"testimonio\">\n      <h2>Testimonio</h2>\n      <p>“Patitas Felices nos ha hecho sentir más tranquilos con nuestro cuidado.” – Juan Pérez, dueño de un perro.</p>\n    </section>\n  </main>\n\n  <footer>\n    <p>&copy; 2024 Patitas Felices. Tous les droits reservés.</p>\n  </footer>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "servicios.html",
+          "texto": "```html-servicios\n<!-- servicios.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Servicios</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <header>\n    <h1>Patitas Felices</h1>\n    <nav class=\"sidebar\">\n      <ul>\n        <li><a href=\"#index\">Index</a></li>\n        <li><a href=\"#servicios\">Servicios</a></li>\n        <li><a href=\"#precios\">Precios</a></li>\n        <li><a href=\"#contacto\">Contacto</a></li>\n      </ul>\n    </nav>\n  </header>\n\n  <main>\n    <section id=\"index\">\n      <h2>Index</h2>\n      <p>Bienvenido a Patitas Felices. Aquí encontrará todo lo que necesita.</p>\n    </section>\n\n    <section id=\"servicios\">\n      <h2>Servicios</h2>\n      <ul>\n        <li><a href=\"#\">Atención Veterinaria</a></li>\n        <li><a href=\"#\">Vacunas</a></li>\n        <li><a href=\"#\">Exámenes</a></li>\n        <li><a href=\"#\">Alergias</a></li>\n        <li><a href=\"#\">Anestesia</a></li>\n        <li><a href=\"#\">Diagnósticos</a></li>\n        <li><a href=\"#\">Tratamientos</a></li>\n      </ul>\n    </section>\n\n    <section id=\"precios\">\n      <h2>Precios</h2>\n      <p>Los precios varían según el servicio y la ubicación.</p>\n    </section>\n\n    <section id=\"contacto\">\n      <h2>Contacto</h2>\n      <p>Para más información, contacte a patitasfelices@clinica.com o llame al 123-456-7890.</p>\n    </section>\n  </main>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "precios.html",
+          "texto": "```html-precios\n<!-- precios.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Precios</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <h1>Precios</h1>\n  <div class=\"prices-grid\">\n    <div class=\"price-card\">\n      <h2>Servicio de Alimentación</h2>\n      <p>Precio: $15.00</p>\n    </div>\n    <div class=\"price-card\">\n      <h2>Vacunas</h2>\n      <p>Precio: $25.00</p>\n    </div>\n    <div class=\"price-card\">\n      <h2>Examen Veterinario</h2>\n      <p>Precio: $40.00</p>\n    </div>\n  </div>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "contacto.html",
+          "texto": "```html-contacto\n<!-- contacto.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Contacto</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <form action=\"/contacto\" method=\"post\">\n    <label for=\"nombre\">Nombre:</label>\n    <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n\n    <label for=\"email\">Correo:</label>\n    <input type=\"email\" id=\"email\" name=\"email\" required>\n\n    <label for=\"telefono\">Teléfono:</label>\n    <input type=\"text\" id=\"telefono\" name=\"telefono\" required>\n\n    <label for=\"mensaje\">Mensaje:</label>\n    <textarea id=\"mensaje\" name=\"mensaje\" required></textarea>\n\n    <button type=\"submit\">Enviar</button>\n  </form>\n\n  <p>¡Hola! Estamos encantados de saludarles. Estamos aquí para atender sus necesidades veterinarias.</p>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "style.css",
+          "texto": "```css\n<!-- style.css -->\n:root {\n  --primary: #4CAF50;\n  --secondary: #FF9800;\n  --accent: #FF6384;\n  --bg: #f5f5f5;\n  --text: #333;\n  --card: #f9f9f9;\n}\n\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: Arial, sans-serif;\n  background: var(--bg);\n  color: var(--text);\n  line-height: 1.6;\n}\n\n.hero {\n  background: linear-gradient(135deg, var(--primary), var(--secondary));\n  color: white;\n  padding: 2rem;\n  text-align: center;\n}\n\n.hero h1 {\n  font-size: 3rem;\n  margin-bottom: 0.5rem;\n}\n\n.hero p {\n  font-size: 1.2rem;\n  margin-bottom: 1rem;\n}\n\n.section {\n  padding: 2rem;\n  background: var(--card);\n  border-radius: 8px;\n  box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n}\n\n.section h2 {\n  margin-top: 0;\n  font-size: 1.5rem;\n}\n\n.section p {\n  margin-bottom: 1rem;\n}\n\n.section ul {\n  list-style: none;\n  padding-left: 0;\n}\n\n.section li {\n  margin-bottom: 0.5rem;\n}\n\n.section a {\n  color: var(--accent);\n  text-decoration: none;\n  padding: 0.5rem 1rem;\n  border-radius: 4px;\n}\n\n.section a:hover {\n  text-decoration: underline;\n}\n\n@keyframes fadeIn {\n  from { opacity: 0; transform: translateY(10px); }\n  to { opacity: 1; transform: translateY(0); }\n}\n\n@media (max-width: 768px) {\n  .hero h1 {\n    font-size: 2rem;\n  }\n  .section {\n    padding: 1rem;\n  }\n}\n\n:focus-visible,\n:prefers-reduced-motion {\n  -webkit-focus-visible: outline 2px solid var(--accent);\n  -webkit-focus-visible: outline-offset 2px;\n  -moz-focus-visible: outline 2px solid var(--accent);\n  -moz-focus-visible: outline-offset 2px;\n}\n```"
+        },
+        {
+          "archivo": "script.js",
+          "texto": "```js\n<!-- script.js -->\n// Inicialización de hooks\ndataNavToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entry.target.focus();\n    }\n  });\n});\n\ndataThemeToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      document.documentElement.setAttribute('data-theme', entry.target.dataset.theme);\n    }\n  });\n});\n\ndataFaqToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.dataset.faq = 'Yes';\n    }\n  });\n});\n\ndataPriceToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.dataset.price = entry.target.dataset.price;\n    }\n  });\n});\n\ndataContacto = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.dataset.contacto = 'Yes';\n    }\n  });\n});\n\n// Validación de formulario\nfunction validarFormulario(form) {\n  const error = document.querySelector('form[error]');\n  if (error) {\n    error.textContent = 'Por favor, complete el formulario correctamente.';\n  }\n}\n\n// Manejo de eventos\ndocument.addEventListener('DOMContentLoaded', () => {\n  validarFormulario(document.querySelector('form'));\n});\n\n// Escritura a localStorage\nfunction guardarLocalStorage(key, valor) {\n  localStorage.setItem(key, valor);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarIntersectionObserver(observer) {\n  localStorage.setItem('intersectionObserver', JSON.stringify(observer));\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataTheme(theme) {\n  localStorage.setItem('data-theme', theme);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataFaq(faq) {\n  localStorage.setItem('data-faq', faq);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPrice(price) {\n  localStorage.setItem('data-price', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(contacto) {\n  localStorage.setItem('data-contacto', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(scroll) {\n  localStorage.setItem('data-scroll-progress', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal() {\n  localStorage.setItem('data-reveal', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgressToggle(scroll) {\n  localStorage.setItem('data-scroll-progress-toggle', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarRevealToggle() {\n  localStorage.setItem('data-reveal-toggle', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggleToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggleToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgressToggleToggle(scroll) {\n  localStorage.setItem('data-scroll-progress-toggle', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarRevealToggleToggle() {\n  localStorage.setItem('data-reveal-toggle', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggleToggleToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggleToggleToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgressToggleToggleToggle(scroll) {\n  localStorage.setItem('data-scroll-progress-toggle', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarRevealToggleToggleToggle() {\n  localStorage.setItem('data-reveal-toggle', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggleToggleToggleToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggleToggleToggleToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgressToggleToggleToggleToggle(scroll) {\n  localStorage.setItem('data-scroll-progress-toggle', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarRevealToggleToggleToggleToggle() {\n  localStorage.setItem('data-reveal-toggle', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggleToggleToggleToggleToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggleToggleToggleToggleToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgressToggleToggleToggleToggleToggle(scroll) {\n  localStorage.setItem('data-scroll-progress-toggle', scroll);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarRevealToggleToggleToggleToggleToggle() {\n  localStorage.setItem('data-reveal-toggle', 'Yes');\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggleToggleToggleToggleToggleToggle(price) {\n  localStorage.setItem('data-price-toggle', price);\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContactoToggleToggleToggleToggleToggleToggle(contacto) {\n  localStorage.setItem('data-contacto-toggle', contacto);\n}\n\n// Escritura a IntersectionObserver\n```"
+        },
+        {
+          "archivo": "script.js",
+          "texto": "```js\n<!-- script.js -->\n// Inicialización de hooks\ndataNavToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entry.target.focus();\n    }\n  });\n});\n\ndataThemeToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      document.documentElement.setAttribute('data-theme', entry.target.className);\n    }\n  });\n});\n\ndataFaqToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-faq', entry.target.className);\n    }\n  });\n});\n\ndataPriceToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-price', entry.target.className);\n    }\n  });\n});\n\ndataContacto = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-contacto', entry.target.className);\n    }\n  });\n});\n\n// Validación de formulario\nfunction validarFormulario(formulario) {\n  const error = document.querySelector('form[id=\"data-form-exito\"]');\n  if (error) {\n    error.validationFailed = 'Por favor, complete todos los campos del formulario';\n  }\n}\n\n// Manejo de eventos\ndocument.addEventListener('DOMContentLoaded', () => {\n  validarFormulario(document.querySelector('form[id=\"data-form-exito\"]'));\n});\n\n// Escritura a localStorage\nfunction guardarLocalStorage(data) {\n  localStorage.setItem('data-' + data, JSON.stringify(data));\n}\n\n// Escritura a screen\nfunction guardarScreen(data) {\n  document.body.style.background = data;\n}\n\n// Escritura a IntersectionObserver\nfunction guardarIntersectionObserver(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataThemeToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-theme', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataFaqToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-faq', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n```"
+        }
+      ],
+      "funcional": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 58,
+        "casos": [
+          {
+            "name": "paginas_entregadas",
+            "passed": true,
+            "detail": "4/4"
+          },
+          {
+            "name": "titulo_por_pagina",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "estructura_semantica",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "h1_unico",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "enlaza_assets",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "links_resueltos",
+            "passed": false,
+            "detail": "0 enlace(s)"
+          },
+          {
+            "name": "data_page_por_pagina",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "ids_referenciados_existen",
+            "passed": true,
+            "detail": "0 referencia(s)"
+          },
+          {
+            "name": "css_tokens",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_animaciones",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "css_responsive",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_focus_visible",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "js_hooks_testeables",
+            "passed": false,
+            "detail": "faltan: data-nav-toggle, data-theme-toggle, data-faq-toggle, data-price-toggle, data-mensual, data-anual"
+          },
+          {
+            "name": "js_tema_persistente",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "js_reveal_observer",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_fetch",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_eval",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_handlers_inline",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_recursos_externos",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "ejecucion_js",
+            "passed": false,
+            "detail": "Unexpected token ')'"
+          }
+        ],
+        "originalidad": {
+          "soportado": true,
+          "ok": false,
+          "puntuacion": 43,
+          "casos": [
+            {
+              "name": "css_animaciones",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "css_reduced_motion",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "css_clamp",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "html_svg_inline",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "no_lorem_ipsum",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_emoji",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_gradient_generico",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        },
+        "paginas": 4,
+        "dinamico": {
+          "soportado": true,
+          "ok": false,
+          "puntuacion": 0
+        }
+      },
+      "originalidad": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 43,
+        "casos": [
+          {
+            "name": "css_animaciones",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": false,
+            "detail": ""
+          }
+        ]
+      },
+      "bloquesEncontrados": [
+        "index.html",
+        "servicios.html",
+        "precios.html",
+        "contacto.html",
+        "style.css",
+        "script.js"
+      ],
+      "archivosEvaluados": {
+        "index.html": true,
+        "servicios.html": true,
+        "precios.html": true,
+        "contacto.html": true,
+        "style.css": true,
+        "script.js": true
+      },
+      "calidad": {
+        "index.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 81
+        },
+        "servicios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": false,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 75
+        },
+        "precios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": false,
+            "nav": false,
+            "main": false,
+            "footer": false,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 56
+        },
+        "contacto.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": false,
+            "nav": false,
+            "main": false,
+            "footer": false,
+            "title": true,
+            "h1Unico": false,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 56
+        },
+        "style.css": {
+          "checks": {
+            "body": true,
+            "hover": true,
+            "mediaQuery": true,
+            "variables": true,
+            "boxSizing": true,
+            "hexColor": true,
+            "transicion": false,
+            "noHTML": true,
+            "clamp": false,
+            "keyframes": false,
+            "mediaQueries": false,
+            "reducedMotion": true,
+            "focusVisible": true,
+            "tokens": true,
+            "texturaOGrano": false
+          },
+          "puntuacion": 67
+        },
+        "script.js": {
+          "checks": {
+            "eventListener": true,
+            "dom": true,
+            "funcion": true,
+            "validacion": false,
+            "noJQuery": true,
+            "noHTML": true,
+            "localStorage": true,
+            "observer": true,
+            "hooks": false,
+            "sinFetch": true,
+            "sinEval": true
+          },
+          "puntuacion": 52,
+          "sintaxis": {
+            "valida": false,
+            "error": "/tmp/agentkit-syntax-P2qIc4/snippet.mjs:143\nfunction guardarDataPriceToggle(observer) {\n^\n\nSyntaxError: Identifier 'guardarDataPriceToggle' has already been declared\n    at checkSyntax (node:internal/main/check_syntax:84:5)\n\nNode.js v24.21.0"
+          }
+        }
+      },
+      "puntuacionMedia": 65,
+      "codigo": {
+        "index.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <header>\n    <nav>\n      <ul>\n        <li><a href=\"#\">Inicio</a></li>\n        <li><a href=\"#\">Servicios</a></li>\n        <li><a href=\"#\">Precios</a></li>\n        <li><a href=\"#\">Contacto</a></li>\n      </ul>\n    </nav>\n  </header>\n\n  <main>\n    <h1>Bienvenidos a Patitas Felices</h1>\n    <div class=\"hero\">\n      <div class=\"asymhero\">\n        <div class=\"hero-left\">\n          <h2>¡Bienvenidos a Patitas Felices!</h2>\n          <p>Nuestra clínica veterinaria ofrece un cuidado de alta calidad para tu animal.</p>\n        </div>\n        <div class=\"hero-right\">\n          <h2>Busca un veterinario</h2>\n          <a href=\"#\" class=\"cta-btn\">Buscar un veterinario</a>\n        </div>\n      </div>\n    </div>\n\n    <section class=\"testimonio\">\n      <h2>Testimonio</h2>\n      <p>“Patitas Felices nos ha hecho sentir más tranquilos con nuestro cuidado.” – Juan Pérez, dueño de un perro.</p>\n    </section>\n  </main>\n\n  <footer>\n    <p>&copy; 2024 Patitas Felices. Tous les droits reservés.</p>\n  </footer>\n</body>\n</html>",
+        "servicios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Servicios</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <header>\n    <h1>Patitas Felices</h1>\n    <nav class=\"sidebar\">\n      <ul>\n        <li><a href=\"#index\">Index</a></li>\n        <li><a href=\"#servicios\">Servicios</a></li>\n        <li><a href=\"#precios\">Precios</a></li>\n        <li><a href=\"#contacto\">Contacto</a></li>\n      </ul>\n    </nav>\n  </header>\n\n  <main>\n    <section id=\"index\">\n      <h2>Index</h2>\n      <p>Bienvenido a Patitas Felices. Aquí encontrará todo lo que necesita.</p>\n    </section>\n\n    <section id=\"servicios\">\n      <h2>Servicios</h2>\n      <ul>\n        <li><a href=\"#\">Atención Veterinaria</a></li>\n        <li><a href=\"#\">Vacunas</a></li>\n        <li><a href=\"#\">Exámenes</a></li>\n        <li><a href=\"#\">Alergias</a></li>\n        <li><a href=\"#\">Anestesia</a></li>\n        <li><a href=\"#\">Diagnósticos</a></li>\n        <li><a href=\"#\">Tratamientos</a></li>\n      </ul>\n    </section>\n\n    <section id=\"precios\">\n      <h2>Precios</h2>\n      <p>Los precios varían según el servicio y la ubicación.</p>\n    </section>\n\n    <section id=\"contacto\">\n      <h2>Contacto</h2>\n      <p>Para más información, contacte a patitasfelices@clinica.com o llame al 123-456-7890.</p>\n    </section>\n  </main>\n</body>\n</html>",
+        "precios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Precios</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <h1>Precios</h1>\n  <div class=\"prices-grid\">\n    <div class=\"price-card\">\n      <h2>Servicio de Alimentación</h2>\n      <p>Precio: $15.00</p>\n    </div>\n    <div class=\"price-card\">\n      <h2>Vacunas</h2>\n      <p>Precio: $25.00</p>\n    </div>\n    <div class=\"price-card\">\n      <h2>Examen Veterinario</h2>\n      <p>Precio: $40.00</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "contacto.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Patitas Felices - Contacto</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n  <script src=\"script.js\" defer></script>\n</head>\n<body>\n  <form action=\"/contacto\" method=\"post\">\n    <label for=\"nombre\">Nombre:</label>\n    <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n\n    <label for=\"email\">Correo:</label>\n    <input type=\"email\" id=\"email\" name=\"email\" required>\n\n    <label for=\"telefono\">Teléfono:</label>\n    <input type=\"text\" id=\"telefono\" name=\"telefono\" required>\n\n    <label for=\"mensaje\">Mensaje:</label>\n    <textarea id=\"mensaje\" name=\"mensaje\" required></textarea>\n\n    <button type=\"submit\">Enviar</button>\n  </form>\n\n  <p>¡Hola! Estamos encantados de saludarles. Estamos aquí para atender sus necesidades veterinarias.</p>\n</body>\n</html>",
+        "style.css": ":root {\n  --primary: #4CAF50;\n  --secondary: #FF9800;\n  --accent: #FF6384;\n  --bg: #f5f5f5;\n  --text: #333;\n  --card: #f9f9f9;\n}\n\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: Arial, sans-serif;\n  background: var(--bg);\n  color: var(--text);\n  line-height: 1.6;\n}\n\n.hero {\n  background: linear-gradient(135deg, var(--primary), var(--secondary));\n  color: white;\n  padding: 2rem;\n  text-align: center;\n}\n\n.hero h1 {\n  font-size: 3rem;\n  margin-bottom: 0.5rem;\n}\n\n.hero p {\n  font-size: 1.2rem;\n  margin-bottom: 1rem;\n}\n\n.section {\n  padding: 2rem;\n  background: var(--card);\n  border-radius: 8px;\n  box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n}\n\n.section h2 {\n  margin-top: 0;\n  font-size: 1.5rem;\n}\n\n.section p {\n  margin-bottom: 1rem;\n}\n\n.section ul {\n  list-style: none;\n  padding-left: 0;\n}\n\n.section li {\n  margin-bottom: 0.5rem;\n}\n\n.section a {\n  color: var(--accent);\n  text-decoration: none;\n  padding: 0.5rem 1rem;\n  border-radius: 4px;\n}\n\n.section a:hover {\n  text-decoration: underline;\n}\n\n@keyframes fadeIn {\n  from { opacity: 0; transform: translateY(10px); }\n  to { opacity: 1; transform: translateY(0); }\n}\n\n@media (max-width: 768px) {\n  .hero h1 {\n    font-size: 2rem;\n  }\n  .section {\n    padding: 1rem;\n  }\n}\n\n:focus-visible,\n:prefers-reduced-motion {\n  -webkit-focus-visible: outline 2px solid var(--accent);\n  -webkit-focus-visible: outline-offset 2px;\n  -moz-focus-visible: outline 2px solid var(--accent);\n  -moz-focus-visible: outline-offset 2px;\n}",
+        "script.js": "// Inicialización de hooks\ndataNavToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entry.target.focus();\n    }\n  });\n});\n\ndataThemeToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      document.documentElement.setAttribute('data-theme', entry.target.className);\n    }\n  });\n});\n\ndataFaqToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-faq', entry.target.className);\n    }\n  });\n});\n\ndataPriceToggle = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-price', entry.target.className);\n    }\n  });\n});\n\ndataContacto = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isintersecting) {\n      document.documentElement.setAttribute('data-contacto', entry.target.className);\n    }\n  });\n});\n\n// Validación de formulario\nfunction validarFormulario(formulario) {\n  const error = document.querySelector('form[id=\"data-form-exito\"]');\n  if (error) {\n    error.validationFailed = 'Por favor, complete todos los campos del formulario';\n  }\n}\n\n// Manejo de eventos\ndocument.addEventListener('DOMContentLoaded', () => {\n  validarFormulario(document.querySelector('form[id=\"data-form-exito\"]'));\n});\n\n// Escritura a localStorage\nfunction guardarLocalStorage(data) {\n  localStorage.setItem('data-' + data, JSON.stringify(data));\n}\n\n// Escritura a screen\nfunction guardarScreen(data) {\n  document.body.style.background = data;\n}\n\n// Escritura a IntersectionObserver\nfunction guardarIntersectionObserver(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataThemeToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-theme', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataFaqToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-faq', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataContacto(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-contacto', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataScrollProgress(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        guardarLocalStorage(entry.target);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarReveal(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-reveal', entry.target.className);\n      }\n    }\n  });\n}\n\n// Escritura a IntersectionObserver\nfunction guardarDataPriceToggle(observer) {\n  observer.observe(document, {\n    entry: entry => {\n      if (entry.isintersecting) {\n        document.documentElement.setAttribute('data-price', entry.target.className);"
+      },
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "lfm3-omni:2b",
+        "baseUrl": "http://localhost:11434",
+        "taskType": "web-complex",
+        "presetTaskType": "web",
+        "maxTokens": 900,
+        "timeoutMs": 300000,
+        "temperature": 0.3,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 16384,
+        "toolChoice": null
+      }
+    }
+  }
+}

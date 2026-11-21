@@ -1,0 +1,95 @@
+:root {
+  --primary: #4CAF50;
+  --secondary: #FF9800;
+  --accent: #FF6384;
+  --bg: #f5f5f5;
+  --text: #333;
+  --card: #f9f9f9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.section {
+  padding: 2rem;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.section h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.section p {
+  margin-bottom: 1rem;
+}
+
+.section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.section li {
+  margin-bottom: 0.5rem;
+}
+
+.section a {
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.section a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .section {
+    padding: 1rem;
+  }
+}
+
+:focus-visible,
+:prefers-reduced-motion {
+  -webkit-focus-visible: outline 2px solid var(--accent);
+  -webkit-focus-visible: outline-offset 2px;
+  -moz-focus-visible: outline 2px solid var(--accent);
+  -moz-focus-visible: outline-offset 2px;
+}

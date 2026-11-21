@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T03:19:12.709Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "quality",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5-coder:3b",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p05_enhanced": {
+      "exito": true,
+      "duracionMs": 40235,
+      "intentos": 1,
+      "mejoras": [
+        "system_prompt_code_es",
+        "fewshot_javascript",
+        "validacion_ok_p100"
+      ],
+      "comportamiento": {
+        "soportado": true,
+        "ok": true,
+        "puntuacion": 100,
+        "casos": [
+          {
+            "name": "email_valido",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "email_con_punto_y_tag",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "sin_arroba",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "sin_dominio_punto",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "vacio",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "con_espacio",
+            "passed": true,
+            "detail": "devolvió false"
+          }
+        ]
+      },
+      "calidad": {
+        "checks": {
+          "tieneContenido": true,
+          "tieneComentarios": true,
+          "noPlaceholders": true,
+          "noExplicacion": true
+        },
+        "puntuacion": 100,
+        "sintaxis": {
+          "valida": true,
+          "error": null
+        },
+        "funcional": {
+          "soportado": true,
+          "ok": true,
+          "puntuacion": 100,
+          "casos": [
+            {
+              "name": "email_valido",
+              "passed": true,
+              "detail": "devolvió true"
+            },
+            {
+              "name": "email_con_punto_y_tag",
+              "passed": true,
+              "detail": "devolvió true"
+            },
+            {
+              "name": "sin_arroba",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "sin_dominio_punto",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "vacio",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "con_espacio",
+              "passed": true,
+              "detail": "devolvió false"
+            }
+          ]
+        }
+      },
+      "funcional": {
+        "soportado": true,
+        "ok": true,
+        "puntuacion": 100,
+        "casos": [
+          {
+            "name": "email_valido",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "email_con_punto_y_tag",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "sin_arroba",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "sin_dominio_punto",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "vacio",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "con_espacio",
+            "passed": true,
+            "detail": "devolvió false"
+          }
+        ]
+      },
+      "codigo": "function isValidEmail(email) {\n    // Expresión regular para validar un email básico\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    \n    // Comprueba si el email coincide con la expresión regular\n    return emailRegex.test(email);\n}",
+      "error": null
+    }
+  }
+}

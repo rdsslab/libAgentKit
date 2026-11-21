@@ -41,6 +41,7 @@ import {
 import { listOllamaModels } from "./ollama.js";
 import { compactMessages, shouldAutoCompact } from "./compaction.js";
 import { extractCodeBlock, detectRefusal, validateMinimumContent } from "./utils/response-cleaner.js";
+import { repararRespuesta } from "./utils/response-repair.js";
 import { normalizeToolArguments } from "./utils/tool-arguments.js";
 
 const DEFAULT_MAX_TOOL_ROUNDS = 4;
@@ -72,6 +73,7 @@ const normalizeResponseProcessing = (value, taskType) => {
 		extractCodeBlocks: false,
 		detectRefusal: true,
 		validateMinimumContent: true,
+		repair: false,
 	};
 
 	if (value === true) {
@@ -82,6 +84,7 @@ const normalizeResponseProcessing = (value, taskType) => {
 			extractCodeBlocks: false,
 			detectRefusal: false,
 			validateMinimumContent: false,
+			repair: false,
 		};
 	}
 
@@ -90,6 +93,7 @@ const normalizeResponseProcessing = (value, taskType) => {
 		extractCodeBlocks: config.extractCodeBlocks ?? config.extractCode ?? config.stripMarkdown ?? defaults.extractCodeBlocks,
 		detectRefusal: config.detectRefusal ?? defaults.detectRefusal,
 		validateMinimumContent: config.validateMinimumContent ?? defaults.validateMinimumContent,
+		repair: config.repair ?? config.repairResponse ?? defaults.repair,
 		language: config.language ?? (["code", "js", "javascript", "html", "css", "web"].includes(taskType) ? taskType : undefined),
 	};
 };
@@ -858,6 +862,18 @@ export const askAgent = async ({
 		taskType,
 	);
 	if (text) {
+		// Reparación determinista y genérica: cerrar cercos, quitar envolventes
+		// y recortar bucles de repetición antes de extraer código. No cambia el
+		// significado de la respuesta y evita gastar un reintento del modelo.
+		if (processing.repair) {
+			const reparado = repararRespuesta(text, { language: processing.language ?? taskType });
+			text = reparado.text;
+			if (isPlainObject(diagnostics)) {
+				if (reparado.reparaciones.length) diagnostics.reparacionesAplicadas = reparado.reparaciones;
+				if (reparado.truncado) diagnostics.respuestaTruncada = reparado.senales;
+			}
+		}
+
 		if (processing.extractCodeBlocks) {
 			const cleaned = extractCodeBlock(text, processing.language ?? taskType);
 			if (cleaned && cleaned.length > 0) {

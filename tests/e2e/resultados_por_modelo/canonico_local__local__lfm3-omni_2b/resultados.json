@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "fecha": "2026-11-21T03:16:29.286Z",
+    "fecha": "2026-11-21T10:45:27.736Z",
     "coreVersion": "0.4.0",
-    "commit": "67570fd",
+    "commit": "6b822d1",
     "node": "v24.21.0",
     "presets": [
       "chat",
@@ -23,9 +23,9 @@
   "pruebas": {
     "p01": {
       "exito": true,
-      "duracionMs": 11160,
-      "tokensPorSegundo": 4.11,
-      "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario interactivas y dinámicas. Sirve para construir aplicaciones web modernas y escalables sin necesidad de gestionar el estado del navegador manualmente.",
+      "duracionMs": 4094,
+      "tokensPorSegundo": 10.85,
+      "respuesta": "React es una biblioteca de JavaScript que permite crear componentes reutilizables y gestionar el estado de una aplicación. Sirve para simplificar el desarrollo de interfaces de usuario interactivas y modulares.",
       "error": null,
       "systemPromptEnviado": true,
       "config": {
@@ -47,7 +47,7 @@
       "exito": true,
       "ip": {
         "exito": true,
-        "duracionMs": 7216,
+        "duracionMs": 5558,
         "ipEsperada": "192.168.100.129",
         "herramientaLlamada": true,
         "herramientaOk": true,
@@ -69,7 +69,7 @@
         ],
         "intentos": [
           {
-            "duracionMs": 7216,
+            "duracionMs": 5558,
             "exito": true,
             "toolChoiceForzado": false,
             "error": null
@@ -82,7 +82,7 @@
           "taskType": "tools",
           "presetTaskType": "chat",
           "maxTokens": 384,
-          "timeoutMs": 154489,
+          "timeoutMs": 120000,
           "temperature": 0.7,
           "top_p": 0.9,
           "top_k": 40,
@@ -93,7 +93,7 @@
       },
       "web": {
         "exito": true,
-        "duracionMs": 13324,
+        "duracionMs": 11592,
         "datoEsperado": "Quito",
         "herramientaLlamada": true,
         "herramientaOk": true,
@@ -111,14 +111,14 @@
             "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
           },
           {
-            "title": "Ecuador - Wikipedia, la enciclopedia libre",
-            "url": "https://es.wikipedia.org/wiki/Ecuador",
-            "snippet": "La capital de Ecuador es Quito. Su ciudad más poblada es Guayaquil."
-          },
-          {
             "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
             "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
-            "snippet": "La capital del Ecuador es Quito, en la provincia del Pichincha. Tiene 2850 m s. n. m de altitud."
+            "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+          },
+          {
+            "title": "Ecuador - Wikipedia, la enciclopedia libre",
+            "url": "https://es.wikipedia.org/wiki/Ecuador",
+            "snippet": "Ecuador , a oficialmente República del Ecuador , b es un país soberano ubicado en la región noroccidental de América del Sur. Está constituido como un Estado social, democrático, de derecho y plurinacional, cuya forma de gobierno es la de una república presidencialista, unitaria y descentralizada. ..."
           }
         ],
         "ejecuciones": [
@@ -140,14 +140,14 @@
                   "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
                 },
                 {
-                  "title": "Ecuador - Wikipedia, la enciclopedia libre",
-                  "url": "https://es.wikipedia.org/wiki/Ecuador",
-                  "snippet": "La capital de Ecuador es Quito. Su ciudad más poblada es Guayaquil."
-                },
-                {
                   "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
                   "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
-                  "snippet": "La capital del Ecuador es Quito, en la provincia del Pichincha. Tiene 2850 m s. n. m de altitud."
+                  "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+                },
+                {
+                  "title": "Ecuador - Wikipedia, la enciclopedia libre",
+                  "url": "https://es.wikipedia.org/wiki/Ecuador",
+                  "snippet": "Ecuador , a oficialmente República del Ecuador , b es un país soberano ubicado en la región noroccidental de América del Sur. Está constituido como un Estado social, democrático, de derecho y plurinacional, cuya forma de gobierno es la de una república presidencialista, unitaria y descentralizada. ..."
                 }
               ],
               "note": "",
@@ -157,7 +157,7 @@
         ],
         "intentos": [
           {
-            "duracionMs": 13324,
+            "duracionMs": 11592,
             "exito": true,
             "toolChoiceForzado": false,
             "error": null
@@ -170,7 +170,7 @@
           "taskType": "tools",
           "presetTaskType": "chat",
           "maxTokens": 384,
-          "timeoutMs": 199739,
+          "timeoutMs": 120000,
           "temperature": 0.7,
           "top_p": 0.9,
           "top_k": 40,
@@ -189,30 +189,30 @@
       "turnos": [
         {
           "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
-          "respuesta": "Hola María, ¡me alegra conocerte! Patitas Felices suena como un nombre muy cariñoso para una clínica. ¿En qué puedo ayudarte hoy?",
+          "respuesta": "Hola María, ¡me alegra conocerte! Patitas Felices suena como un nombre muy cariñoso para una clínica veterinaria. ¿En qué puedo ayudarte hoy?",
           "exito": true,
-          "duracionMs": 4168,
+          "duracionMs": 4154,
           "error": null
         },
         {
           "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
-          "respuesta": "¡Perfecto! Esa es una amplia gama de servicios. ¿Qué tipo de consulta o caso tienes en mente hoy?",
+          "respuesta": "¡Perfecto! Esa es una amplia gama de servicios. ¿Hay algo en particular que necesites hoy?",
           "exito": true,
-          "duracionMs": 3759,
+          "duracionMs": 3708,
           "error": null
         },
         {
           "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
           "respuesta": "¡Claro! Mi nombre es María y mi clínica se llama Patitas Felices.",
           "exito": true,
-          "duracionMs": 3164,
+          "duracionMs": 3352,
           "error": null
         },
         {
           "usuario": "¿Qué servicios ofrecemos en la clínica?",
           "respuesta": "Ofrecemos consultas, cirugías y hospitalización para perros, gatos, aves y conejos.",
           "exito": true,
-          "duracionMs": 4432,
+          "duracionMs": 4112,
           "error": null
         }
       ]
@@ -242,7 +242,7 @@
       "salidas": {
         "javascript": {
           "exito": true,
-          "duracionMs": 5281,
+          "duracionMs": 5494,
           "calidad": {
             "checks": {
               "tieneContenido": true,
@@ -299,7 +299,7 @@
         },
         "python": {
           "exito": true,
-          "duracionMs": 10958,
+          "duracionMs": 10083,
           "calidad": {
             "checks": {
               "tieneContenido": true,
@@ -338,7 +338,7 @@
     },
     "p06": {
       "exito": true,
-      "duracionMs": 53833,
+      "duracionMs": 57393,
       "continuacion": null,
       "funcional": {
         "soportado": true,
@@ -414,15 +414,15 @@
         "css": {
           "checks": {
             "body": true,
-            "hover": false,
+            "hover": true,
             "mediaQuery": true,
             "variables": true,
-            "boxSizing": false,
+            "boxSizing": true,
             "hexColor": true,
             "transicion": false,
             "noHTML": true
           },
-          "puntuacion": 63
+          "puntuacion": 88
         },
         "js": {
           "checks": {
@@ -440,13 +440,13 @@
           }
         }
       },
-      "puntuacionMedia": 79,
+      "puntuacionMedia": 87,
       "codigo": {
-        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Consultar</button>\n    </form>\n</body>\n</html>",
-        "css": ":root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: var(--text-color);\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    font-weight: bold;\n}\n\ninput {\n    padding: 10px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: var(--primary-color);\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}",
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"post\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Solicitar Consulta</button>\n    </form>\n</body>\n</html>",
+        "css": ":root {\n    --color-primary: #4CAF50;\n    --color-secondary: #f44336;\n    --color-accent: #FF9800;\n}\n\n* {\n    box-sizing: border-box;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: #333;\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    display: block;\n    margin-bottom: 5px;\n}\n\ninput {\n    padding: 8px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: #4CAF50;\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\nbutton:hover {\n    background-color: #45a049;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}",
         "js": "document.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value;\n        const edad = document.getElementById('edad').value;\n        const contacto = document.getElementById('contacto').value;\n\n        if (nombre && edad && contacto) {\n            alert(`¡Hola, ${nombre}! A ${edad} años. Contacto: ${contacto}`);\n        } else {\n            alert('Por favor, complete todos los campos.');\n        }\n    });\n});"
       },
-      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Consultar</button>\n    </form>\n</body>\n</html>\n```\n\n```css\n:root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: var(--text-color);\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    font-weight: bold;\n}\n\ninput {\n    padding: 10px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: var(--primary-color);\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}\n```\n\n```js\ndocument.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value;\n        const edad = document.getElementById('edad').value;\n        const contacto = document.getElementById('contacto').value;\n\n        if (nombre && edad && contacto) {\n            alert(`¡Hola, ${nombre}! A ${edad} años. Contacto: ${contacto}`);\n        } else {\n            alert('Por favor, complete todos los campos.');\n        }\n    });\n});\n```",
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"post\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Solicitar Consulta</button>\n    </form>\n</body>\n</html>\n```\n\n```css\n:root {\n    --color-primary: #4CAF50;\n    --color-secondary: #f44336;\n    --color-accent: #FF9800;\n}\n\n* {\n    box-sizing: border-box;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: #333;\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    display: block;\n    margin-bottom: 5px;\n}\n\ninput {\n    padding: 8px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: #4CAF50;\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\nbutton:hover {\n    background-color: #45a049;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}\n```\n\n```js\ndocument.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value;\n        const edad = document.getElementById('edad').value;\n        const contacto = document.getElementById('contacto').value;\n\n        if (nombre && edad && contacto) {\n            alert(`¡Hola, ${nombre}! A ${edad} años. Contacto: ${contacto}`);\n        } else {\n            alert('Por favor, complete todos los campos.');\n        }\n    });\n});\n```",
       "error": null,
       "systemPromptEnviado": true
     }

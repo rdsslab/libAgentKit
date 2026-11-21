@@ -1,0 +1,527 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T05:09:00.903Z",
+    "coreVersion": "0.4.0",
+    "commit": "6b822d1",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "web-complex",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5-coder:3b",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "webComplex": {
+      "exito": false,
+      "bloquesCompletos": true,
+      "duracionMs": 300408,
+      "duracionTotalMs": 855137,
+      "faltantes": [
+        "index.html",
+        "servicios.html",
+        "precios.html",
+        "contacto.html",
+        "style.css",
+        "script.js"
+      ],
+      "faltantesFinales": [],
+      "continuaciones": [
+        {
+          "archivo": "index.html",
+          "etiqueta": "html-index",
+          "ok": true,
+          "duracionMs": 86877,
+          "maxTokens": 900,
+          "error": null
+        },
+        {
+          "archivo": "servicios.html",
+          "etiqueta": "html-servicios",
+          "ok": true,
+          "duracionMs": 115903,
+          "maxTokens": 900,
+          "error": null
+        },
+        {
+          "archivo": "precios.html",
+          "etiqueta": "html-precios",
+          "ok": true,
+          "duracionMs": 77926,
+          "maxTokens": 900,
+          "error": null
+        },
+        {
+          "archivo": "contacto.html",
+          "etiqueta": "html-contacto",
+          "ok": true,
+          "duracionMs": 78541,
+          "maxTokens": 900,
+          "error": null
+        },
+        {
+          "archivo": "style.css",
+          "etiqueta": "css",
+          "ok": true,
+          "duracionMs": 41987,
+          "maxTokens": 1400,
+          "error": null
+        },
+        {
+          "archivo": "script.js",
+          "etiqueta": "js",
+          "ok": true,
+          "duracionMs": 153495,
+          "maxTokens": 1400,
+          "error": null
+        }
+      ],
+      "funcional": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 64,
+        "casos": [
+          {
+            "name": "paginas_entregadas",
+            "passed": true,
+            "detail": "4/4"
+          },
+          {
+            "name": "titulo_por_pagina",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "estructura_semantica",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "h1_unico",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "enlaza_assets",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "links_resueltos",
+            "passed": false,
+            "detail": "0 enlace(s)"
+          },
+          {
+            "name": "data_page_por_pagina",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "ids_referenciados_existen",
+            "passed": false,
+            "detail": "faltan: name, message"
+          },
+          {
+            "name": "css_tokens",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_animaciones",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_responsive",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_focus_visible",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "js_hooks_testeables",
+            "passed": false,
+            "detail": "faltan: data-mensual, data-anual"
+          },
+          {
+            "name": "js_tema_persistente",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "js_reveal_observer",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_fetch",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_eval",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_handlers_inline",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_recursos_externos",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "ejecucion_js",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "dom_ready",
+            "passed": true,
+            "detail": "1 listener(s) de arranque"
+          },
+          {
+            "name": "eventos_registrados",
+            "passed": true,
+            "detail": "click=4 submit=1 keydown=0"
+          },
+          {
+            "name": "nav_toggle",
+            "passed": false,
+            "detail": "aria-expanded=false"
+          },
+          {
+            "name": "theme_toggle",
+            "passed": false,
+            "detail": "tema=claro"
+          },
+          {
+            "name": "faq_toggle",
+            "passed": false,
+            "detail": "aria-expanded=false"
+          },
+          {
+            "name": "price_toggle",
+            "passed": false,
+            "detail": "los importes no cambiaron"
+          },
+          {
+            "name": "formulario_rechaza_invalido",
+            "passed": false,
+            "detail": "Cannot read properties of null (reading 'value')"
+          },
+          {
+            "name": "formulario_acepta_valido",
+            "passed": false,
+            "detail": "Cannot read properties of null (reading 'value')"
+          },
+          {
+            "name": "reveal_observer",
+            "passed": true,
+            "detail": "1 elemento(s) observados"
+          },
+          {
+            "name": "scroll_progress",
+            "passed": false,
+            "detail": "la barra no cambió"
+          }
+        ],
+        "originalidad": {
+          "soportado": true,
+          "ok": false,
+          "puntuacion": 71,
+          "casos": [
+            {
+              "name": "css_animaciones",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "css_reduced_motion",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "css_clamp",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "html_svg_inline",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "no_lorem_ipsum",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_emoji",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_gradient_generico",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        "paginas": 4,
+        "dinamico": {
+          "soportado": true,
+          "ok": false,
+          "puntuacion": 36
+        }
+      },
+      "originalidad": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 71,
+        "casos": [
+          {
+            "name": "css_animaciones",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": true,
+            "detail": ""
+          }
+        ]
+      },
+      "bloquesEncontrados": [
+        "index.html",
+        "servicios.html",
+        "precios.html",
+        "contacto.html",
+        "style.css",
+        "script.js"
+      ],
+      "archivosEvaluados": {
+        "index.html": true,
+        "servicios.html": true,
+        "precios.html": true,
+        "contacto.html": true,
+        "style.css": true,
+        "script.js": true
+      },
+      "calidad": {
+        "index.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 88
+        },
+        "servicios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 88
+        },
+        "precios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": false,
+            "nav": false,
+            "main": false,
+            "footer": false,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 63
+        },
+        "contacto.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": false,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 88
+        },
+        "style.css": {
+          "checks": {
+            "body": true,
+            "hover": false,
+            "mediaQuery": true,
+            "variables": true,
+            "boxSizing": false,
+            "hexColor": true,
+            "transicion": false,
+            "noHTML": true,
+            "clamp": false,
+            "keyframes": true,
+            "mediaQueries": true,
+            "reducedMotion": true,
+            "focusVisible": true,
+            "tokens": true,
+            "svgInline": false
+          },
+          "puntuacion": 67
+        },
+        "script.js": {
+          "checks": {
+            "eventListener": true,
+            "dom": true,
+            "funcion": false,
+            "validacion": true,
+            "noJQuery": true,
+            "noHTML": true,
+            "localStorage": true,
+            "observer": true,
+            "hooks": true,
+            "sinFetch": true,
+            "sinEval": true
+          },
+          "puntuacion": 91,
+          "sintaxis": {
+            "valida": true,
+            "error": null
+          }
+        }
+      },
+      "puntuacionMedia": 81,
+      "codigo": {
+        "index.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Inicio | Mi Sitio Web</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header data-page=\"index\">\n        <nav>\n            <ul>\n                <li><a href=\"#home\">Inicio</a></li>\n                <li><a href=\"#about\">Nosotros</a></li>\n                <li><a href=\"#services\">Servicios</a></li>\n                <li><a href=\"#contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n\n    <main>\n        <section id=\"hero\" class=\"hero\">\n            <div class=\"hero-content\">\n                <h1>¡Bienvenidos a Mi Sitio Web!</h1>\n                <marquee behavior=\"scroll\" direction=\"left\">Nuestro servicio está en constante crecimiento...</marquee>\n            </div>\n        </section>\n\n        <section id=\"testimonials\" class=\"testimonials\">\n            <h2>Testimonios</h2>\n            <div class=\"testimonial\">\n                <p>\"¡Excelente servicio! Estoy muy satisfecho con la calidad de su trabajo.\"</p>\n                <cite>Cliente Satisfecho</cite>\n            </div>\n        </section>\n\n        <section id=\"cta\" class=\"cta\">\n            <h2>¡Contáctanos!</h2>\n            <p>¿Tienes alguna pregunta? Estamos aquí para ayudarte.</p>\n            <a href=\"#contact\" class=\"btn\">Contáctanos</a>\n        </section>\n    </main>\n\n    <footer>\n        <p>&copy; 2023 Mi Sitio Web. Todos los derechos reservados.</p>\n    </footer>\n\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "servicios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Servicios</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body data-page=\"servicios\">\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#inicio\">Inicio</a></li>\n                <li><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"inicio\">\n            <h1>Bienvenido a nuestra página</h1>\n            <p>Nosotros ofrecemos una amplia gama de servicios para ayudarte a resolver tus necesidades.</p>\n        </section>\n        <section id=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li><a href=\"#servicio1\">Servicio 1</a></li>\n                <li><a href=\"#servicio2\">Servicio 2</a></li>\n                <li><a href=\"#servicio3\">Servicio 3</a></li>\n                <li><a href=\"#servicio4\">Servicio 4</a></li>\n            </ul>\n        </section>\n        <section id=\"servicio1\">\n            <h3>Servicio 1</h3>\n            <p>Descripción del servicio 1.</p>\n        </section>\n        <section id=\"servicio2\">\n            <h3>Servicio 2</h3>\n            <p>Descripción del servicio 2.</p>\n        </section>\n        <section id=\"servicio3\">\n            <h3>Servicio 3</h3>\n            <p>Descripción del servicio 3.</p>\n        </section>\n        <section id=\"servicio4\">\n            <h3>Servicio 4</h3>\n            <p>Descripción del servicio 4.</p>\n        </section>\n        <section id=\"contacto\">\n            <h2>Contacto</h2>\n            <p>Si tienes alguna pregunta o necesitas más información, ponte en contacto con nosotros.</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Nuestro Sitio Web. Todos los derechos reservados.</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "precios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Precios</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body data-page=\"precios\">\n    <div class=\"container\">\n        <h1>Precios</h1>\n        <div class=\"plan\">\n            <h2>Plan Mensual</h2>\n            <p data-mensual=\"100\">Precio Mensual: $100</p>\n            <p data-anual=\"1200\">Precio Anual: $1200</p>\n            <button data-price-toggle=\"mensual\">Ver más</button>\n        </div>\n        <div class=\"plan\">\n            <h2>Plan Anual</h2>\n            <p data-mensual=\"120\">Precio Mensual: $120</p>\n            <p data-anual=\"1440\">Precio Anual: $1440</p>\n            <button data-price-toggle=\"anual\">Ver más</button>\n        </div>\n        <div class=\"plan\">\n            <h2>Plan Premium</h2>\n            <p data-mensual=\"150\">Precio Mensual: $150</p>\n            <p data-anual=\"1800\">Precio Anual: $1800</p>\n            <button data-price-toggle=\"premium\">Ver más</button>\n        </div>\n    </div>\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "contacto.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Contacto</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body data-page=\"contacto\">\n    <header>\n        <h1>Contacto</h1>\n    </header>\n    <main>\n        <form id=\"data-contacto\" action=\"#\" method=\"post\">\n            <div>\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n            </div>\n            <div>\n                <label for=\"email\">Email:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n            </div>\n            <div>\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n            </div>\n            <div>\n                <label for=\"mensaje\">Mensaje:</label>\n                <textarea id=\"mensaje\" name=\"mensaje\" rows=\"4\" required></textarea>\n            </div>\n            <div>\n                <button type=\"submit\">Enviar</button>\n            </div>\n        </form>\n        <div id=\"data-form-exito\" style=\"display: none;\">\n            <p>¡Gracias por tu mensaje!</p>\n        </div>\n    </main>\n    <footer>\n        <p>Dirección: Calle 123, Ciudad</p>\n        <p>Horarios: Lunes a Viernes de 9:00 a 18:00</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "style.css": ":root {\n  --primary-color: #007bff;\n  --secondary-color: #6c757d;\n  --white: #fff;\n  --black: #000;\n}\n\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n@keyframes slideIn {\n  from {\n    transform: translateX(-100%);\n  }\n  to {\n    transform: translateX(0);\n  }\n}\n\n@media (max-width: 768px) {\n  body {\n    font-size: 16px;\n  }\n}\n\n@media (min-width: 769px) {\n  body {\n    font-size: 18px;\n  }\n}\n\n:focus-visible {\n  outline: 2px solid var(--primary-color);\n  outline-offset: 2px;\n}\n\n@media (prefers-reduced-motion: reduce) {\n  animation: none;\n}",
+        "script.js": "document.addEventListener('DOMContentLoaded', function() {\n  // Data attributes for toggling\n  const navToggle = document.querySelectorAll('[data-nav-toggle]');\n  const themeToggle = document.querySelectorAll('[data-theme-toggle]');\n  const faqToggle = document.querySelectorAll('[data-faq-toggle]');\n  const priceToggle = document.querySelectorAll('[data-price-toggle]');\n  const contactoToggle = document.querySelectorAll('[data-contacto]');\n  const formExitoToggle = document.querySelectorAll('[data-form-exito]');\n  const scrollProgressToggle = document.querySelectorAll('[data-scroll-progress]');\n  const revealToggle = document.querySelectorAll('[data-reveal]');\n\n  // Toggle functionality\n  navToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-nav-toggle'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  themeToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-theme-toggle'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  faqToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-faq-toggle'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  priceToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-price-toggle'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  contactoToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-contacto'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  formExitoToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-form-exito'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  scrollProgressToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-scroll-progress'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  revealToggle.forEach(toggle => toggle.addEventListener('click', function() {\n    const target = document.querySelector(toggle.getAttribute('data-reveal'));\n    if (target) {\n      target.classList.toggle('active');\n    }\n  }));\n\n  // LocalStorage functionality\n  const theme = localStorage.getItem('theme');\n  if (theme) {\n    document.body.classList.add(theme);\n  }\n\n  // IntersectionObserver for scroll progress\n  const observer = new IntersectionObserver((entries) => {\n    entries.forEach(entry => {\n      if (entry.isIntersecting) {\n        document.body.classList.add('scrolling');\n      } else {\n        document.body.classList.remove('scrolling');\n      }\n    });\n  }, { threshold: 0.5 });\n\n  observer.observe(document.querySelector('body'));\n\n  // Form validation\n  const form = document.querySelector('form');\n  form.addEventListener('submit', function(event) {\n    event.preventDefault();\n    const name = document.getElementById('name').value;\n    const email = document.getElementById('email').value;\n    const message = document.getElementById('message').value;\n\n    if (name === '' || email === '' || message === '') {\n      alert('Por favor, complete todos los campos.');\n    } else {\n      alert('Formulario enviado correctamente!');\n      form.reset();\n      formExitoToggle.forEach(toggle => toggle.click());\n    }\n  });\n});"
+      },
+      "respuestaCruda": "",
+      "error": "Request was aborted.",
+      "systemPromptEnviado": false,
+      "config": {
+        "model": "qwen2.5-coder:3b",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "web-complex",
+        "timeoutMs": 300000
+      }
+    }
+  }
+}

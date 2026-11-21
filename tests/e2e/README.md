@@ -15,7 +15,17 @@ node tests/e2e/run_canonical.mjs --suite=remote --models=lfm3-omni:latest
 node tests/e2e/run_canonical.mjs --suite=tools --output=RESUMEN_CANONICO_TOOLS.md
 node tests/e2e/run_canonical.mjs --suite=idioma
 node tests/e2e/run_canonical.mjs --suite=quality
+node tests/e2e/run_canonical.mjs --suite=web-complex --models=qwen2.5-coder:3b
 ```
+
+La suite `web-complex` usa el prompt de `prompts/landing_multipagina.md`:
+4 páginas + CSS + JS, animaciones, diseño no genérico y validación funcional
+con DOM simulado. No sustituye a P06; sus artefactos van en carpetas
+`canonico_web-complex__*`. La rúbrica y los hallazgos están en
+`prompts/landing_multipagina_evaluacion.md`; el resumen comparativo de los dos
+modelos probados, en `RESUMEN_CANONICO_WEB_COMPLEX.md`. Por defecto genera un
+archivo por llamada; `--web-generacion=monolitico` conserva el modo de estrés
+original.
 
 Las carpetas numeradas y los `run_*.mjs` anteriores se conservan como
 referencia histórica; para reportes nuevos usa el runner canónico.

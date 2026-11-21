@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="contacto">
+    <header>
+        <h1>Contacto</h1>
+    </header>
+    <main>
+        <form id="data-contacto" action="#" method="post">
+            <div>
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div>
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required>
+            </div>
+            <div>
+                <label for="mensaje">Mensaje:</label>
+                <textarea id="mensaje" name="mensaje" rows="4" required></textarea>
+            </div>
+            <div>
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
+        <div id="data-form-exito" style="display: none;">
+            <p>¡Gracias por tu mensaje!</p>
+        </div>
+    </main>
+    <footer>
+        <p>Dirección: Calle 123, Ciudad</p>
+        <p>Horarios: Lunes a Viernes de 9:00 a 18:00</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

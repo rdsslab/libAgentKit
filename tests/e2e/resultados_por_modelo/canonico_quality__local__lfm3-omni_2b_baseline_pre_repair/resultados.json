@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T03:19:12.709Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "quality",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "p05_enhanced": {
+      "exito": true,
+      "duracionMs": 11994,
+      "intentos": 2,
+      "mejoras": [
+        "system_prompt_code_es",
+        "fewshot_javascript",
+        "reintento_descartado_1"
+      ],
+      "comportamiento": {
+        "soportado": true,
+        "ok": true,
+        "puntuacion": 100,
+        "casos": [
+          {
+            "name": "email_valido",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "email_con_punto_y_tag",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "sin_arroba",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "sin_dominio_punto",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "vacio",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "con_espacio",
+            "passed": true,
+            "detail": "devolvió false"
+          }
+        ]
+      },
+      "calidad": {
+        "checks": {
+          "tieneContenido": true,
+          "tieneComentarios": false,
+          "noPlaceholders": true,
+          "noExplicacion": true
+        },
+        "puntuacion": 75,
+        "sintaxis": {
+          "valida": true,
+          "error": null
+        },
+        "funcional": {
+          "soportado": true,
+          "ok": true,
+          "puntuacion": 100,
+          "casos": [
+            {
+              "name": "email_valido",
+              "passed": true,
+              "detail": "devolvió true"
+            },
+            {
+              "name": "email_con_punto_y_tag",
+              "passed": true,
+              "detail": "devolvió true"
+            },
+            {
+              "name": "sin_arroba",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "sin_dominio_punto",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "vacio",
+              "passed": true,
+              "detail": "devolvió false"
+            },
+            {
+              "name": "con_espacio",
+              "passed": true,
+              "detail": "devolvió false"
+            }
+          ]
+        }
+      },
+      "funcional": {
+        "soportado": true,
+        "ok": true,
+        "puntuacion": 100,
+        "casos": [
+          {
+            "name": "email_valido",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "email_con_punto_y_tag",
+            "passed": true,
+            "detail": "devolvió true"
+          },
+          {
+            "name": "sin_arroba",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "sin_dominio_punto",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "vacio",
+            "passed": true,
+            "detail": "devolvió false"
+          },
+          {
+            "name": "con_espacio",
+            "passed": true,
+            "detail": "devolvió false"
+          }
+        ]
+      },
+      "codigo": "function isValidEmail(email) {\n    const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return regex.test(email);\n}",
+      "error": null
+    }
+  }
+}

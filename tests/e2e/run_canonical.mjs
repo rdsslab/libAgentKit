@@ -3,7 +3,7 @@
  *
  * - P01 respuesta, P02 herramientas (IP local + búsqueda web real), P03
  *   coherencia (con historial real), P04 compaction real, P05 código,
- *   P06 landing page.
+ *   P06 landing page; suite `web-complex` con 4 páginas + CSS/JS.
  * - Enforcea responseTimeout en el provider y con AbortSignal.
  * - Envía el system prompt del preset (ahora consumido por askAgent).
  * - Guarda artefactos y metadata de modelo/core por modelo.
@@ -16,6 +16,8 @@
  *   node tests/e2e/run_canonical.mjs --suite=idioma
  *   node tests/e2e/run_canonical.mjs --suite=quality
  *   node tests/e2e/run_canonical.mjs --suite=tools --offline
+ *   node tests/e2e/run_canonical.mjs --suite=web-complex --models=qwen2.5-coder:3b
+ *   node tests/e2e/run_canonical.mjs --suite=web-complex --web-generacion=monolitico
  */
 
 import { askAgent } from "../../src/agent.js";
@@ -23,13 +25,24 @@ import { getModelConfig, MODEL_PRESETS } from "../../src/config/presets.js";
 import { getSystemPromptES, getSystemPromptEN } from "../../src/utils/system-prompts-en.js";
 import { enhancedAskAgent } from "../../src/utils/harness-improvements.js";
 import {
+  blockForPath,
+  blockTagForPath,
   blocksByLanguage,
+  blocksByPath,
+  fenceBalance,
   firstBlock,
   mergeBlocks,
+  mergePathBlocks,
   missingBlockLanguages,
+  missingBlockPaths,
+  MULTIPAGE_BLOCKS,
   sanitizeToolName,
 } from "../utils/e2e-helpers.js";
-import { validateCodeBehavior, validateLandingWiring } from "../utils/code-behavior.js";
+import {
+  validateCodeBehavior,
+  validateLandingWiring,
+  validateMultiPage,
+} from "../utils/code-behavior.js";
 import { validateSyntax } from "../../src/utils/syntax-validator.js";
 
 import fs from "node:fs/promises";
@@ -47,6 +60,9 @@ const REMOTE_URL = "http://192.168.100.126:11434";
 // `--offline` sustituye DuckDuckGo por un fixture; se fija antes de ejecutar.
 let OFFLINE = false;
 let PROVIDER_OVERRIDE = null;
+// `por-archivo` evita la llamada monolítica de 300 s que no devolvió ningún
+// bloque en la primera corrida real. `monolitico` queda como modo de estrés.
+let WEB_GENERACION = "por-archivo";
 
 const SUITES = {
   local: [
@@ -70,6 +86,11 @@ const SUITES = {
     { label: "remoto", model: "lfm3-omni:latest", baseUrl: REMOTE_URL },
     { label: "remoto", model: "qwen2.5-coder:3b", baseUrl: REMOTE_URL },
   ],
+  "web-complex": [
+    { label: "local", model: "lfm3-omni:2b", baseUrl: LOCAL_URL },
+    { label: "remoto", model: "qwen2.5-coder:3b", baseUrl: REMOTE_URL },
+    { label: "remoto", model: "lfm3-omni:latest", baseUrl: REMOTE_URL },
+  ],
 };
 
 const TIMEOUT_BASE = {
@@ -78,12 +99,17 @@ const TIMEOUT_BASE = {
   longContext: 120000,
   code: 150000,
   web: 180000,
+  "web-complex": 300000,
 };
 
 const MAX_TOKENS = {
-  local: { chat: 512, tools: 384, longContext: 768, code: 700, web: 1200 },
-  remoto: { chat: 256, tools: 256, longContext: 384, code: 450, web: 600 },
+  local: { chat: 512, tools: 384, longContext: 768, code: 700, web: 1200, "web-complex": 6000 },
+  remoto: { chat: 256, tools: 256, longContext: 384, code: 450, web: 600, "web-complex": 4000 },
 };
+
+// Techo por archivo en la continuación de la suite multipágina. Pedir los seis
+// bloques de una vez con un solo límite era lo que producía truncamientos.
+const MAX_TOKENS_POR_BLOQUE = { html: 900, css: 1400, js: 1400 };
 
 const parseArgs = () => {
   const args = process.argv.slice(2);
@@ -96,6 +122,7 @@ const parseArgs = () => {
     models: get("models", null),
     output: get("output", "RESUMEN_CANONICO.md"),
     provider: get("provider", null),
+    webGeneracion: get("web-generacion", "por-archivo"),
     offline: args.includes("--offline"),
   };
 };
@@ -191,6 +218,69 @@ const scoreThreeFiles = (scores) => Math.round(
   [scores.html, scores.css, scores.js].reduce((sum, item) => sum + (item?.puntuacion || 0), 0) / 3,
 );
 
+/** Puntuación de una página de la suite multipágina (sin exigir formulario). */
+function scoreMultiPageHTML(text) {
+  return scoreChecks({
+    doctype: /<!DOCTYPE\s+html>/i.test(text),
+    html: /<html[^>]*>/i.test(text),
+    head: /<head[^>]*>/i.test(text),
+    body: /<body[^>]*>/i.test(text),
+    header: /<header/i.test(text),
+    nav: /<nav/i.test(text),
+    main: /<main/i.test(text),
+    footer: /<footer/i.test(text),
+    title: /<title[^>]*>[\s\S]+?<\/title>/i.test(text),
+    h1Unico: (text.match(/<h1\b/gi) || []).length === 1,
+    dataPage: /data-page\s*=\s*["'][^"']+["']/i.test(text),
+    linkCSS: /style\.css/i.test(text),
+    linkJS: /script\.js/i.test(text),
+    accesible: /aria-|role=|<label/i.test(text),
+    cssSeparado: !/<style\b/i.test(text),
+    jsSeparado: !/<script\b/i.test(text),
+  });
+}
+
+function scoreCSSMulti(text) {
+  return scoreChecks({
+    ...scoreCSS(text).checks,
+    clamp: /clamp\s*\(/i.test(text),
+    keyframes: (text.match(/@keyframes/gi) || []).length >= 2,
+    mediaQueries: (text.match(/@media/gi) || []).length >= 2,
+    reducedMotion: /prefers-reduced-motion/i.test(text),
+    focusVisible: /:focus-visible/.test(text),
+    tokens: (text.match(/--[\w-]+\s*:/g) || []).length >= 4,
+    texturaOGrano: /stroke\s*=\s*["']currentColor["']/i.test(text) || /repeating-linear-gradient/i.test(text),
+  });
+}
+
+async function scoreJSMulti(text) {
+  const checks = scoreChecks({
+    eventListener: /addEventListener/.test(text),
+    dom: /getElementById|querySelector/.test(text),
+    funcion: /function\s+\w+|const\s+\w+\s*=\s*\([^)]*\)\s*=>/.test(text),
+    validacion: /validity|checkValidity|preventDefault|trim\(/.test(text),
+    noJQuery: !/\$\s*\(|jQuery/.test(text),
+    noHTML: !/<!DOCTYPE|<html/i.test(text),
+    localStorage: /localStorage/.test(text),
+    observer: /IntersectionObserver/.test(text),
+    hooks: ["data-nav-toggle", "data-theme-toggle", "data-faq-toggle", "data-price-toggle", "data-contacto"]
+      .every((hook) => text.includes(hook)),
+    sinFetch: !/\bfetch\s*\(/.test(text),
+    sinEval: !/\beval\s*\(|new\s+Function\s*\(/.test(text),
+  });
+  const syntax = await validateSyntax(text, "javascript");
+  return {
+    ...checks,
+    sintaxis: syntax.supported ? { valida: syntax.valid, error: syntax.error } : { valida: null, motivo: syntax.error },
+    puntuacion: Math.max(0, checks.puntuacion - (syntax.valid === false ? 30 : 0)),
+  };
+}
+
+const scoreSixFiles = (scores) => Math.round(
+  Object.values(scores).reduce((sum, item) => sum + (item?.puntuacion || 0), 0)
+  / Object.keys(scores).length,
+);
+
 const normalizeToolExecutions = (executions = []) => (Array.isArray(executions) ? executions : []).map((execution) => ({
   tool: execution.toolAlias || execution.toolName || "unknown_tool",
   toolName: execution.toolName || execution.toolAlias || null,
@@ -271,6 +361,10 @@ async function callAgent({
         messages: [...history, { role: "user", content: prompt }],
         capabilities: effectiveCapabilities,
         includeDiagnostics: true,
+        // Capacidad genérica del harness: reparar cercos/envolventes/recortes
+        // antes de puntuar. Se pasa el tipo de tarea canónico (web, code, chat…)
+        // para que la reparación solo opere cuando se espera código.
+        postProcess: { repair: true, language: presetTaskType || taskType },
         autoCompact,
         signal: controller.signal,
         tools,
@@ -283,6 +377,7 @@ async function callAgent({
 
     const duracionMs = Date.now() - started;
     const usage = result?.usage || result?.diagnosticos?.usage || null;
+    const diagnosticos = result?.diagnostics || result?.diagnosticos || {};
     const toolExecutions = normalizeToolExecutions(
       result?.diagnostics?.toolExecutions || result?.toolExecutions,
     );
@@ -290,6 +385,11 @@ async function callAgent({
       ok: true,
       duracionMs,
       texto: result?.text || "",
+      // Señales genéricas del harness: permiten reintentar un corte aunque la
+      // reparación determinista haya cerrado el cerco y permita extraer bloque.
+      truncado: Boolean(diagnosticos.respuestaTruncada?.length),
+      senalesTruncamiento: diagnosticos.respuestaTruncada || [],
+      reparaciones: diagnosticos.reparacionesAplicadas || [],
       usage,
       tokensPorSegundo: usage?.tokens_per_second || null,
       compaction: result?.compaction || result?.diagnosticos?.compaction || null,
@@ -801,6 +901,197 @@ No incluyas explicaciones fuera de los bloques.`;
   };
 }
 
+async function loadMultipagePrompt() {
+  const contenido = await fs.readFile(path.join(SCRIPT_DIR, "prompts/landing_multipagina.md"), "utf8");
+  const marcador = "## PROMPT";
+  const indice = contenido.indexOf(marcador);
+  return (indice >= 0 ? contenido.slice(indice + marcador.length) : contenido).trim();
+}
+
+const REQUISITOS_BLOQUE = {
+  "index.html": "DOCTYPE, header/nav/main/footer, h1 único, hero asimétrico, marquesina, testimonio y CTA; data-page=\"index\"; enlaces a style.css y script.js",
+  "servicios.html": "DOCTYPE, 4 fichas de servicios e índice lateral; data-page=\"servicios\"; enlaces a style.css y script.js",
+  "precios.html": "DOCTYPE, 3 planes con data-mensual/data-anual y data-price-toggle; data-page=\"precios\"; enlaces a style.css y script.js",
+  "contacto.html": "DOCTYPE, form data-contacto con los cinco campos, data-form-exito, horarios y dirección; data-page=\"contacto\"; enlaces a style.css y script.js",
+  "style.css": ":root con al menos 4 tokens, clamp(), 2 @keyframes, 2 @media, :focus-visible y prefers-reduced-motion",
+  "script.js": "vanilla; hooks data-nav-toggle/data-theme-toggle/data-faq-toggle/data-price-toggle/data-contacto/data-form-exito/data-scroll-progress/data-reveal; localStorage, IntersectionObserver y validación de formulario",
+};
+
+const tipoBloque = (filePath) => (filePath.endsWith(".css") ? "css" : filePath.endsWith(".js") ? "js" : "html");
+
+const CONTEXTO_MULTIPAGINA = "Contexto: landing de «Patitas Felices», clínica veterinaria. "
+  + "Cuatro páginas (index, servicios, precios, contacto) comparten style.css y script.js.";
+
+/** Prompt corto y explícito: el prompt completo de 6 bloques inducía a truncar. */
+const instruccionArchivo = (filePath, etiqueta, reintento = false) => [
+  CONTEXTO_MULTIPAGINA,
+  `Devuelve ÚNICAMENTE el contenido completo de ${filePath}.`,
+  `Usa un bloque Markdown etiquetado como \`${etiqueta}\`.`,
+  `La primera línea dentro del bloque debe ser el comentario \`<!-- ${filePath} -->\`.`,
+  `Requisitos: ${REQUISITOS_BLOQUE[filePath]}.`,
+  `Empieza la respuesta con \`\`\`${etiqueta}\` y termínala con \`\`\`; sin texto antes ni después, sin explicaciones y sin otros archivos.`,
+  ...(reintento
+    ? ["IMPORTANTE: tu respuesta anterior quedó cortada. Genera el archivo entero y CIERRA el bloque con ```."]
+    : []),
+].join("\n");
+
+// Tope de pared para la suite: seis llamadas de 420 s cada una daban corridas
+// de 25 min. Si se alcanza, los archivos no intentados se marcan como omitidos
+// por el harness (no como fallo del modelo).
+const DEADLINE_WEBCOMPLEX_MS = 900000;
+
+async function runWebComplex(target, policy) {
+  const iniciado = Date.now();
+  const deadline = iniciado + DEADLINE_WEBCOMPLEX_MS;
+  const promptCompleto = await loadMultipagePrompt();
+  const timeoutInicial = policy.get(target.model, {
+    maxTokens: MAX_TOKENS[target.label]["web-complex"],
+  });
+  const llamadas = [];
+  const respuestasPorLlamada = [];
+  const bloques = {};
+
+  const registrar = (archivo, etiqueta, resultado, maxTokens) => {
+    const texto = resultado.texto || "";
+    const entrada = {
+      archivo,
+      etiqueta,
+      ok: resultado.ok,
+      duracionMs: resultado.duracionMs,
+      maxTokens,
+      error: resultado.error || null,
+      longitudTexto: texto.length,
+      fences: fenceBalance(texto),
+      reparaciones: resultado.reparaciones || [],
+      senalesTruncamiento: resultado.senalesTruncamiento || [],
+      usage: resultado.usage || null,
+      config: resultado.config,
+      systemPromptEnviado: Boolean(resultado.systemPrompt),
+      bloqueExtraido: false,
+    };
+    llamadas.push(entrada);
+    if (texto) respuestasPorLlamada.push({ archivo, texto });
+    return entrada;
+  };
+
+  const generarArchivo = async (filePath) => {
+    const etiqueta = blockTagForPath(filePath);
+    const maxTokens = MAX_TOKENS_POR_BLOQUE[tipoBloque(filePath)];
+    let maxTokensIntento = maxTokens;
+    let mejorCodigo = null;
+    let mejorTruncado = true;
+    for (let intento = 1; intento <= 2; intento += 1) {
+      if (Date.now() > deadline) break;
+      const resultado = await callAgent({
+        target,
+        taskType: "web-complex",
+        presetTaskType: "web",
+        prompt: instruccionArchivo(filePath, etiqueta, intento === 2),
+        timeoutMs: policy.get(target.model, { maxTokens: maxTokensIntento }),
+        maxTokensOverride: maxTokensIntento,
+      });
+      const entrada = registrar(filePath, etiqueta, resultado, maxTokensIntento);
+      if (resultado.ok) {
+        policy.record(target.model, resultado.duracionMs, resultado.tokensPorSegundo);
+      }
+      const extraido = blockForPath(resultado.texto, filePath);
+      entrada.bloqueExtraido = extraido.completo;
+      entrada.fuenteBloque = extraido.fuente;
+      const truncado = resultado.truncado || fenceBalance(resultado.texto) % 2 === 1;
+      entrada.truncado = truncado;
+
+      // Se conserva la versión completa antes que la truncada; entre dos
+      // completas, la más larga. El reintento no puede empeorar el resultado.
+      if (extraido.code && (
+        !mejorCodigo
+        || (mejorTruncado && !truncado)
+        || (mejorTruncado === truncado && extraido.code.length > mejorCodigo.length)
+      )) {
+        mejorCodigo = extraido.code;
+        mejorTruncado = truncado;
+        bloques[filePath] = mejorCodigo;
+      }
+
+      if (intento === 2 || (!truncado && resultado.ok)) break;
+      // Un reintento tras un corte con el mismo techo reproduce el corte.
+      maxTokensIntento = Math.round(maxTokensIntento * 1.6);
+    }
+  };
+
+  // Modo de estrés: una única respuesta con los seis bloques. En la primera
+  // corrida real agotó 300 s sin entregar ninguno; por eso no es el default.
+  if (WEB_GENERACION === "monolitico") {
+    const resultado = await callAgent({
+      target,
+      taskType: "web-complex",
+      presetTaskType: "web",
+      prompt: promptCompleto,
+      timeoutMs: timeoutInicial,
+    });
+    const entrada = registrar(null, null, resultado, MAX_TOKENS[target.label]["web-complex"]);
+    if (resultado.ok) {
+      policy.record(target.model, resultado.duracionMs, resultado.tokensPorSegundo);
+      Object.assign(bloques, blocksByPath(resultado.texto));
+    }
+    entrada.bloquesEncontrados = Object.keys(blocksByPath(resultado.texto));
+  }
+
+  for (const filePath of Object.values(MULTIPAGE_BLOCKS)) {
+    if (bloques[filePath] || Date.now() > deadline) continue;
+    await generarArchivo(filePath);
+  }
+
+  const faltantesFinales = Object.values(MULTIPAGE_BLOCKS).filter((filePath) => !bloques[filePath]);
+  const deadlineAlcanzado = Date.now() > deadline;
+  const scores = {};
+  for (const filePath of Object.values(MULTIPAGE_BLOCKS)) {
+    const code = bloques[filePath];
+    if (!code) {
+      scores[filePath] = null;
+    } else if (filePath.endsWith(".html")) {
+      scores[filePath] = scoreMultiPageHTML(code);
+    } else if (filePath.endsWith(".css")) {
+      scores[filePath] = scoreCSSMulti(code);
+    } else {
+      scores[filePath] = await scoreJSMulti(code);
+    }
+  }
+
+  const pages = Object.fromEntries(
+    Object.entries(bloques).filter(([filePath]) => filePath.endsWith(".html")),
+  );
+  const funcional = validateMultiPage({
+    pages,
+    css: bloques["style.css"] || "",
+    js: bloques["script.js"] || "",
+  });
+
+  return {
+    exito: faltantesFinales.length === 0,
+    bloquesCompletos: faltantesFinales.length === 0,
+    modoGeneracion: WEB_GENERACION,
+    deadlineAlcanzado,
+    duracionMs: llamadas[0]?.duracionMs || 0,
+    duracionTotalMs: llamadas.reduce((sum, item) => sum + item.duracionMs, 0),
+    duracionParedMs: Date.now() - iniciado,
+    faltantesFinales,
+    llamadas,
+    respuestasPorLlamada,
+    funcional,
+    originalidad: funcional.originalidad,
+    bloquesEncontrados: Object.keys(bloques),
+    archivosEvaluados: Object.fromEntries(
+      Object.values(MULTIPAGE_BLOCKS).map((filePath) => [filePath, Boolean(bloques[filePath])]),
+    ),
+    calidad: scores,
+    puntuacionMedia: scoreSixFiles(scores),
+    codigo: bloques,
+    error: llamadas.find((item) => item.error)?.error || null,
+    systemPromptEnviado: llamadas.some((item) => item.systemPromptEnviado),
+    config: llamadas[0]?.config || null,
+  };
+}
+
 async function runIdioma(target, policy) {
   const prompts = {
     code: "Escribe una función isValidEmail(email) en JavaScript. Devuelve solo el código.",
@@ -937,10 +1228,21 @@ async function writeModelArtifacts(target, data) {
     const code = data.pruebas?.p06?.codigo?.[language];
     if (code) await fs.writeFile(path.join(dir, filename), code);
   }
+  if (data.pruebas?.webComplex?.codigo) {
+    for (const filename of Object.values(MULTIPAGE_BLOCKS)) {
+      const code = data.pruebas.webComplex.codigo[filename];
+      if (code) await fs.writeFile(path.join(dir, filename), code);
+    }
+  }
   return dir;
 }
 
 async function writeSummary(outputName, metadata, resumen) {
+  const conWebCompleja = resumen.some((item) => item.webComplex);
+  const cabecera = [
+    "Modelo", "Entorno", "Suite", "P01", "P02", "P03", "P04", "P05", "P06",
+    ...(conWebCompleja ? ["Web compleja"] : []),
+  ];
   const lines = [
     "# Resultados E2E canónicos",
     "",
@@ -950,14 +1252,17 @@ async function writeSummary(outputName, metadata, resumen) {
     `- Modo: ${metadata.modo || "real"}`,
     `- Provider: ${metadata.provider || "ollama"}`,
     "",
-    "| Modelo | Entorno | Suite | P01 | P02 | P03 | P04 | P05 | P06 |",
-    "|---|---|---|---|---|---|---|---|---|",
+    `| ${cabecera.join(" | ")} |`,
+    `|${cabecera.map(() => "---").join("|")}|`,
   ];
   for (const item of resumen) {
     const cell = (value) => value == null ? "—" : String(value);
-    lines.push(
-      `| ${item.model} | ${item.entorno} | ${item.suite} | ${cell(item.p01)} | ${cell(item.p02)} | ${cell(item.p03)} | ${cell(item.p04)} | ${cell(item.p05)} | ${cell(item.p06)} |`,
-    );
+    const fila = [
+      item.model, item.entorno, item.suite,
+      item.p01, item.p02, item.p03, item.p04, item.p05, item.p06,
+      ...(conWebCompleja ? [item.webComplex] : []),
+    ].map(cell);
+    lines.push(`| ${fila.join(" | ")} |`);
   }
   lines.push("", "Los detalles y artefactos están en `resultados_por_modelo/`.");
   const outputPath = path.join(SCRIPT_DIR, outputName);
@@ -969,6 +1274,9 @@ async function main() {
   const args = parseArgs();
   OFFLINE = args.offline;
   PROVIDER_OVERRIDE = args.provider;
+  WEB_GENERACION = ["por-archivo", "monolitico"].includes(args.webGeneracion)
+    ? args.webGeneracion
+    : "por-archivo";
   const metadata = {
     ...await loadMetadata(),
     suite: args.suite,
@@ -992,9 +1300,9 @@ async function main() {
     console.log(`\n▶ ${target.model} @ ${target.baseUrl}`);
     const policy = new (await import("../../src/utils/adaptive-timeout.js")).TimeoutPolicy({
       minMs: target.label === "remoto" ? 45000 : 20000,
-      // P06 de modelos remotos lentos puede necesitar >200 s; el techo anterior
-      // abortaba la generación y producía una regresión falsa (0/0).
-      maxMs: 300000,
+      // P06 de modelos remotos lentos puede necesitar >200 s; la suite
+      // multipágina genera seis archivos y necesita un techo mayor todavía.
+      maxMs: args.suite === "web-complex" ? 420000 : 300000,
       factor: 1.6,
     });
     const data = { metadata, target, pruebas: {} };
@@ -1006,6 +1314,10 @@ async function main() {
       data.pruebas.idioma = await runIdioma(target, policy);
     } else if (args.suite === "quality") {
       data.pruebas.p05_enhanced = await runQuality(target, policy);
+    } else if (args.suite === "web-complex") {
+      data.pruebas.webComplex = await runWebComplex(target, policy);
+      const web = data.pruebas.webComplex;
+      console.log(`  Web compleja calidad=${web.puntuacionMedia} funcional=${web.funcional.puntuacion}% originalidad=${web.originalidad.puntuacion}% archivos=${web.bloquesEncontrados.length}/6`);
     } else {
       data.pruebas.p01 = await runP01(target, policy);
       console.log(`  P01 ${data.pruebas.p01.exito ? "✓" : "✗"} ${Math.round(data.pruebas.p01.duracionMs)}ms`);
@@ -1045,6 +1357,11 @@ async function main() {
       p06: data.pruebas.p06
         ? `${data.pruebas.p06.puntuacionMedia}% · func ${data.pruebas.p06.funcional?.puntuacion ?? "—"}%`
         : null,
+      ...(data.pruebas.webComplex
+        ? {
+            webComplex: `${data.pruebas.webComplex.puntuacionMedia}% · func ${data.pruebas.webComplex.funcional.puntuacion}% · orig ${data.pruebas.webComplex.originalidad.puntuacion}%`,
+          }
+        : {}),
     });
   }
 

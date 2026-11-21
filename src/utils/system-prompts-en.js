@@ -9,12 +9,25 @@
  *
  * Estrategia recomendada:
  *   - Instrucciones de formato y reglas → inglés (mejor comprendido por el modelo)
- *   - Idioma de la respuesta → español (o el que use el usuario)
+ *   - Idioma de la respuesta → el del prompt del usuario, nunca fijo en español
  */
+
+/**
+ * El idioma de la respuesta NO va fijo en el prompt: se añade en
+ * `getSystemPrompt()` según el idioma detectado. Antes un prompt en inglés
+ * instruía "Respond in Spanish", lo que degradaba claridad y causaba cambios
+ * de idioma a mitad de respuesta.
+ */
+const CLAUSULA_IDIOMA_RESPUESTA = {
+  en: "Respond in English, clearly and directly.",
+  es: "Responde en español, de forma clara y directa.",
+};
+
+const TIPOS_CON_IDIOMA_RESPUESTA = new Set(["chat", "reasoning"]);
 
 export const SYSTEM_PROMPTS_EN = {
   /** Chat general, respuestas conversacionales */
-  chat: `You are a helpful, concise and friendly assistant. Respond in Spanish clearly and directly. Maintain coherence in multi-turn conversations.`,
+  chat: `You are a helpful, concise and friendly assistant. Maintain coherence in multi-turn conversations.`,
 
   /** Generación de código (cualquier lenguaje) */
   code: `You are an expert programmer. Generate ONLY functional, well-commented code ready to use.
@@ -41,12 +54,12 @@ STRICT RULES:
   longContext: `You are an assistant that maintains coherence in long conversations. Summarize key information and remember previous details when relevant.`,
 
   /** Razonamiento complejo / análisis */
-  reasoning: `Analyze step by step, reason logically, and provide well-founded responses in Spanish.`,
+  reasoning: `Analyze step by step, reason logically, and provide well-founded responses.`,
 };
 
 export const SYSTEM_PROMPTS_ES = {
   /** Chat general, respuestas conversacionales */
-  chat: "Eres un asistente útil, conciso y amigable. Responde en español de forma clara y directa. Mantén la coherencia en conversaciones multi-turno.",
+  chat: "Eres un asistente útil, conciso y amigable. Mantén la coherencia en conversaciones multi-turno.",
 
   /** Generación de código (cualquier lenguaje) */
   code: `Eres un programador experto. Genera SOLO código funcional, bien comentado y listo para usar.
@@ -73,7 +86,7 @@ REGLAS ESTRICTAS:
   longContext: "Eres un asistente que mantiene coherencia en conversaciones largas. Resume información clave y recuerda detalles anteriores cuando sea relevante.",
 
   /** Razonamiento complejo / análisis */
-  reasoning: "Analiza paso a paso, razona lógicamente y proporciona respuestas bien fundamentadas en español.",
+  reasoning: "Analiza paso a paso, razona lógicamente y proporciona respuestas bien fundamentadas.",
 };
 
 /**
@@ -111,12 +124,15 @@ export function detectPromptLanguage(value) {
   return null;
 }
 
-export function getSystemPrompt(taskType, idioma = "en") {
+export function getSystemPrompt(taskType, idioma = "en", idiomaRespuesta = idioma) {
   const key = resolveTaskType(taskType);
-  if (idioma === "es") {
-    return SYSTEM_PROMPTS_ES[key] || SYSTEM_PROMPTS_ES.chat;
-  }
-  return SYSTEM_PROMPTS_EN[key] || SYSTEM_PROMPTS_EN.chat;
+  const base = idioma === "es"
+    ? (SYSTEM_PROMPTS_ES[key] || SYSTEM_PROMPTS_ES.chat)
+    : (SYSTEM_PROMPTS_EN[key] || SYSTEM_PROMPTS_EN.chat);
+  if (!TIPOS_CON_IDIOMA_RESPUESTA.has(key)) return base;
+
+  const clause = CLAUSULA_IDIOMA_RESPUESTA[String(idiomaRespuesta).toLowerCase()];
+  return clause ? `${base}\n${clause}` : base;
 }
 
 /**

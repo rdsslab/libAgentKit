@@ -68,8 +68,8 @@ document.getElementById('miBoton').addEventListener('click', () => {
  * @param {string} [idiomaSystemPrompt] - Idioma del system prompt: "en" o "es" (default: "en")
  * @returns {string} System prompt específico
  */
-export function getSystemPrompt(taskType, lenguaje = null, idiomaSystemPrompt = "en") {
-  return getSystemPromptBilingüe(taskType, idiomaSystemPrompt);
+export function getSystemPrompt(taskType, lenguaje = null, idiomaSystemPrompt = "en", idiomaRespuesta = idiomaSystemPrompt) {
+  return getSystemPromptBilingüe(taskType, idiomaSystemPrompt, idiomaRespuesta);
 }
 
 /**
@@ -94,11 +94,12 @@ export function getFewShotExample(taskType, lenguaje = null) {
  * @param {string} taskType - Tipo de tarea inferida
  * @param {string} [lenguaje] - Lenguaje de programación
  * @param {string} [idiomaSystemPrompt] - Idioma del system prompt: "en" o "es" (default: "en")
+ * @param {string} [idiomaRespuesta] - Idioma en que debe responder el modelo (default: idiomaSystemPrompt)
  * @returns {Array<{role: string, content: string}>} Mensajes enriquecidos
  */
-export function enriquecerMensajes(messages, taskType, lenguaje = null, idiomaSystemPrompt = "en") {
+export function enriquecerMensajes(messages, taskType, lenguaje = null, idiomaSystemPrompt = "en", idiomaRespuesta = idiomaSystemPrompt) {
   const enriquecidos = [...messages];
-  const systemPrompt = getSystemPrompt(taskType, lenguaje, idiomaSystemPrompt);
+  const systemPrompt = getSystemPrompt(taskType, lenguaje, idiomaSystemPrompt, idiomaRespuesta);
   const fewShot = getFewShotExample(taskType, lenguaje);
 
   const partes = [];

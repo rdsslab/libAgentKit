@@ -25,14 +25,31 @@ import { detectPromptLanguage, getSystemPrompt } from "../src/utils/system-promp
 import { normalizeToolArguments } from "../src/utils/tool-arguments.js";
 import { generateMultiFile, stripWrapperTags } from "../src/utils/multi-file-generator.js";
 import {
+  detectarTruncamiento,
+  repararRespuesta,
+  fenceBalance as fenceBalanceRespuesta,
+} from "../src/utils/response-repair.js";
+import {
+  blockForPath,
+  blockTagForPath,
   blocksByLanguage,
+  blocksByPath,
+  fenceBalance,
   firstBlock,
   mergeBlocks,
+  mergePathBlocks,
   missingBlockLanguages,
+  missingBlockPaths,
+  MULTIPAGE_BLOCKS,
   normalizeBlockKey,
   sanitizeToolName,
 } from "./utils/e2e-helpers.js";
-import { validateEmailBehavior, validateReadFileBehavior, validateLandingWiring } from "./utils/code-behavior.js";
+import {
+  validateEmailBehavior,
+  validateReadFileBehavior,
+  validateLandingWiring,
+  validateMultiPage,
+} from "./utils/code-behavior.js";
 
 const fakeProviderNamePrefix = "test-harness-";
 let fakeProviderCounter = 0;
@@ -796,4 +813,417 @@ test("ia: ollama-native usa /api/chat con num_ctx real y ejecuta tools", async (
 	} finally {
 		await new Promise((resolve) => server.close(resolve));
 	}
+});
+
+const MULTIPAGE_RESPUESTA = [
+  '```html-index',
+  '<!-- index.html -->',
+  '<!DOCTYPE html><html><body data-page="index">inicio</body></html>',
+  '```',
+  '```html-servicios',
+  '<!-- servicios.html -->',
+  '<!DOCTYPE html><html><body data-page="servicios">servicios</body></html>',
+  '```',
+  '```html-precios',
+  '<!-- precios.html -->',
+  '<!DOCTYPE html><html><body data-page="precios">precios</body></html>',
+  '```',
+  '```html-contacto',
+  '<!-- contacto.html -->',
+  '<!DOCTYPE html><html><body data-page="contacto">contacto</body></html>',
+  '```',
+  '```css',
+  '/* style.css */',
+  ':root { --tinta: #1B1A17; }',
+  '```',
+  '```js',
+  '// script.js',
+  " document.querySelector('[data-nav-toggle]');",
+  '```',
+].join("\n");
+
+test("e2e-helpers: blocksByPath conserva las cuatro páginas y limpia el comentario", () => {
+  const bloques = blocksByPath(MULTIPAGE_RESPUESTA);
+  assert.deepEqual(Object.keys(bloques), Object.values(MULTIPAGE_BLOCKS));
+  assert.match(bloques["index.html"], /^<!DOCTYPE html>/);
+  assert.doesNotMatch(bloques["index.html"], /<!-- index.html -->/);
+  assert.equal(blockTagForPath("precios.html"), "html-precios");
+  assert.equal(blockTagForPath("script.js"), "js");
+});
+
+test("e2e-helpers: blockForPath rechaza fences sin cerrar y acepta etiquetas genéricas", () => {
+  assert.equal(fenceBalance("```html-index\nabierto"), 1);
+  assert.equal(fenceBalance("```html-index\ncerrado\n```"), 2);
+  const truncado = "```html-index\n<!-- index.html -->\n<!DOCTYPE html><html></html>";
+  assert.deepEqual(blockForPath(truncado, "index.html"), { code: null, completo: false, fuente: null });
+  const generico = "```html\n<!DOCTYPE html><html><body>x</body></html>\n```";
+  const extraido = blockForPath(generico, "index.html");
+  assert.equal(extraido.completo, true);
+  assert.equal(extraido.fuente, "tipo");
+  assert.match(extraido.code, /^<!DOCTYPE html>/);
+});
+
+test("e2e-helpers: missingBlockPaths y mergePathBlocks reparan bloques sueltos", () => {
+  assert.deepEqual(missingBlockPaths(MULTIPAGE_RESPUESTA), []);
+  const incompleto = MULTIPAGE_RESPUESTA.split("```js")[0];
+  assert.deepEqual(missingBlockPaths(incompleto), ["script.js"]);
+  const reparado = mergePathBlocks(incompleto, '```js\n// script.js\nconst theme = 1;\n```');
+  assert.match(reparado["script.js"], /const theme = 1/);
+  assert.equal(Object.keys(reparado).length, 6);
+});
+
+const paginaMultipagina = (nombre) => [
+  "<!DOCTYPE html>",
+  '<html lang="es"><head><meta charset="utf-8"><title>Clínica ' + nombre + "</title>",
+  '<link rel="stylesheet" href="style.css"></head>',
+  '<body data-page="' + nombre + '">',
+  '<header><nav><a href="index.html">Inicio</a></nav></header>',
+  '<main><h1>' + nombre + '</h1><svg stroke="currentColor" aria-hidden="true"></svg></main>',
+  '<footer><script src="script.js"></script></footer>',
+  "</body></html>",
+].join("\n");
+
+const cssMultipagina = [
+  ":root { --tinta: #1B1A17; --crema: #F4EFE6; --terracota: #C65D3B; --salvia: #6F8F6A; }",
+  "*, *::before, *::after { box-sizing: border-box; }",
+  "@keyframes marquesina { from { transform: translateX(0); } to { transform: translateX(-50%); } }",
+  "@keyframes reveal { from { opacity: 0; } to { opacity: 1; } }",
+  ".titular { font-size: clamp(2.5rem, 5vw, 6rem); }",
+  "@media (max-width: 800px) { body { padding: 1rem; } }",
+  "@media (min-width: 1200px) { body { padding: 2rem; } }",
+  "@media (prefers-reduced-motion: reduce) { * { animation: none; } }",
+  ":focus-visible { outline: 2px solid var(--terracota); }",
+].join("\n");
+
+const jsMultipagina = [
+  "document.addEventListener('DOMContentLoaded', function () {",
+  "  var nav = document.querySelector('[data-nav-toggle]');",
+  "  nav.addEventListener('click', function () {",
+  "    nav.setAttribute('aria-expanded', nav.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');",
+  "  });",
+  "  var theme = document.querySelector('[data-theme-toggle]');",
+  "  theme.addEventListener('click', function () {",
+  "    var next = document.documentElement.dataset.theme === 'oscuro' ? 'claro' : 'oscuro';",
+  "    document.documentElement.dataset.theme = next;",
+  "    localStorage.setItem('theme', next);",
+  "  });",
+  "  var faq = document.querySelector('[data-faq-toggle]');",
+  "  faq.addEventListener('click', function () {",
+  "    faq.setAttribute('aria-expanded', faq.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');",
+  "  });",
+  "  var precios = [].concat(",
+  "    [].slice.call(document.querySelectorAll('[data-mensual]')),",
+  "    [].slice.call(document.querySelectorAll('[data-anual]'))",
+  "  );",
+  "  document.querySelector('[data-price-toggle]').addEventListener('click', function () {",
+  "    precios.forEach(function (item) { item.textContent = 'Oferta ' + item.textContent; });",
+  "  });",
+  "  var form = document.querySelector('form');",
+  "  var exito = document.querySelector('[data-form-exito]');",
+  "  form.addEventListener('submit', function (event) {",
+  "    event.preventDefault();",
+  "    var fields = [].slice.call(document.querySelectorAll('input[name], textarea[name]'));",
+  "    var invalid = fields.filter(function (field) { return !String(field.value || '').trim(); });",
+  "    if (invalid.length) {",
+  "      invalid.forEach(function (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); });",
+  "      return;",
+  "    }",
+  "    exito.textContent = 'Gracias, te contactaremos pronto.';",
+  "  });",
+  "  var observer = new IntersectionObserver(function (entries) {",
+  "    entries.forEach(function (entry) { entry.target.setAttribute('data-visible', 'true'); });",
+  "  });",
+  "  document.querySelectorAll('[data-reveal]').forEach(function (item) { observer.observe(item); });",
+  "  var progress = document.querySelector('[data-scroll-progress]');",
+  "  window.addEventListener('scroll', function () { progress.style.width = '25%'; });",
+  "});",
+].join("\n");
+
+test("code-behavior: validateMultiPage aprueba diseño, hooks e interacciones simuladas", () => {
+  const resultado = validateMultiPage({
+    pages: {
+      "index.html": paginaMultipagina("index"),
+      "servicios.html": paginaMultipagina("servicios"),
+      "precios.html": paginaMultipagina("precios"),
+      "contacto.html": paginaMultipagina("contacto"),
+    },
+    css: cssMultipagina,
+    js: jsMultipagina,
+  });
+
+  const porNombre = Object.fromEntries(resultado.casos.map((caso) => [caso.name, caso]));
+  for (const nombre of [
+    "paginas_entregadas", "links_resueltos", "data_page_por_pagina", "js_hooks_testeables",
+    "nav_toggle", "theme_toggle", "faq_toggle", "price_toggle",
+    "formulario_rechaza_invalido", "formulario_acepta_valido", "reveal_observer",
+    "scroll_progress", "no_gradient_generico",
+  ]) {
+    assert.equal(porNombre[nombre]?.passed, true, `falló ${nombre}: ${porNombre[nombre]?.detail}`);
+  }
+  assert.ok(resultado.puntuacion >= 85, `puntuación ${resultado.puntuacion}`);
+  assert.ok(resultado.originalidad.puntuacion >= 80);
+  assert.equal(resultado.paginas, 4);
+});
+
+test("code-behavior: el stub acepta hooks con selector, classList y alert", () => {
+  const js = [
+    "document.addEventListener('DOMContentLoaded', function () {",
+    "  document.querySelectorAll('[data-nav-toggle]').forEach(function (boton) {",
+    "    boton.addEventListener('click', function () {",
+    "      var destino = document.querySelector(boton.getAttribute('data-nav-toggle'));",
+    "      if (destino) destino.classList.toggle('active');",
+    "    });",
+    "  });",
+    "  document.querySelector('form').addEventListener('submit', function (event) {",
+    "    event.preventDefault();",
+    "    if (!document.getElementById('name').value) {",
+    "      alert('Por favor complete todos los campos.');",
+    "      return;",
+    "    }",
+    "    alert('Gracias, formulario enviado correctamente.');",
+    "  });",
+    "});",
+  ].join("\n");
+
+  const resultado = validateMultiPage({
+    pages: { "index.html": paginaMultipagina("index") },
+    css: cssMultipagina,
+    js,
+  });
+  const porNombre = Object.fromEntries(resultado.casos.map((caso) => [caso.name, caso]));
+  assert.equal(porNombre.nav_toggle.passed, true, porNombre.nav_toggle.detail);
+  assert.equal(porNombre.formulario_rechaza_invalido.passed, true, porNombre.formulario_rechaza_invalido.detail);
+  assert.equal(porNombre.formulario_acepta_valido.passed, true, porNombre.formulario_acepta_valido.detail);
+});
+
+test("code-behavior: el stub soporta nextElementSibling, classList propio y FormData", () => {
+  const js = [
+    "document.addEventListener('DOMContentLoaded', function () {",
+    "  document.querySelectorAll('[data-nav-toggle]').forEach(function (boton) {",
+    "    boton.addEventListener('click', function () { this.classList.toggle('active'); });",
+    "  });",
+    "  document.querySelectorAll('[data-faq-toggle]').forEach(function (boton) {",
+    "    boton.addEventListener('click', function () { this.nextElementSibling.classList.toggle('active'); });",
+    "  });",
+    "  document.querySelectorAll('[data-price-toggle]').forEach(function (boton) {",
+    "    boton.addEventListener('click', function () { this.nextElementSibling.classList.toggle('active'); });",
+    "  });",
+    "  var exito = document.querySelector('[data-form-exito]');",
+    "  document.querySelector('form').addEventListener('submit', function (event) {",
+    "    event.preventDefault();",
+    "    var datos = new FormData(this);",
+    "    if (!datos.get('name') || !datos.get('email') || !datos.get('message')) {",
+    "      alert('Por favor, complete todos los campos.');",
+    "      return;",
+    "    }",
+    "    exito.style.display = 'block';",
+    "  });",
+    "});",
+  ].join("\n");
+
+  const resultado = validateMultiPage({
+    pages: { "index.html": paginaMultipagina("index") },
+    css: cssMultipagina,
+    js,
+  });
+  const porNombre = Object.fromEntries(resultado.casos.map((caso) => [caso.name, caso]));
+  for (const nombre of [
+    "nav_toggle", "faq_toggle", "price_toggle",
+    "formulario_rechaza_invalido", "formulario_acepta_valido",
+  ]) {
+    assert.equal(porNombre[nombre]?.passed, true, `falló ${nombre}: ${porNombre[nombre]?.detail}`);
+  }
+});
+
+test("code-behavior: validateMultiPage detecta anti-patrones y JS que no reacciona", () => {
+  const pagina = paginaMultipagina("index").replace("<h1>", "<h1>").concat("\n<p>Lorem ipsum</p>");
+  const css = cssMultipagina.replace("--tinta: #1B1A17;", "#667eea;");
+  const js = jsMultipagina.replace(/nav\.setAttribute\('aria-expanded'[^\n]+\n/, "");
+  const resultado = validateMultiPage({
+    pages: {
+      "index.html": pagina,
+      "servicios.html": paginaMultipagina("servicios"),
+      "precios.html": paginaMultipagina("precios"),
+      "contacto.html": paginaMultipagina("contacto"),
+    },
+    css,
+    js,
+  });
+  const porNombre = Object.fromEntries(resultado.casos.map((caso) => [caso.name, caso]));
+  assert.equal(porNombre.no_lorem_ipsum.passed, false);
+  assert.equal(porNombre.no_gradient_generico.passed, false);
+  assert.equal(porNombre.nav_toggle.passed, false);
+});
+
+test("response-repair: cierra un cerco sin cerrar y conserva la señal de truncamiento", () => {
+  const crudo = "```js\nconst x = 1;";
+  const reparado = repararRespuesta(crudo, { language: "javascript" });
+
+  assert.equal(fenceBalanceRespuesta(reparado.text), 0);
+  assert.equal(reparado.truncado, true);
+  assert.ok(reparado.senales.includes("cerco_sin_cerrar"));
+  assert.ok(reparado.reparaciones.includes("cerco_cerrado"));
+});
+
+test("response-repair: quita prólogo y envolvente sin tocar comentarios de código", () => {
+  const conPrologo = repararRespuesta("Aquí tienes el archivo:\n```css\nbody { color: red; }\n```", { language: "css" });
+  const conComentario = repararRespuesta("// generado\n```css\nbody { color: red; }\n```", { language: "css" });
+  const conEnvolvente = repararRespuesta("<style>\nbody { color: red; }\n</style>", { language: "css" });
+
+  assert.equal(conPrologo.text, "```css\nbody { color: red; }\n```");
+  assert.ok(conPrologo.reparaciones.includes("prologo_eliminado"));
+  assert.match(conComentario.text, /^\/\/ generado/);
+  assert.equal(conEnvolvente.text, "body { color: red; }");
+  assert.ok(conEnvolvente.reparaciones.includes("envolvente_eliminado"));
+});
+
+test("response-repair: recorta un bucle de repetición al final", () => {
+  const crudo = [
+    "const x = 1;",
+    "console.log(x);",
+    "}",
+    "}",
+    "}",
+    "}",
+    "}",
+  ].join("\n");
+  const reparado = repararRespuesta(crudo, { language: "javascript" });
+
+  assert.ok(reparado.reparaciones.includes("repeticion_recortada"));
+  assert.ok(reparado.senales.includes("bucle_repeticion"));
+  assert.ok(!reparado.text.endsWith("}\n}\n}\n}"));
+});
+
+test("response-repair: no altera prosa de chat sin cercos", () => {
+  const texto = "Hola, aquí tienes la explicación. Espero que sirva.";
+  const reparado = repararRespuesta(texto);
+
+  assert.equal(reparado.text, texto);
+  assert.deepEqual(reparado.reparaciones, []);
+  assert.equal(reparado.truncado, false);
+});
+
+test("askAgent: postProcess.repair repara la salida antes de devolverla", async () => {
+  const provider = registerFakeAdapter(async () => ({ text: "Respuesta:\n```js\nconst x = 1;" }));
+  const resultado = await askAgent({
+    provider,
+    messages: [{ role: "user", content: "genera código" }],
+    postProcess: { repair: true },
+    includeDiagnostics: true,
+  });
+
+  assert.equal(fenceBalanceRespuesta(resultado.text), 0);
+  assert.ok(resultado.diagnostics.reparacionesAplicadas.includes("cerco_cerrado"));
+  assert.ok(resultado.diagnostics.reparacionesAplicadas.includes("prologo_eliminado"));
+});
+
+test("system-prompts: el idioma de respuesta no queda fijo en inglés", () => {
+  const en = getSystemPrompt("chat", "en", "en");
+  const es = getSystemPrompt("chat", "es", "es");
+
+  assert.match(en, /Respond in English/);
+  assert.doesNotMatch(en, /Respond in Spanish|Responde en español/);
+  assert.match(es, /Responde en español/);
+  assert.doesNotMatch(es, /Respond in English/);
+});
+
+test("enhancedAskAgent: un truncamiento amplía maxTokens en el reintento", async () => {
+  let llamadas = 0;
+  let configuracionRetry = null;
+  const provider = registerFakeAdapter(
+    async () => {
+      llamadas += 1;
+      if (llamadas === 1) return { text: "```js\nconst x = 1;" };
+      return { text: "// ok\nfunction sumar(a, b) { return a + b; }" };
+    },
+    (config) => {
+      if (llamadas >= 1) configuracionRetry = config;
+    },
+  );
+
+  await enhancedAskAgent({
+    provider: { ...provider, temperature: 0.8, seed: 123, maxTokens: 100 },
+    messages: [{ role: "user", content: "genera una función" }],
+    taskType: "code",
+    lenguaje: "javascript",
+    autoCorrect: true,
+    maxCorrectionAttempts: 1,
+  });
+
+  assert.equal(configuracionRetry.temperature, 0.4);
+  assert.equal("seed" in configuracionRetry, false);
+  assert.equal(configuracionRetry.maxTokens, 160);
+});
+
+test("response-repair: detecta identificadores repetidos sin reescribirlos", () => {
+  const crudo = "function guardarDataScrollProgressToggleToggleToggleToggleToggle(scroll) {}";
+  const reparado = repararRespuesta(crudo, { language: "javascript" });
+
+  // Reescribir el nombre podría colisionar con otro símbolo del archivo.
+  assert.match(reparado.text, /ProgressToggleToggleToggleToggleToggle\(scroll\)/);
+  assert.ok(!reparado.reparaciones.includes("identificador_colapsado"));
+  assert.ok(reparado.senales.includes("identificador_repetido"));
+});
+
+test("response-repair: recorta una declaración de función incompleta al final", () => {
+  const crudo = [
+    "function completa() { return 1; }",
+    "function guardarScroll(scroll)",
+  ].join("\n");
+  const reparado = repararRespuesta(crudo, { language: "javascript" });
+
+  assert.equal(reparado.text.trim(), "function completa() { return 1; }");
+  assert.ok(reparado.reparaciones.includes("cola_incompleta_recortada"));
+  assert.ok(reparado.senales.includes("declaracion_incompleta"));
+});
+
+test("response-repair: un corte con cerco abierto sigue señalando truncamiento tras reparar", () => {
+  const crudo = [
+    "```js",
+    "function completa() { return 1; }",
+    "function guardarScrollToggleToggleToggleToggleToggle(scroll)",
+  ].join("\n");
+  const reparado = repararRespuesta(crudo, { language: "web" });
+
+  assert.equal(fenceBalanceRespuesta(reparado.text), 0);
+  assert.equal(reparado.truncado, true);
+  assert.ok(reparado.senales.includes("declaracion_incompleta"));
+  assert.ok(reparado.senales.includes("identificador_repetido"));
+});
+
+test("response-repair: elimina bloques de función idénticos repetidos", () => {
+  const bloque = "function f() {\n  return 1;\n}";
+  const crudo = [bloque, "function g() {\n  return 2;\n}", bloque].join("\n\n");
+  const reparado = repararRespuesta(crudo, { language: "javascript" });
+
+  assert.equal((reparado.text.match(/function f\(/g) || []).length, 1);
+  assert.match(reparado.text, /function g\(/);
+  assert.ok(reparado.reparaciones.some((item) => item.startsWith("bloques_duplicados_eliminados")));
+});
+
+test("code-behavior: un JS que no ejecuta falla también todas las interacciones", () => {
+  const resultado = validateMultiPage({
+    pages: {
+      "index.html": paginaMultipagina("index"),
+      "servicios.html": paginaMultipagina("servicios"),
+      "precios.html": paginaMultipagina("precios"),
+      "contacto.html": paginaMultipagina("contacto"),
+    },
+    css: cssMultipagina,
+    js: "function roto( {",
+  });
+  const porNombre = Object.fromEntries(resultado.casos.map((caso) => [caso.name, caso]));
+
+  assert.equal(porNombre.ejecucion_js.passed, false);
+  for (const nombre of ["dom_ready", "eventos_registrados", "nav_toggle", "formulario_acepta_valido"]) {
+    assert.equal(porNombre[nombre]?.passed, false, `la interacción ${nombre} no se marcó como fallida`);
+  }
+});
+
+test("response-repair: no toma prosa de chat aunque contenga un bloque de código", () => {
+  const texto = "Claro, aquí va un ejemplo:\n```js\nconst x = 1;\n```\nEspero que ayude.";
+  const reparado = repararRespuesta(texto, { language: "chat" });
+
+  assert.equal(reparado.text, texto);
+  assert.deepEqual(reparado.reparaciones, []);
 });

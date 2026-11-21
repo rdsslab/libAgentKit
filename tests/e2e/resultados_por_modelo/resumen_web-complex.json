@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T10:45:32.036Z",
+    "coreVersion": "0.4.0",
+    "commit": "6b822d1",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "web-complex",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "resumen": [
+    {
+      "model": "qwen2.5-coder:3b",
+      "entorno": "remoto",
+      "suite": "web-complex",
+      "p01": null,
+      "p02": null,
+      "p03": null,
+      "p04": null,
+      "p05": null,
+      "p06": null,
+      "webComplex": "85% · func 86% · orig 71%"
+    }
+  ]
+}

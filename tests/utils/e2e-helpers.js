@@ -65,3 +65,100 @@ export const mergeBlocks = (...texts) => {
   }
   return merged;
 };
+
+/**
+ * Contrato de la suite `web-complex`: etiqueta de bloque -> nombre de archivo.
+ * Las etiquetas solo usan `[A-Za-z0-9-]` para que `extractCodeBlocks()` las
+ * acepte; el nombre real se declara además en la primera línea del bloque.
+ */
+export const MULTIPAGE_BLOCKS = Object.freeze({
+  "html-index": "index.html",
+  "html-servicios": "servicios.html",
+  "html-precios": "precios.html",
+  "html-contacto": "contacto.html",
+  css: "style.css",
+  js: "script.js",
+});
+
+const PATH_COMMENTS = [
+  [/^\s*<!--\s*([\w.-]+\.(?:html|css|js))\s*-->/i, 1],
+  [/^\s*\/\*\s*([\w.-]+\.(?:html|css|js))\s*\*\//i, 1],
+  [/^\s*\/\/\s*([\w.-]+\.(?:html|css|js))\s*$/i, 1],
+];
+
+const pathFromBlock = (block) => {
+  const tag = String(block.language || "").toLowerCase().trim();
+  if (MULTIPAGE_BLOCKS[tag]) return MULTIPAGE_BLOCKS[tag];
+  if (/^[\w.-]+\.(?:html|css|js)$/i.test(tag)) return tag;
+  const firstLine = String(block.code || "").split(/\r?\n/, 1)[0];
+  for (const [pattern, group] of PATH_COMMENTS) {
+    const match = firstLine.match(pattern);
+    if (match) return match[group];
+  }
+  return null;
+};
+
+const stripPathComment = (code) => String(code || "")
+  .replace(/^\s*<!--\s*[\w.-]+\.(?:html|css|js)\s*-->\s*\r?\n?/i, "")
+  .replace(/^\s*\/\*\s*[\w.-]+\.(?:html|css|js)\s*\*\/\s*\r?\n?/i, "")
+  .replace(/^\s*\/\/\s*[\w.-]+\.(?:html|css|js)\s*\r?\n?/i, "")
+  .trim();
+
+/**
+ * Agrupa bloques por nombre de archivo (no por idioma). Varios bloques `html-*`
+ * dejan de colapsar en una sola clave `html`. El primer bloque válido gana.
+ */
+export const blocksByPath = (text) => {
+  const byPath = {};
+  for (const block of extractCodeBlocks(text)) {
+    const filePath = pathFromBlock(block);
+    if (filePath && !byPath[filePath]) byPath[filePath] = stripPathComment(block.code);
+  }
+  return byPath;
+};
+
+/** Archivos del contrato multipágina que no aparecieron en la respuesta. */
+export const missingBlockPaths = (text) => Object.values(MULTIPAGE_BLOCKS)
+  .filter((filePath) => !blocksByPath(text)[filePath]);
+
+/** Etiqueta de bloque que el modelo debe usar para un archivo dado. */
+export const blockTagForPath = (filePath) => Object.keys(MULTIPAGE_BLOCKS)
+  .find((tag) => MULTIPAGE_BLOCKS[tag] === filePath) || null;
+
+/** Combina respuestas parciales de la suite multipágina por nombre de archivo. */
+export const mergePathBlocks = (...texts) => {
+  const merged = {};
+  for (const text of texts) {
+    for (const [filePath, code] of Object.entries(blocksByPath(text))) {
+      if (!merged[filePath] && code) merged[filePath] = code;
+    }
+  }
+  return merged;
+};
+
+/** Número de delimitadores ``` (par = bloques cerrados, impar = truncado). */
+export const fenceBalance = (text) => (String(text || "").match(/```/g) || []).length;
+
+const coincideExtension = (filePath, language) => {
+  const tag = String(language || "").toLowerCase().trim();
+  if (filePath.endsWith(".css")) return /(^|-)css/.test(tag) || tag === filePath.replace(/\.css$/, "");
+  if (filePath.endsWith(".js")) return /^(js|javascript|mjs|node|cjs)$/.test(tag) || /js$/.test(tag);
+  return /^(html|htm|html-[\w-]+)$/.test(tag) || /^[\w-]*html[\w-]*$/.test(tag);
+};
+
+/**
+ * Extrae el bloque completo de una respuesta de **un solo archivo**. Primero
+ * exige el nombre exacto; si el modelo usó una etiqueta genérica (`html`,
+ * `javascript`), acepta el primer bloque cerrado del tipo correcto. Nunca
+ * devuelve código de un fence sin cerrar.
+ */
+export const blockForPath = (text, filePath) => {
+  const exacto = blocksByPath(text)[filePath];
+  if (exacto) return { code: exacto, completo: true, fuente: "path" };
+  for (const block of extractCodeBlocks(text)) {
+    if (block.code && coincideExtension(filePath, block.language)) {
+      return { code: stripPathComment(block.code), completo: true, fuente: "tipo" };
+    }
+  }
+  return { code: null, completo: false, fuente: null };
+};

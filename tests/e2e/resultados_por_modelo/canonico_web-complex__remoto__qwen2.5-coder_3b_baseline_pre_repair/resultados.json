@@ -1,0 +1,676 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T05:54:24.005Z",
+    "coreVersion": "0.4.0",
+    "commit": "6b822d1",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "web-complex",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5-coder:3b",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "webComplex": {
+      "exito": true,
+      "bloquesCompletos": true,
+      "modoGeneracion": "por-archivo",
+      "deadlineAlcanzado": false,
+      "duracionMs": 100604,
+      "duracionTotalMs": 598769,
+      "duracionParedMs": 598810,
+      "faltantesFinales": [],
+      "llamadas": [
+        {
+          "archivo": "index.html",
+          "etiqueta": "html-index",
+          "ok": true,
+          "duracionMs": 100604,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1800,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        },
+        {
+          "archivo": "servicios.html",
+          "etiqueta": "html-servicios",
+          "ok": true,
+          "duracionMs": 96551,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1755,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 301907,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        },
+        {
+          "archivo": "precios.html",
+          "etiqueta": "html-precios",
+          "ok": true,
+          "duracionMs": 94021,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1568,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 300000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        },
+        {
+          "archivo": "contacto.html",
+          "etiqueta": "html-contacto",
+          "ok": true,
+          "duracionMs": 109449,
+          "maxTokens": 900,
+          "error": null,
+          "longitudTexto": 1985,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 900,
+            "timeoutMs": 303755,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        },
+        {
+          "archivo": "style.css",
+          "etiqueta": "css",
+          "ok": true,
+          "duracionMs": 67277,
+          "maxTokens": 1400,
+          "error": null,
+          "longitudTexto": 1081,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 1400,
+            "timeoutMs": 420000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        },
+        {
+          "archivo": "script.js",
+          "etiqueta": "js",
+          "ok": true,
+          "duracionMs": 130867,
+          "maxTokens": 1400,
+          "error": null,
+          "longitudTexto": 3218,
+          "fences": 2,
+          "config": {
+            "model": "qwen2.5-coder:3b",
+            "baseUrl": "http://192.168.100.126:11434",
+            "taskType": "web-complex",
+            "presetTaskType": "web",
+            "maxTokens": 1400,
+            "timeoutMs": 420000,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "num_ctx": 16384,
+            "toolChoice": null
+          },
+          "systemPromptEnviado": true,
+          "bloqueExtraido": true,
+          "fuenteBloque": "path"
+        }
+      ],
+      "respuestasPorLlamada": [
+        {
+          "archivo": "index.html",
+          "texto": "```html-index\n<!-- index.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Patitas Felices - Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\"></script>\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#home\" data-page=\"index\">Inicio</a></li>\n                <li><a href=\"#services\" data-page=\"services\">Servicios</a></li>\n                <li><a href=\"#prices\" data-page=\"prices\">Precios</a></li>\n                <li><a href=\"#contact\" data-page=\"contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"hero\" class=\"hero\">\n            <h1 data-page=\"index\">Bienvenido a Patitas Felices</h1>\n            <p>Clínica veterinaria especializada en cuidado de mascotas.</p>\n            <marquee behavior=\"scroll\" direction=\"left\">¡Adopta un nuevo amigo hoy!</marquee>\n        </section>\n        <section id=\"testimonials\" class=\"testimonials\">\n            <h2 data-page=\"index\">Testimonios de Clientes</h2>\n            <blockquote>\n                \"La atención y el servicio de Patitas Felices es excepcional. Mi mascota está en buen estado gracias a su cuidado y profesionalismo. Recomendaría a todos los amantes de las mascotas.\"\n                <cite>Cliente Satisfecho</cite>\n            </blockquote>\n        </section>\n        <section id=\"cta\" class=\"cta\">\n            <h2 data-page=\"index\">¿Quieres saber más?</h2>\n            <a href=\"#contact\" data-page=\"contact\" class=\"btn\">Contáctanos</a>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "servicios.html",
+          "texto": "```html-servicios\n<!-- servicios.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Patitas Felices | Servicios</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\"></script>\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#index\">Inicio</a></li>\n                <li class=\"active\"><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#precios\">Precios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"index\" class=\"page\" data-page=\"index\">\n            <h1>Bienvenido a Patitas Felices</h1>\n            <p>Clínica veterinaria especializada en cuidado de mascotas.</p>\n        </section>\n        <section id=\"servicios\" class=\"page\" data-page=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Consultas veterinarias</li>\n                <li>Vacunaciones y desparasitación</li>\n                <li>Cirugías veterinarias</li>\n                <li>Tratamientos de enfermedades</li>\n            </ul>\n        </section>\n        <section id=\"precios\" class=\"page\" data-page=\"precios\">\n            <h2>Precios</h2>\n            <p>Ofrecemos precios competitivos para todos nuestros servicios.</p>\n        </section>\n        <section id=\"contacto\" class=\"page\" data-page=\"contacto\">\n            <h2>Contacto</h2>\n            <p>Contáctanos para cualquier consulta o solicitud.</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "precios.html",
+          "texto": "```html-precios\n<!-- precios.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Precios - Patitas Felices</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <a href=\"index.html\">Inicio</a>\n            <a href=\"servicios.html\">Servicios</a>\n            <a href=\"precios.html\" class=\"active\">Precios</a>\n            <a href=\"contacto.html\">Contacto</a>\n        </nav>\n    </header>\n\n    <main>\n        <h1>Precios</h1>\n        <section class=\"plan\">\n            <h2>Plan Mensual</h2>\n            <ul>\n                <li>Visitas a la veterinaria</li>\n                <li>Exámenes regulares</li>\n                <li>Consultas médicas</li>\n                <li>Acceso a servicios especiales</li>\n            </ul>\n            <span data-mensual data-price-toggle>500€</span>\n        </section>\n\n        <section class=\"plan\">\n            <h2>Plan Anual</h2>\n            <ul>\n                <li>Visitas a la veterinaria</li>\n                <li>Exámenes regulares</li>\n                <li>Consultas médicas</li>\n                <li>Acceso a servicios especiales</li>\n                <li>Descuento especial en productos veterinarios</li>\n            </ul>\n            <span data-anual data-price-toggle>400€</span>\n        </section>\n    </main>\n\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "contacto.html",
+          "texto": "```html-contacto\n<!-- contacto.html -->\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Contacto - Patitas Felices</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"index.html\">Inicio</a></li>\n                <li><a href=\"servicios.html\">Servicios</a></li>\n                <li><a href=\"precios.html\">Precios</a></li>\n                <li class=\"active\"><a href=\"contacto.html\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section class=\"contact-form\">\n            <h2>Contactanos</h2>\n            <form id=\"data-contacto\" action=\"#\" method=\"post\" data-form-exito=\"¡Gracias por contactarnos!\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n\n                <label for=\"email\">Email:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n\n                <label for=\"mensaje\">Mensaje:</label>\n                <textarea id=\"mensaje\" name=\"mensaje\" required></textarea>\n\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section class=\"contact-info\">\n            <h2>Información de Contacto</h2>\n            <p><strong>Dirección:</strong> Calle Principal 123, Ciudad</p>\n            <p><strong>Teléfono:</strong> (55) 1234-5678</p>\n            <p><strong>Email:</strong> info@patitasfelices.com</p>\n            <p><strong>Horarios:</strong> Lunes a Viernes: 9:00 AM - 5:00 PM</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```"
+        },
+        {
+          "archivo": "style.css",
+          "texto": "```css\n<!-- style.css -->\n\n:root {\n  --primary-color: #3498db;\n  --secondary-color: #2ecc71;\n  --text-color: #333;\n  --background-color: #f4f4f9;\n  --font-size: 16px;\n  --spacing: 1rem;\n  --transition-speed: 0.3s;\n}\n\nbody {\n  font-family: Arial, sans-serif;\n  background-color: var(--background-color);\n  color: var(--text-color);\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\n/* Responsive design (mobile-first) */\n@media (max-width: 768px) {\n  .container {\n    padding: var(--spacing) 1rem;\n  }\n}\n\n@media (min-width: 769px) {\n  .container {\n    max-width: 1200px;\n    margin: 0 auto;\n  }\n}\n\n/* Keyframes */\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n@keyframes slideIn {\n  from {\n    transform: translateX(-100%);\n  }\n  to {\n    transform: translateX(0);\n  }\n}\n\n/* Focus-visible pseudo-class */\n:focus-visible {\n  outline: 2px solid var(--primary-color);\n  outline-offset: 2px;\n}\n\n/* prefers-reduced-motion media query */\n@media (prefers-reduced-motion: reduce) {\n  *, *::before, *::after {\n    transition: none !important;\n  }\n}\n```"
+        },
+        {
+          "archivo": "script.js",
+          "texto": "```js\n<!-- script.js -->\n\ndocument.addEventListener('DOMContentLoaded', function() {\n  // Data attributes for toggling\n  const navToggle = document.querySelectorAll('[data-nav-toggle]');\n  const themeToggle = document.querySelectorAll('[data-theme-toggle]');\n  const faqToggle = document.querySelectorAll('[data-faq-toggle]');\n  const priceToggle = document.querySelectorAll('[data-price-toggle]');\n  const contactoToggle = document.querySelectorAll('[data-contacto]');\n  const formExito = document.querySelector('[data-form-exito]');\n  const scrollProgress = document.querySelector('[data-scroll-progress]');\n  const reveal = document.querySelectorAll('[data-reveal]');\n\n  // Toggle navigation\n  navToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      this.classList.toggle('active');\n    });\n  });\n\n  // Toggle theme\n  themeToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      document.body.classList.toggle('dark');\n      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');\n    });\n  });\n\n  // Toggle FAQ\n  faqToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const faqContent = this.nextElementSibling;\n      faqContent.classList.toggle('active');\n    });\n  });\n\n  // Toggle prices\n  priceToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const pricesContent = this.nextElementSibling;\n      pricesContent.classList.toggle('active');\n    });\n  });\n\n  // Toggle contact\n  contactoToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const contactoContent = this.nextElementSibling;\n      contactoContent.classList.toggle('active');\n    });\n  });\n\n  // Form submission and success message\n  const form = document.querySelector('form');\n  const successMessage = document.querySelector('[data-form-exito]');\n\n  form.addEventListener('submit', function(event) {\n    event.preventDefault();\n    const formData = new FormData(form);\n    const name = formData.get('name');\n    const email = formData.get('email');\n    const message = formData.get('message');\n\n    // Basic validation\n    if (!name || !email || !message) {\n      alert('Por favor, complete todos los campos.');\n      return;\n    }\n\n    // Show success message\n    successMessage.style.display = 'block';\n\n    // Clear form fields\n    form.reset();\n  });\n\n  // Scroll progress\n  const observer = new IntersectionObserver(function(entries) {\n    entries.forEach(entry => {\n      if (entry.isIntersecting) {\n        scrollProgress.classList.add('active');\n      } else {\n        scrollProgress.classList.remove('active');\n      }\n    });\n  }, { threshold: 0.5 });\n\n  observer.observe(document.body);\n\n  // Reveal elements on scroll\n  reveal.forEach(reveal => {\n    const observer = new IntersectionObserver(function(entries) {\n      entries.forEach(entry => {\n        if (entry.isIntersecting) {\n          reveal.classList.add('active');\n        }\n      });\n    }, { threshold: 0.5 });\n\n    observer.observe(reveal);\n  });\n\n  // Restore theme from localStorage\n  if (localStorage.getItem('theme') === 'dark') {\n    document.body.classList.add('dark');\n  }\n});\n```"
+        }
+      ],
+      "funcional": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 86,
+        "casos": [
+          {
+            "name": "paginas_entregadas",
+            "passed": true,
+            "detail": "4/4"
+          },
+          {
+            "name": "titulo_por_pagina",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "estructura_semantica",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "h1_unico",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "enlaza_assets",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "links_resueltos",
+            "passed": true,
+            "detail": "8 enlace(s)"
+          },
+          {
+            "name": "data_page_por_pagina",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "ids_referenciados_existen",
+            "passed": true,
+            "detail": "0 referencia(s)"
+          },
+          {
+            "name": "css_tokens",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_animaciones",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_responsive",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_focus_visible",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "js_hooks_testeables",
+            "passed": false,
+            "detail": "faltan: data-mensual, data-anual"
+          },
+          {
+            "name": "js_tema_persistente",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "js_reveal_observer",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_fetch",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_eval",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_handlers_inline",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "sin_recursos_externos",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "ejecucion_js",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "dom_ready",
+            "passed": true,
+            "detail": "1 listener(s) de arranque"
+          },
+          {
+            "name": "eventos_registrados",
+            "passed": true,
+            "detail": "click=4 submit=1 keydown=0"
+          },
+          {
+            "name": "nav_toggle",
+            "passed": true,
+            "detail": "antes=false|| despues=false|active|"
+          },
+          {
+            "name": "theme_toggle",
+            "passed": true,
+            "detail": "tema=dark clase=false"
+          },
+          {
+            "name": "faq_toggle",
+            "passed": true,
+            "detail": "antes=false|| despues=false||active"
+          },
+          {
+            "name": "price_toggle",
+            "passed": true,
+            "detail": "el periodo cambió"
+          },
+          {
+            "name": "formulario_rechaza_invalido",
+            "passed": true,
+            "detail": "aria-invalid=0 focus=0 aviso=true"
+          },
+          {
+            "name": "formulario_acepta_valido",
+            "passed": true,
+            "detail": "confirmación visible"
+          },
+          {
+            "name": "reveal_observer",
+            "passed": true,
+            "detail": "4 elemento(s) observados"
+          },
+          {
+            "name": "scroll_progress",
+            "passed": true,
+            "detail": "progreso actualizado"
+          }
+        ],
+        "originalidad": {
+          "soportado": true,
+          "ok": false,
+          "puntuacion": 71,
+          "casos": [
+            {
+              "name": "css_animaciones",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "css_reduced_motion",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "css_clamp",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "html_svg_inline",
+              "passed": false,
+              "detail": ""
+            },
+            {
+              "name": "no_lorem_ipsum",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_emoji",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "no_gradient_generico",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        "paginas": 4,
+        "dinamico": {
+          "soportado": true,
+          "ok": true,
+          "puntuacion": 100
+        }
+      },
+      "originalidad": {
+        "soportado": true,
+        "ok": false,
+        "puntuacion": 71,
+        "casos": [
+          {
+            "name": "css_animaciones",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_reduced_motion",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_clamp",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "html_svg_inline",
+            "passed": false,
+            "detail": ""
+          },
+          {
+            "name": "no_lorem_ipsum",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_emoji",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "no_gradient_generico",
+            "passed": true,
+            "detail": ""
+          }
+        ]
+      },
+      "bloquesEncontrados": [
+        "index.html",
+        "servicios.html",
+        "precios.html",
+        "contacto.html",
+        "style.css",
+        "script.js"
+      ],
+      "archivosEvaluados": {
+        "index.html": true,
+        "servicios.html": true,
+        "precios.html": true,
+        "contacto.html": true,
+        "style.css": true,
+        "script.js": true
+      },
+      "calidad": {
+        "index.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 88
+        },
+        "servicios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 88
+        },
+        "precios.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": true,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": false,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 81
+        },
+        "contacto.html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "nav": true,
+            "main": true,
+            "footer": true,
+            "title": true,
+            "h1Unico": false,
+            "dataPage": false,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 81
+        },
+        "style.css": {
+          "checks": {
+            "body": true,
+            "hover": false,
+            "mediaQuery": true,
+            "variables": true,
+            "boxSizing": true,
+            "hexColor": true,
+            "transicion": true,
+            "noHTML": true,
+            "clamp": false,
+            "keyframes": true,
+            "mediaQueries": true,
+            "reducedMotion": true,
+            "focusVisible": true,
+            "tokens": true,
+            "texturaOGrano": false
+          },
+          "puntuacion": 80
+        },
+        "script.js": {
+          "checks": {
+            "eventListener": true,
+            "dom": true,
+            "funcion": false,
+            "validacion": true,
+            "noJQuery": true,
+            "noHTML": true,
+            "localStorage": true,
+            "observer": true,
+            "hooks": true,
+            "sinFetch": true,
+            "sinEval": true
+          },
+          "puntuacion": 91,
+          "sintaxis": {
+            "valida": true,
+            "error": null
+          }
+        }
+      },
+      "puntuacionMedia": 85,
+      "codigo": {
+        "index.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Patitas Felices - Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\"></script>\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#home\" data-page=\"index\">Inicio</a></li>\n                <li><a href=\"#services\" data-page=\"services\">Servicios</a></li>\n                <li><a href=\"#prices\" data-page=\"prices\">Precios</a></li>\n                <li><a href=\"#contact\" data-page=\"contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"hero\" class=\"hero\">\n            <h1 data-page=\"index\">Bienvenido a Patitas Felices</h1>\n            <p>Clínica veterinaria especializada en cuidado de mascotas.</p>\n            <marquee behavior=\"scroll\" direction=\"left\">¡Adopta un nuevo amigo hoy!</marquee>\n        </section>\n        <section id=\"testimonials\" class=\"testimonials\">\n            <h2 data-page=\"index\">Testimonios de Clientes</h2>\n            <blockquote>\n                \"La atención y el servicio de Patitas Felices es excepcional. Mi mascota está en buen estado gracias a su cuidado y profesionalismo. Recomendaría a todos los amantes de las mascotas.\"\n                <cite>Cliente Satisfecho</cite>\n            </blockquote>\n        </section>\n        <section id=\"cta\" class=\"cta\">\n            <h2 data-page=\"index\">¿Quieres saber más?</h2>\n            <a href=\"#contact\" data-page=\"contact\" class=\"btn\">Contáctanos</a>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>",
+        "servicios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Patitas Felices | Servicios</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\"></script>\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#index\">Inicio</a></li>\n                <li class=\"active\"><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#precios\">Precios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"index\" class=\"page\" data-page=\"index\">\n            <h1>Bienvenido a Patitas Felices</h1>\n            <p>Clínica veterinaria especializada en cuidado de mascotas.</p>\n        </section>\n        <section id=\"servicios\" class=\"page\" data-page=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Consultas veterinarias</li>\n                <li>Vacunaciones y desparasitación</li>\n                <li>Cirugías veterinarias</li>\n                <li>Tratamientos de enfermedades</li>\n            </ul>\n        </section>\n        <section id=\"precios\" class=\"page\" data-page=\"precios\">\n            <h2>Precios</h2>\n            <p>Ofrecemos precios competitivos para todos nuestros servicios.</p>\n        </section>\n        <section id=\"contacto\" class=\"page\" data-page=\"contacto\">\n            <h2>Contacto</h2>\n            <p>Contáctanos para cualquier consulta o solicitud.</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>",
+        "precios.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Precios - Patitas Felices</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <a href=\"index.html\">Inicio</a>\n            <a href=\"servicios.html\">Servicios</a>\n            <a href=\"precios.html\" class=\"active\">Precios</a>\n            <a href=\"contacto.html\">Contacto</a>\n        </nav>\n    </header>\n\n    <main>\n        <h1>Precios</h1>\n        <section class=\"plan\">\n            <h2>Plan Mensual</h2>\n            <ul>\n                <li>Visitas a la veterinaria</li>\n                <li>Exámenes regulares</li>\n                <li>Consultas médicas</li>\n                <li>Acceso a servicios especiales</li>\n            </ul>\n            <span data-mensual data-price-toggle>500€</span>\n        </section>\n\n        <section class=\"plan\">\n            <h2>Plan Anual</h2>\n            <ul>\n                <li>Visitas a la veterinaria</li>\n                <li>Exámenes regulares</li>\n                <li>Consultas médicas</li>\n                <li>Acceso a servicios especiales</li>\n                <li>Descuento especial en productos veterinarios</li>\n            </ul>\n            <span data-anual data-price-toggle>400€</span>\n        </section>\n    </main>\n\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "contacto.html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Contacto - Patitas Felices</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"index.html\">Inicio</a></li>\n                <li><a href=\"servicios.html\">Servicios</a></li>\n                <li><a href=\"precios.html\">Precios</a></li>\n                <li class=\"active\"><a href=\"contacto.html\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section class=\"contact-form\">\n            <h2>Contactanos</h2>\n            <form id=\"data-contacto\" action=\"#\" method=\"post\" data-form-exito=\"¡Gracias por contactarnos!\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n\n                <label for=\"email\">Email:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n\n                <label for=\"mensaje\">Mensaje:</label>\n                <textarea id=\"mensaje\" name=\"mensaje\" required></textarea>\n\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section class=\"contact-info\">\n            <h2>Información de Contacto</h2>\n            <p><strong>Dirección:</strong> Calle Principal 123, Ciudad</p>\n            <p><strong>Teléfono:</strong> (55) 1234-5678</p>\n            <p><strong>Email:</strong> info@patitasfelices.com</p>\n            <p><strong>Horarios:</strong> Lunes a Viernes: 9:00 AM - 5:00 PM</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Patitas Felices. Todos los derechos reservados.</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>",
+        "style.css": ":root {\n  --primary-color: #3498db;\n  --secondary-color: #2ecc71;\n  --text-color: #333;\n  --background-color: #f4f4f9;\n  --font-size: 16px;\n  --spacing: 1rem;\n  --transition-speed: 0.3s;\n}\n\nbody {\n  font-family: Arial, sans-serif;\n  background-color: var(--background-color);\n  color: var(--text-color);\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\n/* Responsive design (mobile-first) */\n@media (max-width: 768px) {\n  .container {\n    padding: var(--spacing) 1rem;\n  }\n}\n\n@media (min-width: 769px) {\n  .container {\n    max-width: 1200px;\n    margin: 0 auto;\n  }\n}\n\n/* Keyframes */\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n@keyframes slideIn {\n  from {\n    transform: translateX(-100%);\n  }\n  to {\n    transform: translateX(0);\n  }\n}\n\n/* Focus-visible pseudo-class */\n:focus-visible {\n  outline: 2px solid var(--primary-color);\n  outline-offset: 2px;\n}\n\n/* prefers-reduced-motion media query */\n@media (prefers-reduced-motion: reduce) {\n  *, *::before, *::after {\n    transition: none !important;\n  }\n}",
+        "script.js": "document.addEventListener('DOMContentLoaded', function() {\n  // Data attributes for toggling\n  const navToggle = document.querySelectorAll('[data-nav-toggle]');\n  const themeToggle = document.querySelectorAll('[data-theme-toggle]');\n  const faqToggle = document.querySelectorAll('[data-faq-toggle]');\n  const priceToggle = document.querySelectorAll('[data-price-toggle]');\n  const contactoToggle = document.querySelectorAll('[data-contacto]');\n  const formExito = document.querySelector('[data-form-exito]');\n  const scrollProgress = document.querySelector('[data-scroll-progress]');\n  const reveal = document.querySelectorAll('[data-reveal]');\n\n  // Toggle navigation\n  navToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      this.classList.toggle('active');\n    });\n  });\n\n  // Toggle theme\n  themeToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      document.body.classList.toggle('dark');\n      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');\n    });\n  });\n\n  // Toggle FAQ\n  faqToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const faqContent = this.nextElementSibling;\n      faqContent.classList.toggle('active');\n    });\n  });\n\n  // Toggle prices\n  priceToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const pricesContent = this.nextElementSibling;\n      pricesContent.classList.toggle('active');\n    });\n  });\n\n  // Toggle contact\n  contactoToggle.forEach(toggle => {\n    toggle.addEventListener('click', function() {\n      const contactoContent = this.nextElementSibling;\n      contactoContent.classList.toggle('active');\n    });\n  });\n\n  // Form submission and success message\n  const form = document.querySelector('form');\n  const successMessage = document.querySelector('[data-form-exito]');\n\n  form.addEventListener('submit', function(event) {\n    event.preventDefault();\n    const formData = new FormData(form);\n    const name = formData.get('name');\n    const email = formData.get('email');\n    const message = formData.get('message');\n\n    // Basic validation\n    if (!name || !email || !message) {\n      alert('Por favor, complete todos los campos.');\n      return;\n    }\n\n    // Show success message\n    successMessage.style.display = 'block';\n\n    // Clear form fields\n    form.reset();\n  });\n\n  // Scroll progress\n  const observer = new IntersectionObserver(function(entries) {\n    entries.forEach(entry => {\n      if (entry.isIntersecting) {\n        scrollProgress.classList.add('active');\n      } else {\n        scrollProgress.classList.remove('active');\n      }\n    });\n  }, { threshold: 0.5 });\n\n  observer.observe(document.body);\n\n  // Reveal elements on scroll\n  reveal.forEach(reveal => {\n    const observer = new IntersectionObserver(function(entries) {\n      entries.forEach(entry => {\n        if (entry.isIntersecting) {\n          reveal.classList.add('active');\n        }\n      });\n    }, { threshold: 0.5 });\n\n    observer.observe(reveal);\n  });\n\n  // Restore theme from localStorage\n  if (localStorage.getItem('theme') === 'dark') {\n    document.body.classList.add('dark');\n  }\n});"
+      },
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "qwen2.5-coder:3b",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "web-complex",
+        "presetTaskType": "web",
+        "maxTokens": 900,
+        "timeoutMs": 300000,
+        "temperature": 0.3,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 16384,
+        "toolChoice": null
+      },
+      "reescorado": {
+        "motivo": "stub con nextElementSibling/FormData/classList propio",
+        "antes": {
+          "funcional": 72,
+          "originalidad": 71
+        }
+      }
+    }
+  }
+}

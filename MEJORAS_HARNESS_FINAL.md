@@ -399,3 +399,148 @@ mientras los scorers esperan bloques etiquetados. Ahora:
   `RESUMEN_CANONICO_TOOLS.md`, `RESUMEN_CANONICO_TOOLS_OFFLINE.md`,
   `RESUMEN_CANONICO_NATIVO.md`, `RESUMEN_COMPARACION.md`.
 - No se hicieron commits ni pushes.
+
+## 10. Suite `web-complex`: landing multipágina y diseño no genérico
+
+P06 midía tres archivos y un solo HTML. El prompt de
+`tests/e2e/prompts/landing_multipagina.md` eleva el listón a **4 páginas +
+CSS + JS**, con animaciones, diseño editorial y hooks de prueba, y sirve para
+encontrar límites del propio harness sin tocar el core ni la GUI.
+
+### 10.1 Parser por ruta
+
+`extractCodeBlocks()` ya aceptaba etiquetas `html-index`, pero
+`blocksByLanguage()` las guardaba como claves distintas y `missingBlockLanguages()`
+creía que faltaba `html`. Ahora `tests/utils/e2e-helpers.js` añade:
+
+- `MULTIPAGE_BLOCKS`: contrato etiqueta → archivo.
+- `blocksByPath()`: agrupa por nombre de archivo y quita el comentario de la
+  primera línea.
+- `missingBlockPaths()`, `mergePathBlocks()` y `blockTagForPath()`.
+
+P06 sigue usando las funciones originales, así que no hay regresiones.
+
+### 10.2 Reparación por archivo y presupuesto propio
+
+`runWebComplex()` genera **cada archivo en su propia llamada**, con la etiqueta
+exacta (`html-precios`, `script.js`, ...) y un techo por tipo (`html` 900,
+`css`/`js` 1400). La suite tiene `MAX_TOKENS.web-complex` de 6000 local /
+4000 remoto y `TimeoutPolicy.maxMs = 420000` únicamente para ella. El modo
+monolítico original queda detrás de `--web-generacion=monolitico` como prueba
+de estrés: en la primera corrida real agotó 300 s sin devolver ni un bloque.
+
+### 10.3 Funcionalidad simulada y originalidad medible
+
+`validateMultiPage()` (`tests/utils/code-behavior.js`) combina:
+
+- **Estático**: 4 páginas, `<title>`, landmarks, `h1` único, enlaces relativos
+  que resuelven, `data-page`, IDs referenciados, tokens CSS, `clamp()`,
+  `@keyframes` ≥ 2, `@media` ≥ 2, `prefers-reduced-motion`, `:focus-visible`,
+  SVG inline y hooks JS.
+- **Dinámico**: `createDomStub()` (`tests/utils/dom-stub.js`) ejecuta el JS en
+  `vm` con un DOM mínimo y simula `DOMContentLoaded`, click del menú/tema/FAQ/
+  precios, submit inválido y válido, `IntersectionObserver` y scroll.
+- **Anti-plantilla**: `originalidad` es un eje separado que penaliza `Lorem
+  ipsum`, emoji, `#667eea`, `linear-gradient(135deg`, recursos externos,
+  `eval`, `fetch` y handlers inline.
+
+`calidad.puntuacion` histórico no se toca: la nueva suite reporta
+`puntuacionMedia`, `funcional` y `originalidad` como campos propios.
+
+### 10.4 Verificación
+
+- `npm test`: **65/65** (7 tests nuevos: parser por ruta, fusión/continuación,
+  validación completa, hooks con selector/`classList`/`alert`,
+  `nextElementSibling`/`FormData`, fences sin cerrar / etiquetas genéricas y
+  detección de anti-patrones).
+- `node --check` OK en runner, helpers, validador, stub y tests.
+- Arranque de la suite con `--models=modelo_inexistente`: sin errores de
+  importación ni de despacho.
+- Artefactos: `canonico_web-complex__<entorno>__<modelo>/` con los seis
+  archivos y `resultados.json`; resumen `resumen_web-complex.json`.
+- Primera corrida real (`qwen2.5-coder:3b`, modo monolítico): calidad 81,
+  funcional 64%, originalidad 71%, 6/6 archivos pero 855 s y 300 s perdidos
+  en la llamada inicial. Conservada en
+  `canonico_web-complex__remoto__qwen2.5-coder_3b_monolitico_baseline/`.
+- El stub acepta ahora hooks con valor de selector y cambios de `classList`,
+  además de `aria-expanded`; distingue fallos reales del modelo (IDs
+  `name`/`message` inexistentes, enlaces `#anchor`, sin `clamp()`) de
+  limitaciones del evaluador.
+- El primer intento `por-archivo` fue una **regresión del harness**, no una
+  medida del modelo (calidad 10, 1/6 archivos, 1492 s): el prompt de cada
+  archivo repetía el contrato de seis bloques y las respuestas truncadas se
+  re-parseaban concatenadas, cerrando un fence con el de la llamada siguiente.
+  Ahora `instruccionArchivo()` es corta, `blockForPath()` exige bloque cerrado,
+  `fenceBalance()` dispara un reintento acotado, cada respuesta se guarda en
+  `respuestasPorLlamada` y se parsea por separado, y un deadline de pared de
+  15 min evita corridas de 25 min (`deadlineAlcanzado`).
+- Relanzamiento corregido (`qwen2.5-coder:3b`): calidad **85**, funcional
+  **86%** (72% antes de arreglar el stub), originalidad 71%, 6/6 archivos y
+  **599 s** vs 855 s del baseline monolítico. Seis llamadas, cero reintentos y
+  cero aborts. El re-escore del mismo código con el stub mejorado quedó
+  registrado en `resultados.json` (`reescorado`): 14 puntos eran del evaluador,
+  no del modelo.
+- `lfm3-omni:2b` (local): calidad 56, funcional 39%, originalidad 43%, 5/6
+  archivos y 411 s. `script.js` se truncó dos veces (fence impar, bucle de
+  repetición y código roto), así que se marcó como faltante en lugar de
+  puntuarse. La suite discrimina entre modelos donde P05/P06 no lo hacían.
+  Resumen conjunto: `RESUMEN_CANONICO_WEB_COMPLEX.md`.
+
+## 11. Reparación determinista y reintentos conscientes del corte (2026-11-21)
+
+### 11.1 Cambios genéricos en el harness
+
+Ninguna función depende de `landing`, clínicas, IPs ni de las suites locales.
+Todas son capacidades del harness para cualquier prompt.
+
+- **`src/utils/response-repair.js` (nuevo)**: reparación determinista de la
+  *forma* de la respuesta, sin conocimiento del dominio:
+  - cierra cercos Markdown desbalanceados;
+  - quita prólogos en prosa antes del primer cerco y envolventes
+    `<style>`/`<script>` (solo en tareas de código; en chat la respuesta se
+    devuelve intacta, porque un bloque de código puede ser legítimo);
+  - recorta bucles de líneas repetidas al final;
+  - detecta (sin reescribir) identificadores con repetición interna:
+    reescribirlos podía colisionar con otro símbolo del mismo archivo;
+  - recorta una declaración de función incompleta en la última línea;
+  - elimina bloques de función **idénticos** repetidos (en JS un nombre
+    duplicado es error de sintaxis; no se tocan reimplementaciones distintas).
+  - Devuelve `reparaciones`, `truncado` y `senales` para que el llamador decida.
+  - La reparación solo se aplica cuando se espera código. El núcleo no conoce
+    nombres de suite: el llamador pasa un tipo de tarea genérico (`web`, `code`,
+    `css`…) en `postProcess.language`. En `chat` la respuesta se devuelve intacta.
+- **`askAgent`**: `postProcess: { repair: true }` activa la reparación antes de
+  extraer bloques. Es opt-in; el comportamiento por defecto sigue intacto.
+- **`enhancedAskAgent`**: activa la reparación en la llamada inicial y en cada
+  reintento; cuando hay señales de truncamiento, `providerParaRetry()` baja la
+  temperatura, quita la semilla **y amplía `maxTokens` ×1,6**. Antes se pedía lo
+  mismo con el mismo techo y se reproducía el corte.
+- **`system-prompts-en.js`**: el idioma de la respuesta ya no va fijo en
+  español dentro de los prompts en inglés; se añade según el idioma detectado.
+  `enhancedAskAgent` pasa el mismo idioma para instrucciones y respuesta.
+- **Evaluador**: reintento tras truncamiento aunque la reparación haya cerrado
+  el cerco, techo ampliado en ese reintento, y se conserva la mejor versión
+  (completa antes que truncada; entre completas, la más larga). El validador
+  funcional marca todas las interacciones como fallidas cuando el JS no
+  ejecuta: antes ese caso ocultaba los fallos y hacía que un JS roto puntuara
+  mejor que uno ejecutable con interacciones incompletas.
+
+### 11.2 Medición
+
+Mismo validador para todas las filas (re-escore de los artefactos guardados):
+
+| Corrida `web-complex` | Calidad | Funcional | Archivos |
+|---|---|---|---|
+| `lfm3-omni:2b` antes | 56 | 39% | 5/6 |
+| `lfm3-omni:2b` con todas las correcciones | **70** | **47%** | **6/6** |
+| `qwen2.5-coder:3b` antes | 85 | 86% | 6/6 |
+| `qwen2.5-coder:3b` después | 85 | 86% | 6/6 |
+
+El modelo local pasó de perder `script.js` a entregarlo con sintaxis válida;
+la subida de calidad es de +14 puntos y la funcional de +8 puntos porcentuales.
+El modelo fuerte no se degradó. Las corridas intermedias se conservaron en
+`canonico_web-complex__local__lfm3-omni_2b_{baseline_pre_repair,r1,r2,r3}/`.
+
+`npm test`: **78/78**. Las mejoras que se descartaron por el propio ciclo de
+medición: colapsar identificadores repetidos (creaba nombres duplicados) y
+aceptar el último bloque generado sin comparar (un reintento podía empeorar).
