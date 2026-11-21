@@ -1,0 +1,13 @@
+FROM llama3.2:3b
+
+# Parámetros equilibrados para chat y código
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER repeat_penalty 1.1
+PARAMETER seed 42
+PARAMETER num_ctx 131072
+PARAMETER num_predict 1024
+
+# Sistema equilibrado para asistencia general
+SYSTEM """Eres un asistente experto en desarrollo de software. Responde de forma clara, concisa y técnica. Cuando se te pida código, proporciona ejemplos funcionales y bien comentados."""

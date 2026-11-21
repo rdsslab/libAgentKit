@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T13:59:23.253Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ]
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "idioma": {
+      "es": {
+        "code": {
+          "exito": true,
+          "duracionMs": 5146,
+          "systemPrompt": "Eres un programador experto. Genera SOLO código funcional, bien comentado y listo para usar.\n\nREGLAS ESTRICTAS:\n1. No incluyas explicaciones previas ni postéricas salvo comentarios dentro del código.\n2. No uses bloques de markdown ``` a menos que se te pida explícitamente.\n3. El código debe ser válido, seguir buenas prácticas y no requerir dependencias externas no mencionadas.\n4. Incluye manejo de errores cuando sea apropiado.\n5. Usa nombres de variables y funciones descriptivos en español o inglés según el contexto.",
+          "systemPromptChars": 522,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  try {\n    return regex.test(email);\n  } catch (error) {\n    return 'Error: ' + error.message;\n  }\n}",
+          "error": null
+        },
+        "web": {
+          "exito": true,
+          "duracionMs": 38416,
+          "systemPrompt": "Eres un programador experto. Genera SOLO código funcional, bien comentado y listo para usar.\n\nREGLAS ESTRICTAS:\n1. No incluyas explicaciones previas ni postéricas salvo comentarios dentro del código.\n2. No uses bloques de markdown ``` a menos que se te pida explícitamente.\n3. El código debe ser válido, seguir buenas prácticas y no requerir dependencias externas no mencionadas.\n4. Incluye manejo de errores cuando sea apropiado.\n5. Usa nombres de variables y funciones descriptivos en español o inglés según el contexto.",
+          "systemPromptChars": 522,
+          "calidad": {
+            "puntuacion": 25
+          },
+          "codigo": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            margin: 0;\n            padding: 0;\n            background-color: #f4f4f9;\n            color: #333;\n        }\n        header {\n            background-color: #4a90e2;\n            color: white;\n            padding: 1rem;\n            text-align: center;\n        }\n        header h1 {\n            margin: 0;\n        }\n        .container {\n            max-width: 800px;\n            margin: 0 auto;\n            padding: 2rem;\n        }\n        .services {\n            display: flex;\n            justify-content: space-around;\n            margin-bottom: 1rem;\n        }\n        .service-card {\n            background-color: white;\n            border: 1px solid #ddd;\n            border-radius: 8px;\n            padding: 1rem;\n            width: 45%;\n        }\n        .service-card h2 {\n            margin-top: 0;\n        }\n        .contact {\n            background-color: #4a90e2;\n            color: white;\n            padding: 1rem;\n            text-align: center;\n        }\n        .contact p {\n            margin: 0;\n        }\n    </style>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <div class=\"container\">\n        <div class=\"services\">\n            <div class=\"service-card\">\n                <h2>Chequeo Médico</h2>\n                <p>Evaluación integral del animal.</p>\n            </div>\n            <div class=\"service-card\">\n                <h2>Vacunaciones</h2>\n                <p>Protección contra enfermedades.</p>\n            </div>\n            <div class=\"service-card\">\n                <h2>Exámenes Especializados</h2>\n                <p>Diagnósticos avanzados.</p>\n            </div>\n        </div>\n        <div class=\"contact\">\n            <p>Llamar: +34 123 456 789</p>\n            <p>Email: info@clinica.com</p>\n        </div>\n    </div>\n</body>\n</html>",
+          "error": null
+        }
+      },
+      "en": {
+        "code": {
+          "exito": true,
+          "duracionMs": 3896,
+          "systemPrompt": "You are an expert programmer. Generate ONLY functional, well-commented code ready to use.\n\nSTRICT RULES:\n1. Do not include explanations before or after the code, except comments within the code.\n2. Do not use markdown code blocks (```) unless explicitly requested.\n3. Code must be valid, follow best practices, and not require external dependencies not mentioned.\n4. Include error handling when appropriate.\n5. Use descriptive variable and function names in Spanish or English as appropriate.",
+          "systemPromptChars": 492,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return regex.test(email);\n}",
+          "error": null
+        },
+        "web": {
+          "exito": true,
+          "duracionMs": 85097,
+          "systemPrompt": "You are an expert programmer. Generate ONLY functional, well-commented code ready to use.\n\nSTRICT RULES:\n1. Do not include explanations before or after the code, except comments within the code.\n2. Do not use markdown code blocks (```) unless explicitly requested.\n3. Code must be valid, follow best practices, and not require external dependencies not mentioned.\n4. Include error handling when appropriate.\n5. Use descriptive variable and function names in Spanish or English as appropriate.",
+          "systemPromptChars": 492,
+          "calidad": {
+            "puntuacion": 0
+          },
+          "codigo": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria - Consulta Online</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header class=\"header\">\n        <div class=\"logo\">Clínica Veterinaria</div>\n        <nav class=\"nav\">\n            <ul>\n                <li><a href=\"#home\">Inicio</a></li>\n                <li><a href=\"#services\">Servicios</a></li>\n                <li><a href=\"#contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n\n    <main class=\"main\">\n        <section class=\"hero\">\n            <h1>Bienestar Animal</h1>\n            <p>Ofrecemos cuidados de alta calidad para tu animal de mascota.</p>\n        </section>\n\n        <section class=\"services\">\n            <h2>Servicios</h2>\n            <ul>\n                <li><a href=\"#\">Chequeo Médico</a></li>\n                <li><a href=\"#\">Vacunación</a></li>\n                <li><a href=\"#\">Examen Odontológico</a></li>\n                <li><a href=\"#\">Terapia Física</a></li>\n                <li><a href=\"#\">Nutrición</a></li>\n            </ul>\n        </section>\n\n        <section class=\"contact\">\n            <h2>Contacto</h2>\n            <form action=\"contact-form\" method=\"post\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"text\" id=\"telefono\" name=\"telefono\" required>\n\n                <label for=\"email\">Correo:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n\n                <button type=\"submit\" class=\"btn\">Enviar Consulta</button>\n            </form>\n        </section>\n    </main>\n\n    <footer class=\"footer\">\n        <p>&copy; 2024 Clínica Veterinaria. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>\n\n<style>\n    * {\n        margin: 0;\n        padding: 0;\n        box-sizing: border-box;\n    }\n\n    body {\n        font-family: Arial, sans-serif;\n        background-color: #f5f5f5;\n        color: #333;\n    }\n\n    header {\n        background-color: #1a1a1a;\n        color: #fff;\n        padding: 1rem 2rem;\n        text-align: center;\n    }\n\n    .logo {\n        font-size: 1.5rem;\n        font-weight: bold;\n        margin-bottom: 0.5rem;\n    }\n\n    .nav {\n        list-style-type: none;\n        display: flex;\n        justify-content: center;\n        gap: 1.5rem;\n    }\n\n    .nav a {\n        color: #fff;\n        text-decoration: none;\n        font-size: 1rem;\n    }\n\n    .hero {\n        text-align: center;\n        padding: 2rem;\n        background-color: #fff;\n        border-bottom: 2px solid #1a1a1a;\n    }\n\n    .hero h1 {\n        margin-bottom: 0.5rem;\n    }\n\n    .hero p {\n        margin-bottom: 1rem;\n    }\n\n    .services {\n        padding: 2rem;\n        background-color: #fff;\n        border-radius: 8px;\n        box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n    }\n\n    .services h2 {\n        margin-bottom: 1rem;\n    }\n\n    .services ul {\n        list-style-type: none;\n        padding-left: 0;\n    }\n\n    .services li {\n        margin-bottom: 0.5rem;\n    }\n\n    .services a {\n        color: #1a1a1a;\n        text-decoration: none;\n        font-size: 1rem;\n    }\n\n    .contact {\n        padding: 2rem;\n        background-color: #fff;\n        border-radius: 8px;\n        box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n    }\n\n    .contact h2 {\n        margin-bottom: 1rem;\n    }\n\n    .contact form {\n        display: flex;\n        gap: 1rem;\n        margin-top: 1rem;\n    }\n\n    .contact form label {\n        font-weight: bold;\n        margin-bottom: 0.5rem;\n    }\n\n    .contact form input {\n        padding: 0.5rem;\n        border: 1px solid #ccc;\n        border-radius: 4px;\n        font-size: 1rem;\n    }\n\n    .contact form button {\n        background-color: #1a1a1a;\n        color: #fff;\n        border: none;\n        padding: 0.75rem 1.5rem;\n  ",
+          "error": null
+        }
+      }
+    }
+  }
+}

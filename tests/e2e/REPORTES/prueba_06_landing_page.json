@@ -1,0 +1,35 @@
+{
+  "prueba": "06_landing_page_html",
+  "modelo": "qwen3:4b-instruct",
+  "servidor": "http://127.0.0.1:11434",
+  "fecha": "2026-11-19",
+  "resultado": {
+    "html": {
+      "success": false,
+      "durationMs": 38933,
+      "chars": 482,
+      "error": "HTML incompleto - modelo generó HTML parcial con cierre incorrecto</.html>",
+      "archivo_creado_manualmente": true
+    },
+    "css": {
+      "success": false,
+      "durationMs": null,
+      "chars": 0,
+      "error": "Timeout > 300000ms - modelo no respondió",
+      "archivo_creado_manualmente": true
+    },
+    "js": {
+      "success": false,
+      "durationMs": null,
+      "chars": 0,
+      "error": "Timeout > 300000ms - modelo no respondió",
+      "archivo_creado_manualmente": true
+    }
+  },
+  "validaciones": {
+    "htmlValid": true,
+    "cssValid": true,
+    "jsValid": true
+  },
+  "nota": "Los archivos HTML, CSS y JS se crearon manualmente como ejemplo de lo que el GUI debería generar. El modelo qwen3:4b-instruct no fue capaz de generar CSS y JS completos en tiempo razonable (>300s timeout), y el HTML generado estaba incompleto (cierre incorrecto </.html> y faltaban secciones principales)."
+}

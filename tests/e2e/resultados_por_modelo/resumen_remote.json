@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T04:11:01.116Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "remote",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "resumen": [
+    {
+      "model": "qwen2.5-coder:3b",
+      "entorno": "remoto",
+      "suite": "remote",
+      "p01": "✓ 17245ms",
+      "p02": "ip:✓ web:✓",
+      "p03": "✓ memoria",
+      "p04": "compact/recuerda",
+      "p05": "100% · func 75%",
+      "p06": "83% · func 100%"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "prueba": "04_long_context_compaction",
+  "modelo": "functiongemma:latest",
+  "servidor": "http://192.168.100.126:11434",
+  "fecha": "2026-11-19T14:23:37.585Z",
+  "configuracion": {
+    "umbral_compactacion": 25,
+    "keepLastMessages": 3
+  },
+  "resultados": [
+    {
+      "turn": 1,
+      "user": "Mensaje 1: Información extensa sobre cuidado de mascotas. Los perros necesitan paseos diarios, alimentación balanceada y visitas regulares al veterinario.",
+      "response": "Mensaje 1: Información extensa sobre cuidado de mascotas. Los perros necesitan paseos diarios, alimentación balanceada y visitas regulares al veterinario.",
+      "success": true,
+      "durationMs": 1562,
+      "context": {
+        "used_tokens": 69,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    },
+    {
+      "turn": 2,
+      "user": "Mensaje 2: Los gatos necesitan arenero limpio, comida de calidad, y revisiones veterinarias anuales para detectar problemas temprano.",
+      "response": "Mensaje 2: Los gatos necesitan arenero limpio, comida de calidad, y revisiones veterinarias anuales para detectar problemas temprano.",
+      "success": true,
+      "durationMs": 1018,
+      "context": {
+        "used_tokens": 137,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    },
+    {
+      "turn": 3,
+      "user": "Mensaje 3: Las aves requieren jaulas espaciosas, dieta variada de semillas y frutas, y socialización diaria con sus dueños.",
+      "response": "Mensaje 3: Las aves requieren jaulas espaciosas, dieta variada de semillas y frutas, y socialización diaria con sus dueños.",
+      "success": true,
+      "durationMs": 1228,
+      "context": {
+        "used_tokens": 209,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    },
+    {
+      "turn": 4,
+      "user": "Mensaje 4: Los conejos necesitan heno ilimitado, verduras frescas, y espacio para saltar y hacer ejercicio.",
+      "response": "Mensaje 4: Los conejos necesitan heno ilimitado, verduras frescas, y espacio para saltar y hacer ejercicio.",
+      "success": true,
+      "durationMs": 1053,
+      "context": {
+        "used_tokens": 277,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    },
+    {
+      "turn": 5,
+      "user": "Mensaje 5: Las mascotas exóticas como iguanas y serpientes necesitan terrarios con control de temperatura y humedad específico.",
+      "response": "Mensaje 5: Las mascotas exóticas como iguanas y serpientes necesitan terrarios con control de temperatura y humedad específico.",
+      "success": true,
+      "durationMs": 1199,
+      "context": {
+        "used_tokens": 345,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    }
+  ]
+}

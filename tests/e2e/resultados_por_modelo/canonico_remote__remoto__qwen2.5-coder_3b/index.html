@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Veterinaria</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Bienvenido a nuestra Clínica Veterinaria</h1>
+        <nav>
+            <ul>
+                <li><a href="#about">Sobre Nosotros</a></li>
+                <li><a href="#services">Servicios</a></li>
+                <li><a href="#contact">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="about">
+            <h2>Sobre Nosotros</h2>
+            <p>En nuestra clínica veterinaria, cuidamos cada uno de nuestros pacientes con el amor y el conocimiento que merecen.</p>
+        </section>
+        <section id="services">
+            <h2>Servicios</h2>
+            <ul>
+                <li>Cirugía veterinaria</li>
+                <li>Vacunación y desparasitación</li>
+                <li>Exámenes veterinarios</li>
+                <li>Atención a animales de compañía</li>
+            </ul>
+        </section>
+        <section id="contact">
+            <h2>Contacto</h2>
+            <form id="contactForm">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" name="name" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="message">Mensaje:</label>
+                <textarea id="message" name="message" required></textarea>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Clínica Veterinaria. Todos los derechos reservados.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

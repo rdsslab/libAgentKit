@@ -1,0 +1,188 @@
+{
+  "qwen2.5:1.5b-instruct": {
+    "01_response_time": {
+      "exito": true,
+      "duracionMs": 16193,
+      "respuesta": "React es una biblioteca y framework de JavaScript utilizado para construir interfaces de usuario en la nube y aplicaciones web móviles. Proporciona una forma de descomponer una aplicación en component",
+      "longitud": 410,
+      "tokens": 134,
+      "tokensPorSegundo": 5.89,
+      "contexto": {
+        "used_tokens": 134,
+        "limit_tokens": 0,
+        "used_percent": null,
+        "estimated": false
+      }
+    },
+    "03_response_coherence": {
+      "exito": true,
+      "resultados": [
+        {
+          "turno": 1,
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "¡Hola María! Es un placer conocerte. Con tu clínica veterinaria, Patitas Felices, puedes apoyar a los animales y a tu comunidad de manera única. ¿Cómo puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 5115
+        },
+        {
+          "turno": 2,
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Genial María! Tu clínica veterinaria es un excelente servicio para los animales. Los perros, gatos, aves y conejos son muy especiales. ¿Tienes alguna pregunta sobre cómo podemos mejorarlo o si hay algo específico que necesitas ayuda con?",
+          "exito": true,
+          "duracionMs": 6867
+        },
+        {
+          "turno": 3,
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "Por supuesto, María. ¿Tu nombre completo es?",
+          "exito": true,
+          "duracionMs": 1936
+        },
+        {
+          "turno": 4,
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "¡Por supuesto! ¡Quiero asegurarme de tener todos los detalles! ¿Qué servicios ofrecemos en la clínica de María?",
+          "exito": true,
+          "duracionMs": 3789
+        }
+      ],
+      "recuerdaNombre": true,
+      "recuerdaClinica": false,
+      "recuerdaServicios": false
+    },
+    "04_long_context_compaction": {
+      "exito": true,
+      "umbralCompactacion": 25,
+      "resultados": [
+        {
+          "turno": 1,
+          "mensaje": "Mensaje 1: Información extensa sobre cuidado de mascotas. Los perros necesitan paseos diarios, alimentación balanceada y visitas regulares al veterinario.",
+          "respuesta": "Mensaje 2: Sin embargo, hay muchos factores que pueden afectar la salud y el bienestar de los perros, incluyendo el clima, la dieta, la herencia genética, el estado de salud general, y la falta de atención regular. Por lo tanto, es importante mantener un horario de alimentación equilibrado y practicar regularmente los paseos para ayudar a mantener la salud física y mental de tu perro.\n\nMensaje 3: Además de la atención al cuidado de los perros, es fundamental tener una rutina de cuidado de las mascotas que incluye una visita regular al veterinario para asegurarse de que el perro está bien y recibir consejos y cuidados únicos para el perro.\n\nEn resumen, cuidar de mascotas requiere una atención constante y dedicada. Por lo tanto, es esencial tener un plan de cuidado bien organizado y mantener una rutina regular para mantener a tu mascota saludable y feliz.",
+          "exito": true,
+          "duracionMs": 22224,
+          "contexto": {
+            "used_tokens": 281,
+            "limit_tokens": 0,
+            "used_percent": null,
+            "estimated": false
+          }
+        },
+        {
+          "turno": 2,
+          "mensaje": "Mensaje 2: Los gatos necesitan arenero limpio, comida de calidad, y revisiones veterinarias anuales para detectar problemas temprano.",
+          "respuesta": "Mensaje 3: En cuanto a la rutina de cuidado de las mascotas, una visita regular al veterinario para revisar a tu gato es fundamental para mantener su salud y bienestar. Por lo tanto, es importante tener un plan de cuidado bien organizado que incluya revisiones médicas anuales para detectar cualquier problema temprano.\n\nPor otro lado, asegúrate de mantener una rutina de limpieza constante para la casa y el gato. Esto puede implicar limpiar la boca del gato regularmente para mantenerla limpio y saludable. Por lo tanto, es esencial mantener un horario de limpieza bien establecido para mantener a tu gato y tu hogar limpios y seguros.",
+          "exito": true,
+          "duracionMs": 16795,
+          "contexto": {
+            "used_tokens": 480,
+            "limit_tokens": 0,
+            "used_percent": null,
+            "estimated": false
+          }
+        },
+        {
+          "turno": 3,
+          "mensaje": "Mensaje 3: Las aves requieren jaulas espaciosas, dieta variada de semillas y frutas, y socialización diaria con sus dueños.",
+          "respuesta": "Mensaje 4: También es importante tener en cuenta la atención al cuidado de las aves, incluyendo una dieta balanceada y una rutina de limpieza constante para mantener su caja. Además, proporcionar un espacio donde las aves puedan pasear y volar libremente y mantenerlas en contacto con sus dueños diariamente. Por lo tanto, es esencial tener un plan de cuidado bien organizado para mantener a tu mascota saludable y feliz.\n\nEn resumen, cuidar de aves requiere un cuidado especial y constante atención. Por lo tanto, es esencial tener un plan de cuidado bien establecido que incluya una dieta balanceada y una rutina de limpieza constante para mantener a tu mascota en perfecto estado de salud.",
+          "exito": true,
+          "duracionMs": 18782,
+          "contexto": {
+            "used_tokens": 695,
+            "limit_tokens": 0,
+            "used_percent": null,
+            "estimated": false
+          }
+        },
+        {
+          "turno": 4,
+          "mensaje": "Mensaje 4: Los conejos necesitan heno ilimitado, verduras frescas, y espacio para saltar y hacer ejercicio.",
+          "respuesta": "Mensaje 5: Además de la rutina de cuidado bien organizada para las mascotas, también es importante tener en cuenta la atención al cuidado del clima y la seguridad de las mascotas. Esto puede implicar asegurarse de tener suficiente espacio para el perro, proporcionar agua fresca y limpiar regularmente la caja del perro.\n\nEn resumen, cuidar de mascotas requiere un cuidado especial y constante atención. Por lo tanto, es esencial tener un plan de cuidado bien organizado que incluya una rutina de cuidado bien establecido y una atención a las necesidades específicas de cada mascota, así como la seguridad y la protección adecuadas.",
+          "exito": true,
+          "duracionMs": 15829,
+          "contexto": {
+            "used_tokens": 883,
+            "limit_tokens": 0,
+            "used_percent": null,
+            "estimated": false
+          }
+        },
+        {
+          "turno": 5,
+          "mensaje": "Mensaje 5: Las mascotas exóticas como iguanas y serpientes necesitan terrarios con control de temperatura y humedad específico.",
+          "respuesta": "Mensaje 6: En cuanto a la rutina de cuidado de las mascotas exóticas, es fundamental tener un plan bien organizado para mantener a tu mascota en perfecto estado de salud. Por lo tanto, es esencial mantener una temperatura y humedad específica para tus mascotas exóticas, y proporcionar una dieta equilibrada y un espacio de seguridad adecuado.\n\nAdemás, es importante mantener una rutina de limpieza regular para la caja del serpiente o terrario de las iguanas. Esto incluye limpiar el terrario periódicamente, dar alimento limpio y conservar la caja segura. Por lo tanto, es esencial tener un plan de cuidado bien organizado para mantener a tu mascota saludable y feliz.\n\nEn resumen, cuidar de mascotas exóticas requiere un cuidado especial y constante atención. Por lo tanto, es esencial tener un plan de cuidado bien organizado que incluya una rutina de cuidado bien establecido y una atención a las necesidades específicas de cada mascota, así como la seguridad y la protección adecuadas.",
+          "exito": true,
+          "duracionMs": 26005,
+          "contexto": {
+            "used_tokens": 1166,
+            "limit_tokens": 0,
+            "used_percent": null,
+            "estimated": false
+          }
+        }
+      ],
+      "recuerdaNombre": false,
+      "recuerdaClinica": false
+    },
+    "05_code_generation": {
+      "exito": true,
+      "resultados": [
+        {
+          "tarea": "javascript_funcion_utilitaria",
+          "lenguaje": "javascript",
+          "exito": true,
+          "error": null,
+          "duracionMs": 107729,
+          "respuesta": "Aquí tienes una función en JavaScript que utiliza una expresión regular para validar si un correo electrónico es válido. La función también incluye comentarios para explicar su funcionamiento:\n\n```javascript\n// Definimos la función validarCorreo\nfunction validarCorreo(correo) {\n    // Expresión regular para validar un correo electrónico\n    // Esta expresión regular es:\n    // ^[\\w-]+([\\w-]+)*@[\\w-]+(\\.[\\w-]+)*$ \n    // Explicación:\n    // ^ - comienza una cadena de caracteres\n    // [\\w-]+ - hasta un número de caracteres, incluyendo espacios y guiones\n    // ([\\w-]+)* - esto se repite una o más veces\n    // @ - este es el carácter @\n    // [\\w-]+ - hasta un número de caracteres, incluyendo espacios y guiones\n    // (\\.[\\w-]+)* - esto se repite una o más veces\n    // $ - termina la cadena de caracteres\n    // Si la cadena de caracteres cumple con la expresión regular, se considera un correo electrónico válido\n    return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/i.test(correo);\n}\n\n// Ejemplo de uso de la función\nlet correoCorrecto = validarCorreo(\"usuario@ejemplo.com\");\nconsole.log(correoCorrecto); // Debería imprimir \"true\" si el correo es válido\n\nlet correoIncorrecto = validarCorreo(\"usuario@ejemplo.com\");\nconsole.log(correoIncorrecto); // Debería imprimir \"false\" si el correo es inválido\n```\n\nEste código define una función `validarCorreo` que devuelve `true` si el correo es válido y `false` si no lo es. La función utiliza una expresión regular `^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$` para validar el formato del correo. Si el correo coincide con esta expresión regular, se considera válido.\n\nEs importante notar que la expresión regular utilizada aquí es muy básica y puede no ser suficiente para validar todos los correos electrónicos válidos. Para un enfoque más robusto, se recomienda usar el método `email-validator` o otros servicios de validación de correo electrónico más completos.",
+          "archivoGuardado": true,
+          "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/codigo_javascript_funcion_utilitaria.js",
+          "tokens": 549,
+          "tokensPorSegundo": 4.54
+        },
+        {
+          "tarea": "python_lectura_archivo",
+          "lenguaje": "python",
+          "exito": true,
+          "error": null,
+          "duracionMs": 23553,
+          "respuesta": "```python\ndef leer_lineas_con_error():\n    try:\n        with open('archivo.txt', 'r') as archivo:\n            for linea in archivo:\n                # Eliminar espacios y saltos de línea al principio y final de la línea\n                linea_limpia = linea.strip()\n                if 'error' in linea_limpia:\n                    print(linea_limpia)\n    except FileNotFoundError:\n        print(\"El archivo no existe.\")\n    except Exception as e:\n        print(f\"Ocurrió un error: {e}\")\n\n# Llamamos a la función para leer el archivo y imprimir las líneas con 'error'\nleer_lineas_con_error()\n```\n\nEste script lee un archivo llamado `archivo.txt` y busca en cada línea si contiene la palabra 'error'. Si encuentra una línea con 'error', la imprime. \n\nSi el archivo no existe, se muestra un mensaje de error indicando que el archivo no existe. Si ocurre algún otro error durante el proceso de lectura del archivo, se muestra un mensaje de error con el tipo de error que se produjo.",
+          "archivoGuardado": true,
+          "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/codigo_python_lectura_archivo.py",
+          "tokens": 296,
+          "tokensPorSegundo": 9.64
+        }
+      ]
+    },
+    "06_landing_page_html": {
+      "exito": false,
+      "resultados": {
+        "html": {
+          "exito": false,
+          "error": "Request timed out.",
+          "duracionMs": 181228,
+          "respuesta": "",
+          "chars": 0,
+          "archivoCreado": false,
+          "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/index.html"
+        },
+        "css": {
+          "exito": true,
+          "error": null,
+          "duracionMs": 102667,
+          "respuesta": "```css\n/* Clases para el fondo de fondo verde */\nbody {\n    background-color: #2e7d32;\n    color: #fff;\n    font-family: Arial, sans-serif;\n}\n\n/* Clases para el fondo de fondo naranja */\nbody {\n    background-color: #ff9800;\n    color: #fff;\n    font-family: Arial, sans-serif;\n}\n\n/* Clases para animaciones botones hover */\nbutton:hover,\ninput:hover {\n    transform: scale(1.1);\n    transition: all 0.3s;\n}\n\n/* Clases para tarjetas de servicios */\n.card {\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n    transition: all 0.3s;\n}\n\n.card:hover {\n    transform: translateY(-5px);\n}\n\n/* Clases para tabla de precios */\ntable {\n    border-collapse: collapse;\n}\n\ntable, th, td {\n    border: 1px solid #ccc;\n}\n\nth, td {\n    padding: 8px;\n    text-align: left;\n}\n\ntd:hover {\n    background-color: #ff9800;\n}\n\n/* Clases para formulario */\nform {\n    display: flex;\n}\n\nform div {\n    margin: 10px;\n}\n\ninput {\n    width: 100%;\n    padding: 5px;\n    margin-bottom: 10px;\n}\n\ninput:focus {\n    border-color: #ff9800;\n}\n\n/* Clases para header fijo */\nheader {\n    position: fixed;\n    top: 0;\n    width: 100%;\n    background-color: #2e7d32;\n    color: #fff;\n    padding: 10px 15px;\n    z-index: 1;\n}\n\nheader a {\n    color: #ff9800;\n    text-decoration: none;\n}\n\nheader a:hover {\n    color: #ff9800;\n}\n```",
+          "chars": 1291,
+          "archivoCreado": true,
+          "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/style.css"
+        },
+        "js": {
+          "exito": false,
+          "error": "Request timed out.",
+          "duracionMs": 181322,
+          "respuesta": "",
+          "chars": 0,
+          "archivoCreado": false,
+          "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/script.js"
+        }
+      }
+    }
+  }
+}

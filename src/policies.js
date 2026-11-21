@@ -128,6 +128,29 @@ export const looksLikeWebQuery = (text) => {
 };
 
 /** "Busca en internet quien es X" -> "quien es X". */
+/**
+ * Decide si se lanza la búsqueda determinista previa al modelo.
+ *
+ * `webAllowed` lo calcula el llamador con `resolveToolCapability("web_search",
+ * caps)`. Mantener la policy pura evita que `policies.js` dependa de
+ * `capabilities.js`, pero impide que un prompt con "busca en internet" saltarse
+ * una capacidad deshabilitada.
+ */
+const isPlainObjectSafe = (value) => value != null && typeof value === "object" && !Array.isArray(value);
+
+export const shouldRunPreSearch = ({
+  preSearch,
+  lastUserText,
+  webAllowed = true,
+  webSearchConfig = {},
+} = {}) => {
+  if (!webAllowed) return false;
+  return preSearch === true
+    || preSearch === "always"
+    || (preSearch === "auto" && looksLikeWebQuery(lastUserText))
+    || (isPlainObjectSafe(webSearchConfig) && webSearchConfig.preSearch === true);
+};
+
 export const cleanWebQuery = (text) => {
 	const raw = String(text || "").trim();
 	const stripped = raw.replace(

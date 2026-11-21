@@ -25,6 +25,7 @@ export {
 	formatHistoryRecap,
 	looksLikeWebQuery,
 	cleanWebQuery,
+	shouldRunPreSearch,
 	pickWebQuery,
 	formatWebRecap,
 	trimWebResults,
@@ -143,6 +144,86 @@ export {
 	normalizeCapabilities,
 	resolveToolCapability,
 } from "./capabilities.js";
+
+export {
+	shouldAutoCompact,
+	compactMessages,
+	compactMessagesTruncate,
+	compactMessagesWithSummary,
+	buildCompactionSummaryPrompt,
+} from "./compaction.js";
+
+export {
+	MODEL_PRESETS,
+	getModelConfig,
+	listTaskTypes as listPresetTaskTypes,
+} from "./config/presets.js";
+
+export {
+	extractCodeBlock,
+	extractCodeBlocks,
+	detectRefusal,
+	validateMinimumContent,
+} from "./utils/response-cleaner.js";
+
+export {
+	getSystemPrompt,
+	getSystemPromptEN,
+	getSystemPromptES,
+	detectPromptLanguage,
+	SYSTEM_PROMPTS_EN,
+	SYSTEM_PROMPTS_ES,
+} from "./utils/system-prompts-en.js";
+
+export {
+	enriquecerMensajes,
+	getFewShotExample,
+} from "./utils/task-enhancer.js";
+
+export {
+	validarHTMLSalida,
+	validarCSSSalida,
+	validarJSSalida,
+	validarCodigoSalida,
+	generarPromptCorreccion,
+	necesitaCorreccion,
+} from "./utils/output-validator.js";
+
+export {
+	validateSyntax,
+	validateCodeBlocks,
+} from "./utils/syntax-validator.js";
+
+export {
+	createCacheKey,
+	ResponseCache,
+} from "./utils/response-cache.js";
+
+export {
+	suggestTimeoutMs,
+	TimeoutPolicy,
+} from "./utils/adaptive-timeout.js";
+
+export {
+	MODEL_RECOMMENDATIONS,
+	recommendModels,
+	recommendModel,
+} from "./utils/model-registry.js";
+
+export { enhancedAskAgent } from "./utils/harness-improvements.js";
+
+export {
+	unwrapToolArgumentValue,
+	normalizeToolArguments,
+} from "./utils/tool-arguments.js";
+
+export {
+	MULTI_FILE_TEMPLATES,
+	taskTypeForLanguage,
+	buildBlockBundle,
+	stripWrapperTags,
+	generateMultiFile,
+} from "./utils/multi-file-generator.js";
 
 export {
 	GLOBAL_CONFIG_MODE,

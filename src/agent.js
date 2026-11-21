@@ -25,7 +25,7 @@ import { extractDocumentText } from "./documents.js";
 import {
 	cleanWebQuery,
 	formatWebRecap,
-	looksLikeWebQuery,
+	shouldRunPreSearch,
 	short,
 	trimWebResults,
 } from "./policies.js";
@@ -33,11 +33,15 @@ import { webSearch } from "./websearch.js";
 import {
 	applyCapabilitiesToToolHandlers,
 	capabilityDeniedResult,
+	capabilityEnabled,
 	defaultCapabilitiesFor,
 	normalizeCapabilities,
 	resolveToolCapability,
 } from "./capabilities.js";
 import { listOllamaModels } from "./ollama.js";
+import { compactMessages, shouldAutoCompact } from "./compaction.js";
+import { extractCodeBlock, detectRefusal, validateMinimumContent } from "./utils/response-cleaner.js";
+import { normalizeToolArguments } from "./utils/tool-arguments.js";
 
 const DEFAULT_MAX_TOOL_ROUNDS = 4;
 const DEFAULT_MAX_INJECTED_CONTEXT_CHARS = 12000;
@@ -56,6 +60,57 @@ const truncateInjectedText = (text, maxChars = DEFAULT_MAX_INJECTED_CONTEXT_CHAR
 	const limit = Number.isFinite(Number(maxChars)) && Number(maxChars) > 0 ? Number(maxChars) : DEFAULT_MAX_INJECTED_CONTEXT_CHARS;
 	if (value.length <= limit) return value;
 	return `${value.slice(0, limit)}\n\n...[${label} truncated: ${value.length} chars total]`;
+};
+
+/**
+ * Normaliza las opciones de post-procesamiento. Por defecto NO se modifica el
+ * texto devuelto por el modelo: extraer markdown era destructivo en respuestas
+ * de chat que incluían ejemplos de código.
+ */
+const normalizeResponseProcessing = (value, taskType) => {
+	const defaults = {
+		extractCodeBlocks: false,
+		detectRefusal: true,
+		validateMinimumContent: true,
+	};
+
+	if (value === true) {
+		return { ...defaults, extractCodeBlocks: true };
+	}
+	if (value === false) {
+		return {
+			extractCodeBlocks: false,
+			detectRefusal: false,
+			validateMinimumContent: false,
+		};
+	}
+
+	const config = isPlainObject(value) ? value : {};
+	return {
+		extractCodeBlocks: config.extractCodeBlocks ?? config.extractCode ?? config.stripMarkdown ?? defaults.extractCodeBlocks,
+		detectRefusal: config.detectRefusal ?? defaults.detectRefusal,
+		validateMinimumContent: config.validateMinimumContent ?? defaults.validateMinimumContent,
+		language: config.language ?? (["code", "js", "javascript", "html", "css", "web"].includes(taskType) ? taskType : undefined),
+	};
+};
+
+/** Aproximación deliberadamente burda; suficiente para decidir compaction. */
+const estimateMessagesTokens = (messages = []) => {
+	try {
+		return Math.max(1, Math.ceil(JSON.stringify(messages).length / 4));
+	} catch {
+		return 0;
+	}
+};
+
+const resolveContextLimit = (config) => {
+	const value = Number(
+		config?.contextLength
+		?? config?.context_length
+		?? config?.num_ctx
+		?? config?.maxContextTokens,
+	);
+	return Number.isFinite(value) && value > 0 ? value : null;
 };
 
 const userInputUnavailableResult = ({ tool = "request_user_input", message } = {}) => ({
@@ -227,10 +282,49 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  * @param {object} [options.webSearch] Options forwarded to `webSearch()` (providers, maxResults...).
  * @param {number} [options.maxToolRounds]
  * @param {boolean} [options.includeDiagnostics]
+ * @param {boolean|object} [options.autoCompact] Compacta el historial antes de llamar al proveedor.
+ * @param {number} [options.compactionThresholdPercent] Umbral por defecto (25).
+ * @param {number} [options.compactionKeepLastMessages] Mensajes recientes a conservar.
+ * @param {boolean|object} [options.responseProcessing] Post-procesamiento opcional de la respuesta.
  * @param {AbortSignal} [options.signal]
  * @param {(delta: string, meta: object) => void} [options.onTextDelta] Optional streaming callback. When absent the provider uses its non-streaming path.
  * @param {(event: object) => void} [options.onToolStart] Optional tool-start notification.
  * @param {(event: object) => void} [options.onToolFinish] Optional tool-finish notification.
+ * @param {object} options.provider Provider configuration passed to the IA layer.
+ * @param {string} options.provider.provider Provider name ("ollama", "openai-compatible", "anthropic", "google-gemini").
+ * @param {string} options.provider.model Model name (e.g., "qwen2.5-coder:3b", "llama3.2:3b").
+ * @param {string} options.provider.baseUrl Base URL of the provider (default: "http://127.0.0.1:11434").
+ * @param {string} [options.provider.apiKey] API key (optional for Ollama).
+ *
+ *   ## Generation parameters (optional, passed through to the provider):
+ *
+ *   - provider.temperature: Sampling temperature (0.0-2.0, default: 0.7)
+ *   - provider.top_p: Nucleus sampling probability (0.0-1.0, default: 0.9)
+ *   - provider.top_k: Top-k sampling (default: 40)
+ *   - provider.repeat_penalty: Repetition penalty (default: 1.1)
+ *   - provider.seed: Random seed for deterministic output
+ *   - provider.maxTokens / provider.max_tokens: Maximum tokens to generate
+ *   - provider.num_ctx / provider.contextLength / provider.context_length / provider.maxContextTokens: Context window size
+ *   - provider.toolChoice / provider.tool_choice: Tool choice mode ("auto", "required", "none")
+ *
+ * Example:
+ *
+ *   const result = await askAgent({
+ *     provider: {
+ *       provider: "ollama",
+ *       model: "qwen2.5-coder:3b",
+ *       baseUrl: "http://127.0.0.1:11434",
+ *       temperature: 0.2,
+ *       top_p: 0.9,
+ *       top_k: 40,
+ *       repeat_penalty: 1.1,
+ *       seed: 42,
+ *       num_ctx: 32768,
+ *       maxTokens: 2048,
+ *     },
+ *     messages: [{ role: "user", content: "Escribe una función en JavaScript" }],
+ *   });
+ *
  * @returns {Promise<{text: string, usedWeb: boolean, webQuery: string, webResults: Array, webSource: string|null, documents: Array, toolExecutions: Array, diagnostics: object}>}
  */
 export const askAgent = async ({
@@ -248,8 +342,16 @@ export const askAgent = async ({
 	approveToolCall,
 	preSearch = "auto",
 	webSearch: webSearchOptions = {},
+	// Inyección opcional para harness/CI: fixtures deterministas sin red.
+	webSearchFn,
 	maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
 	includeDiagnostics = false,
+	autoCompact = false,
+	compactionThresholdPercent = 25,
+	compactionKeepLastMessages = 12,
+	compactionStrategy = "summary",
+	responseProcessing = false,
+	postProcess,
 	signal,
 	capabilities,
 	interactive = false,
@@ -280,11 +382,36 @@ export const askAgent = async ({
 		});
 	}
 
-	const promptMessages = [];
-	if (system) {
-		promptMessages.push({ role: "system", content: String(system) });
+	// El system prompt puede venir en el nivel superior, dentro del provider
+	// (los presets de harness lo dejan ahí) o como mensajes `system` en el
+	// historial. Se consolidan en UN solo mensaje: varios mensajes system
+	// consecutivos hacen que algunos chat templates de modelos pequeños
+	// devuelvan contenido vacío, además de desperdiciar ventana de contexto.
+	const providerObject = isPlainObject(provider) ? provider : null;
+	const providerSystem = providerObject?.system ?? providerObject?.systemPrompt;
+	const systemParts = [];
+	const addSystemPart = (value) => {
+		if (value == null) return;
+		const text = String(value).trim();
+		if (text && !systemParts.includes(text)) systemParts.push(text);
+	};
+	addSystemPart(system);
+	addSystemPart(providerSystem);
+
+	const conversationMessages = [];
+	for (const message of conversation) {
+		if (message.role === "system") {
+			addSystemPart(message.content);
+			continue;
+		}
+		conversationMessages.push(message);
 	}
-	promptMessages.push(...conversation);
+
+	const promptMessages = [];
+	if (systemParts.length) {
+		promptMessages.push({ role: "system", content: systemParts.join("\n\n") });
+	}
+	promptMessages.push(...conversationMessages);
 
 	const configuredTools = normalizeToolConfig(tools);
 	const handlers = { ...toolHandlers };
@@ -377,6 +504,7 @@ export const askAgent = async ({
 
 	// Web search: deterministic pre-search for weak models plus an optional tool.
 	const wantsWebTool = Boolean(configuredTools.web_search);
+	const runWebSearch = typeof webSearchFn === "function" ? webSearchFn : webSearch;
 	const webConfig = {
 		...webSearchOptions,
 		...(isPlainObject(configuredTools.web_search) ? configuredTools.web_search : {}),
@@ -389,14 +517,17 @@ export const askAgent = async ({
 	let webErrors = [];
 
 	const lastUserText = getLastUserText(conversation);
-	const shouldPreSearch = preSearch === true
-		|| preSearch === "always"
-		|| (preSearch === "auto" && looksLikeWebQuery(lastUserText))
-		|| (isPlainObject(configuredTools.web_search) && configuredTools.web_search.preSearch === true);
+	const webAllowed = resolveToolCapability("web_search", caps).allowed;
+	const shouldPreSearch = shouldRunPreSearch({
+		preSearch,
+		lastUserText,
+		webAllowed,
+		webSearchConfig: configuredTools.web_search,
+	});
 
 	if (shouldPreSearch && lastUserText) {
 		webQuery = cleanWebQuery(lastUserText);
-		const found = await webSearch({ ...webConfig, query: webQuery, signal });
+		const found = await runWebSearch({ ...webConfig, query: webQuery, signal });
 		webResults = found.results || [];
 		webSource = found.source;
 		webErrors = found.errors || [];
@@ -429,8 +560,8 @@ export const askAgent = async ({
 			},
 			policy: { oneShot: true },
 			handler: async (args) => {
-				const query = String(args?.query || "").trim() || lastUserText;
-				const found = await webSearch({ ...webConfig, query, signal });
+				const query = String(normalizeToolArguments(args).query || "").trim() || lastUserText;
+				const found = await runWebSearch({ ...webConfig, query, signal });
 				return {
 					...trimWebResults(found, { maxResults: Number(webConfig.maxResults ?? 4) }),
 					query,
@@ -568,14 +699,27 @@ export const askAgent = async ({
 	// Apply generic capability enforcement to all handlers.
 	const securedHandlers = applyCapabilitiesToToolHandlers(handlers, caps);
 
+	// Defensa en profundidad: el proveedor ya normaliza los argumentos, pero
+	// los handlers inyectados por el llamador también deben recibir valores limpios.
+	const normalizedHandlers = Object.fromEntries(
+		Object.entries(securedHandlers).map(([name, definition]) => {
+			const fn = typeof definition === "function"
+				? definition
+				: (definition?.handler ?? definition?.run ?? definition?.execute);
+			if (typeof fn !== "function") return [name, definition];
+			const normalized = async (args, context) => fn(normalizeToolArguments(args), context);
+			return [name, typeof definition === "function" ? normalized : { ...definition, handler: normalized }];
+		}),
+	);
+
 	// Minimal presentation hooks. They observe the already-secured handlers and
 	// never change a tool's verdict, arguments or result.
 	const observedHandlers = (() => {
 		if (typeof onToolStart !== "function" && typeof onToolFinish !== "function") {
-			return securedHandlers;
+			return normalizedHandlers;
 		}
 		const observed = {};
-		for (const [name, definition] of Object.entries(securedHandlers)) {
+		for (const [name, definition] of Object.entries(normalizedHandlers)) {
 			const fn = typeof definition === "function"
 				? definition
 				: (definition?.handler ?? definition?.run ?? definition?.execute);
@@ -615,7 +759,7 @@ export const askAgent = async ({
 		return observed;
 	})();
 
-	const effectiveMcpServers = caps.mcp === false ? [] : mcpServers;
+	const effectiveMcpServers = capabilityEnabled(caps, "mcp") ? mcpServers : [];
 
 	const hasTools = Object.keys(securedHandlers).length > 0;
 
@@ -635,6 +779,53 @@ export const askAgent = async ({
 		}
 	} catch {}
 
+	// Compactación opcional del historial. Se decide ANTES de la llamada para
+	// que el proveedor reciba realmente menos mensajes (no solo un diagnóstico).
+	let compactionInfo = null;
+	if (autoCompact) {
+		const compactConfig = autoCompact === true ? {} : (isPlainObject(autoCompact) ? autoCompact : {});
+		const thresholdPercent = Number(
+			compactConfig.thresholdPercent ?? compactionThresholdPercent ?? 25,
+		);
+		const contextLimit = resolveContextLimit(effectiveProvider);
+		const estimatedTokens = estimateMessagesTokens(promptMessages);
+		const usedPercent = contextLimit ? (estimatedTokens / contextLimit) * 100 : 0;
+
+		if (shouldAutoCompact({ context: { used_percent: usedPercent } }, thresholdPercent)) {
+			const before = promptMessages.length;
+			const compacted = await compactMessages({
+				messages: promptMessages,
+				strategy: compactConfig.strategy ?? compactionStrategy,
+				keepLastMessages: Number(
+					compactConfig.keepLastMessages ?? compactionKeepLastMessages ?? 12,
+				),
+				summarize: compactConfig.summarize,
+			});
+			promptMessages.length = 0;
+			promptMessages.push(...compacted);
+			compactionInfo = {
+				triggered: true,
+				thresholdPercent,
+				contextLimit,
+				estimatedTokens,
+				usedPercent: Number(usedPercent.toFixed(2)),
+				before,
+				after: promptMessages.length,
+				strategy: compactConfig.strategy ?? compactionStrategy,
+			};
+		} else {
+			compactionInfo = {
+				triggered: false,
+				thresholdPercent,
+				contextLimit,
+				estimatedTokens,
+				usedPercent: Number(usedPercent.toFixed(2)),
+				before: promptMessages.length,
+				after: promptMessages.length,
+			};
+		}
+	}
+
 	// The provider layer is loaded on demand: importing the package must not
 	// pull the OpenAI/Anthropic/Google/MCP SDKs when the caller only needs the
 	// policies, the buffers or the web search. The module instance is the same
@@ -649,14 +840,53 @@ export const askAgent = async ({
 		prompts: promptMessages,
 		images,
 		maxToolRounds,
-		includeDiagnostics: true,
+		includeDiagnostics,
 		signal,
 	});
 
 	const diagnostics = isPlainObject(result) ? result : { text: String(result ?? "") };
-	const text = typeof diagnostics.text === "string" ? diagnostics.text : "";
+	let text = typeof diagnostics.text === "string" ? diagnostics.text : "";
 	const toolExecutionsRaw = Array.isArray(diagnostics.toolExecutions) ? diagnostics.toolExecutions : [];
 	const usageInfo = isPlainObject(diagnostics.usage) ? diagnostics.usage : null;
+
+	// Post-procesamiento OPCIONAL: extraer markdown solo cuando se pide
+	// explícitamente (típicamente tareas de código/web). En chat se conserva
+	// el texto original aunque contenga bloques de código legítimos.
+	const taskType = _inferTaskTypeFromPrompt(promptMessages);
+	const processing = normalizeResponseProcessing(
+		postProcess ?? responseProcessing,
+		taskType,
+	);
+	if (text) {
+		if (processing.extractCodeBlocks) {
+			const cleaned = extractCodeBlock(text, processing.language ?? taskType);
+			if (cleaned && cleaned.length > 0) {
+				text = cleaned;
+			}
+		}
+
+		const refusal = processing.detectRefusal ? detectRefusal(text, taskType) : { refused: false };
+		if (refusal.refused) {
+			if (isPlainObject(diagnostics)) {
+				diagnostics.modelRefusal = true;
+				diagnostics.refusalReason = refusal.reason;
+			}
+		} else if (refusal.reason) {
+			if (isPlainObject(diagnostics)) {
+				diagnostics.contentContamination = refusal.reason;
+			}
+		}
+
+		if (processing.validateMinimumContent) {
+			const minContent = validateMinimumContent(text, 20);
+			if (!minContent.valid) {
+				if (isPlainObject(diagnostics)) {
+					diagnostics.incompleteContent = true;
+					diagnostics.incompleteReason = minContent.reason;
+				}
+			}
+		}
+	}
 
 	let finalUsedWeb = usedWeb;
 	let finalWebQuery = webQuery;
@@ -704,6 +934,9 @@ export const askAgent = async ({
 	for (const key of ["incomplete", "reason", "stoppedAfterToolSuccess", "automaticToolFallbackUsed", "assistantDumpedToolCatalog", "lowConfidenceWebRetryUsed"]) {
 		if (diagnostics[key] != null) extra[key] = diagnostics[key];
 	}
+	if (compactionInfo) {
+		extra.compaction = compactionInfo;
+	}
 
 	if (!includeDiagnostics) {
 		return {
@@ -748,6 +981,26 @@ export const askAgent = async ({
 		...extra,
 	};
 };
+
+/**
+ * Infiere el tipo de tarea a partir de los mensajes del prompt.
+ * Se usa para aplicar post-procesamiento específico (ej. limpiar bloques de código).
+ *
+ * @param {Array<{role: string, content: any}>} prompts
+ * @returns {string} "code", "web", "html", "css", "js", "chat" u otro
+ */
+function _inferTaskTypeFromPrompt(prompts = []) {
+	const lastUser = [...prompts].reverse().find((m) => m.role === 'user');
+	if (!lastUser) return 'chat';
+	const content = typeof lastUser.content === 'string' ? lastUser.content : String(lastUser.content ?? '');
+	const lower = content.toLowerCase();
+
+	if (/landing page|html5|<html|<body|<header|<form/i.test(lower)) return 'html';
+	if (/css\b|stylesheet|:hover|@media|background-color/i.test(lower)) return 'css';
+	if (/javascript\b|addEventListener|getElementById|function\s+\w+/i.test(lower)) return 'js';
+	if (/escribe una función|código|script|programa|algoritmo/i.test(lower)) return 'code';
+	return 'chat';
+}
 
 /** Same as `askAgent` but returns only the assistant text. */
 export const askAgentText = async (options = {}) => {

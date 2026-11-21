@@ -1,0 +1,40 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Color Button</title>
+    <style>
+        .button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #3399ff;
+        }
+        .button.green {
+            background-color: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="button button.green" onclick="this.classList.toggle('button.green')">Click Me</div>
+    <script>
+        function toggleColor() {
+            var button = document.querySelector('.button.green');
+            if (button.style.backgroundColor === 'blue') {
+                button.classList.remove('button.green');
+                button.style.backgroundColor = 'green';
+            } else {
+                button.classList.add('button.green');
+                button.style.backgroundColor = 'blue';
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+In this code, we have created a simple HTML page with a button. The button has a class `button.green` which when clicked, changes to a blue background color and the text color changes to white. When the button loses focus, it changes back to its original color and text color. The `toggleColor` JavaScript function toggles the class of the `button.green` on the button, so its background color changes from blue to green and vice versa.

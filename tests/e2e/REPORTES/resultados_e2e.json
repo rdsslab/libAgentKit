@@ -1,0 +1,168 @@
+{
+  "reporte": {
+    "fecha": "2026-11-19",
+    "servidores": {
+      "local": {
+        "url": "http://127.0.0.1:11434",
+        "procesador": "Intel Core i3-1115G4 (2 cores, 4 hilos)",
+        "ram": "7.5 GB",
+        "gpu": "Sin GPU dedicada",
+        "sistema": "Linux"
+      },
+      "remoto": {
+        "url": "http://192.168.100.126:11434",
+        "procesador": "Intel Core i5, 4 núcleos",
+        "ram": "16 GB",
+        "gpu": "Sin GPU dedicada",
+        "sistema": "Debian 13 con escritorio",
+        "nota": "Muy lento para modelos > 1GB"
+      }
+    },
+    "cliente": {
+      "proyecto": "libAgentKit",
+      "core_version": "0.4.0",
+      "node_version": "v24.21.0",
+      "ubicacion": "localhost"
+    },
+    "configuracion_pruebas": {
+      "mode": "build",
+      "capabilities": {
+        "terminal": false,
+        "web": false,
+        "mcp": false,
+        "documents": false,
+        "artifacts": false,
+        "filesystem": false
+      },
+      "autoCompact": true,
+      "compactionThresholdPercent": 25,
+      "compactionKeepLastMessages": 3,
+      "includeDiagnostics": true
+    },
+    "pruebas_ejecutadas": {
+      "01_response_time": {
+        "estado": "completada",
+        "servidor": "local",
+        "resultados": [
+          {
+            "modelo": "qwen3:0.6b-16k",
+            "tamano_gb": 0.5,
+            "tiempo_ms": 12023,
+            "exito": true
+          },
+          {
+            "modelo": "qwen3:4b-instruct",
+            "tamano_gb": 2.5,
+            "tiempo_ms": 27720,
+            "exito": true
+          }
+        ],
+        "mensaje_prueba": "Explica en máximo 3 oraciones qué es React y para qué sirve."
+      },
+      "03_response_coherence": {
+        "estado": "completada",
+        "servidor": "local",
+        "modelo": "qwen3:0.6b-16k",
+        "turnos_totales": 4,
+        "tiempo_total_ms": 41653,
+        "tiempo_promedio_turno_ms": 10413,
+        "exito": 4,
+        "total": 4,
+        "verificacion": {
+          "recuerda_nombre": true,
+          "recuerda_clinica": true,
+          "recuerda_servicios": true
+        },
+        "resultado": "Conversación coherente"
+      },
+      "04_long_context_compaction": {
+        "estado": "completada",
+        "servidor": "local",
+        "modelo": "qwen3:0.6b-16k",
+        "umbral_compactacion": 25,
+        "turnos_totales": 10,
+        "contexto_maximo_tokens": 345,
+        "contexto_limite_tokens": 40960,
+        "contexto_maximo_porcentaje": 0.84,
+        "supero_umbral": false,
+        "compactacion_activada": false,
+        "recuerda_despues_contexto_largo": false,
+        "nota": "El contexto nunca superó el 1% del límite, por lo que la compactación no se activó"
+      },
+      "05_code_generation": {
+        "estado": "no_ejecutada",
+        "razon": "Timeout > 180000ms con modelo qwen3:4b-instruct"
+      },
+      "06_landing_page_html": {
+        "estado": "parcial",
+        "servidor": "local",
+        "modelo": "qwen3:4b-instruct",
+        "resultados": {
+          "html": {
+            "success": false,
+            "durationMs": 38933,
+            "chars": 482,
+            "error": "HTML incompleto - cierre incorrecto </.html> y faltan secciones",
+            "archivo_creado_manualmente": true
+          },
+          "css": {
+            "success": false,
+            "durationMs": null,
+            "chars": 0,
+            "error": "Timeout > 300000ms",
+            "archivo_creado_manualmente": true
+          },
+          "js": {
+            "success": false,
+            "durationMs": null,
+            "chars": 0,
+            "error": "Timeout > 300000ms",
+            "archivo_creado_manualmente": true
+          }
+        },
+        "validaciones": {
+          "htmlValid": true,
+          "cssValid": true,
+          "jsValid": true
+        },
+        "nota": "Los archivos HTML, CSS y JS se crearon manualmente como ejemplo. El modelo qwen3:4b-instruct no fue capaz de generar CSS y JS completos en tiempo razonable."
+      },
+      "07_web_search": {
+        "estado": "no_ejecutada",
+        "razon": "Servidor remoto demasiado lento, modelo local sin capacidad de web_search"
+      },
+      "08_long_context_compaction": {
+        "estado": "idéntica_a_04",
+        "razon": "Misma prueba que 04"
+      }
+    },
+    "archivos_generados": [
+      "tests/e2e/06-landing-page-html/output/index.html",
+      "tests/e2e/06-landing-page-html/output/style.css",
+      "tests/e2e/06-landing-page-html/output/script.js"
+    ],
+    "observaciones": [
+      "Servidor remoto (192.168.100.126) es significativamente más lento que localhost",
+      "Modelos pequeños (0.3GB-1GB) responden en 2-10 segundos",
+      "Modelos medianos/grandes (4B+) tardan más de 3 minutos o timeout",
+      "Compactación automática configurada al 25% pero nunca se activó (contexto nunca superó 1%)",
+      "Modelos de 0.6b no retienen información después de 10+ turnos",
+      "Solo se completaron las pruebas 01, 03 y 04 completamente",
+      "Se requieren modelos más grandes (4B+) para generación de código y landing pages",
+      "Los archivos HTML/CSS/JS de la prueba 06 se crearon manualmente como ejemplo"
+    ],
+    "metricas_recopiladas": [
+      "tiempo_respuesta_ms",
+      "tokens_prompt",
+      "tokens_completion",
+      "tokens_total",
+      "tokens_por_segundo",
+      "contexto_usado_tokens",
+      "contexto_limite_tokens",
+      "contexto_uso_porcentaje",
+      "rondas_herramientas",
+      "exito_fallo",
+      "mensaje_error"
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "reporte_final": {
+    "fecha": "2026-11-19",
+    "servidor_remoto": "http://192.168.100.126:11434",
+    "servidor_local": "http://127.0.0.1:11434",
+    "modelos_probados": [
+      {
+        "nombre": "functiongemma:latest",
+        "tamano_gb": 0.3,
+        "pruebas_completadas": ["01_response_time", "03_response_coherence", "04_long_context_compaction", "05_code_generation", "06_landing_page_html"],
+        "puede_generar_codigo": false,
+        "observaciones": "Modelo especializado en e-commerce, rechaza generación de código"
+      },
+      {
+        "nombre": "qwen2.5:1.5b-instruct",
+        "tamano_gb": 1.0,
+        "pruebas_completadas": ["01_response_time", "03_response_coherence", "04_long_context_compaction", "05_code_generation"],
+        "puede_generar_codigo": true,
+        "observaciones": "Genera código válido en JS, Python, HTML. HTML de landing page tarda >300s"
+      },
+      {
+        "nombre": "qwen3:1.7b",
+        "tamano_gb": 1.4,
+        "pruebas_completadas": [],
+        "puede_generar_codigo": false,
+        "observaciones": "Muy lento en servidor remoto, no completó pruebas"
+      },
+      {
+        "nombre": "qwen2.5-coder:3b",
+        "tamano_gb": 1.9,
+        "pruebas_completadas": [],
+        "puede_generar_codigo": false,
+        "observaciones": "No probado - servidor remoto demasiado lento"
+      },
+      {
+        "nombre": "nemotron-3-nano:4b",
+        "tamano_gb": 2.8,
+        "pruebas_completadas": [],
+        "puede_generar_codigo": false,
+        "observaciones": "No probado - servidor remoto demasiado lento"
+      },
+      {
+        "nombre": "qwen3.5:4b",
+        "tamano_gb": 3.4,
+        "pruebas_completadas": [],
+        "puede_generar_codigo": false,
+        "observaciones": "No probado - servidor remoto demasiado lento"
+      },
+      {
+        "nombre": "sorc/qwen3.5-instruct-uncensored:4b",
+        "tamano_gb": 4.5,
+        "pruebas_completadas": [],
+        "puede_generar_codigo": false,
+        "observaciones": "No probado - servidor remoto demasiado lento"
+      }
+    ],
+    "archivos_generados_por_modelo": {
+      "functiongemma:latest": [
+        "codigo_javascript_funcion_utilitaria.js",
+        "codigo_python_lectura_archivo.py",
+        "codigo_html_boton_estilo.html",
+        "index.html",
+        "style.css",
+        "script.js"
+      ],
+      "qwen2.5:1.5b-instruct": [
+        "codigo_javascript_funcion_utilitaria.js",
+        "codigo_python_lectura_archivo.py",
+        "codigo_html_boton_estilo.html"
+      ]
+    },
+    "conclusiones": [
+      "Modelos de 0.3-1.0GB responden en 2-12 segundos",
+      "Modelos de 4GB+ tardan más de 3 minutos o timeout en servidor remoto",
+      "Modelos de 0.3GB (functiongemma) no generan código - están especializados en e-commerce",
+      "Modelos de 1.0GB (qwen2.5:1.5b-instruct) generan código válido en JS, Python, HTML",
+      "Compactación automática nunca se activó (contexto nunca superó 1% del límite)",
+      "Modelos de 0.6b no retienen información después de 10+ turnos"
+    ],
+    "recomendaciones_para_el_core": [
+      "Seleccionar modelo por tarea (código vs chat simple)",
+      "Timeouts configurables por tipo de tarea",
+      "Compactación automática con umbral más bajo (10-15%) para modelos pequeños",
+      "Manejo graceful de modelos que rechazan ciertos tipos de contenido"
+    ]
+  }
+}

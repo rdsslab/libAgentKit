@@ -1,0 +1,89 @@
+```css
+/* Clases para el fondo de fondo verde */
+body {
+    background-color: #2e7d32;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+/* Clases para el fondo de fondo naranja */
+body {
+    background-color: #ff9800;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+/* Clases para animaciones botones hover */
+button:hover,
+input:hover {
+    transform: scale(1.1);
+    transition: all 0.3s;
+}
+
+/* Clases para tarjetas de servicios */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Clases para tabla de precios */
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+td:hover {
+    background-color: #ff9800;
+}
+
+/* Clases para formulario */
+form {
+    display: flex;
+}
+
+form div {
+    margin: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+input:focus {
+    border-color: #ff9800;
+}
+
+/* Clases para header fijo */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #2e7d32;
+    color: #fff;
+    padding: 10px 15px;
+    z-index: 1;
+}
+
+header a {
+    color: #ff9800;
+    text-decoration: none;
+}
+
+header a:hover {
+    color: #ff9800;
+}
+```

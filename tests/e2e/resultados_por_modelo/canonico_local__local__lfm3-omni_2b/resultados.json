@@ -1,0 +1,454 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T03:16:29.286Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "local",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "p01": {
+      "exito": true,
+      "duracionMs": 11160,
+      "tokensPorSegundo": 4.11,
+      "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario interactivas y dinámicas. Sirve para construir aplicaciones web modernas y escalables sin necesidad de gestionar el estado del navegador manualmente.",
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "lfm3-omni:2b",
+        "baseUrl": "http://localhost:11434",
+        "taskType": "chat",
+        "presetTaskType": "chat",
+        "maxTokens": 512,
+        "timeoutMs": 90000,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 8192,
+        "toolChoice": null
+      }
+    },
+    "p02": {
+      "exito": true,
+      "ip": {
+        "exito": true,
+        "duracionMs": 7216,
+        "ipEsperada": "192.168.100.129",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "respuestaIncluyeIp": true,
+        "toolChoiceForzado": false,
+        "respuesta": "192.168.100.129",
+        "ejecuciones": [
+          {
+            "tool": "get_local_ip",
+            "toolName": "get_local_ip",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {},
+            "result": {
+              "ok": true,
+              "ip": "192.168.100.129"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 7216,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 154489,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      },
+      "web": {
+        "exito": true,
+        "duracionMs": 13324,
+        "datoEsperado": "Quito",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "resultadosContienenDato": true,
+        "respuestaContieneDato": true,
+        "usedWeb": true,
+        "webQuery": "capital de Ecuador",
+        "webSource": "duckduckgo",
+        "toolChoiceForzado": false,
+        "respuesta": "Quito",
+        "resultadosWeb": [
+          {
+            "title": "Quito - Wikipedia",
+            "url": "https://en.wikipedia.org/wiki/Quito",
+            "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+          },
+          {
+            "title": "Ecuador - Wikipedia, la enciclopedia libre",
+            "url": "https://es.wikipedia.org/wiki/Ecuador",
+            "snippet": "La capital de Ecuador es Quito. Su ciudad más poblada es Guayaquil."
+          },
+          {
+            "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+            "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+            "snippet": "La capital del Ecuador es Quito, en la provincia del Pichincha. Tiene 2850 m s. n. m de altitud."
+          }
+        ],
+        "ejecuciones": [
+          {
+            "tool": "web_search",
+            "toolName": "web_search",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {
+              "query": "capital de Ecuador"
+            },
+            "result": {
+              "ok": true,
+              "source": "duckduckgo",
+              "results": [
+                {
+                  "title": "Quito - Wikipedia",
+                  "url": "https://en.wikipedia.org/wiki/Quito",
+                  "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+                },
+                {
+                  "title": "Ecuador - Wikipedia, la enciclopedia libre",
+                  "url": "https://es.wikipedia.org/wiki/Ecuador",
+                  "snippet": "La capital de Ecuador es Quito. Su ciudad más poblada es Guayaquil."
+                },
+                {
+                  "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+                  "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+                  "snippet": "La capital del Ecuador es Quito, en la provincia del Pichincha. Tiene 2850 m s. n. m de altitud."
+                }
+              ],
+              "note": "",
+              "query": "capital de Ecuador"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 13324,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 199739,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      }
+    },
+    "p03": {
+      "exito": true,
+      "historialEnviado": true,
+      "recuerdaNombre": true,
+      "recuerdaClinica": true,
+      "recuerdaServicios": true,
+      "turnos": [
+        {
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "Hola María, ¡me alegra conocerte! Patitas Felices suena como un nombre muy cariñoso para una clínica. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 4168,
+          "error": null
+        },
+        {
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Perfecto! Esa es una amplia gama de servicios. ¿Qué tipo de consulta o caso tienes en mente hoy?",
+          "exito": true,
+          "duracionMs": 3759,
+          "error": null
+        },
+        {
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "¡Claro! Mi nombre es María y mi clínica se llama Patitas Felices.",
+          "exito": true,
+          "duracionMs": 3164,
+          "error": null
+        },
+        {
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "Ofrecemos consultas, cirugías y hospitalización para perros, gatos, aves y conejos.",
+          "exito": true,
+          "duracionMs": 4432,
+          "error": null
+        }
+      ]
+    },
+    "p04": {
+      "exito": true,
+      "compactionTriggered": true,
+      "compaction": {
+        "triggered": true,
+        "thresholdPercent": 25,
+        "contextLimit": 16384,
+        "estimatedTokens": 5900,
+        "usedPercent": 36.01,
+        "before": 93,
+        "after": 6,
+        "strategy": "summary"
+      },
+      "recuerdaDato": true,
+      "respuesta": "verdeota-73",
+      "error": null
+    },
+    "p05": {
+      "exito": true,
+      "puntuacionMedia": 75,
+      "funcionalMedia": 100,
+      "funcionalOk": true,
+      "salidas": {
+        "javascript": {
+          "exito": true,
+          "duracionMs": 5281,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            },
+            "funcional": {
+              "soportado": true,
+              "ok": true,
+              "puntuacion": 100,
+              "casos": [
+                {
+                  "name": "email_valido",
+                  "passed": true,
+                  "detail": "devolvió true"
+                },
+                {
+                  "name": "email_con_punto_y_tag",
+                  "passed": true,
+                  "detail": "devolvió true"
+                },
+                {
+                  "name": "sin_arroba",
+                  "passed": true,
+                  "detail": "devolvió false"
+                },
+                {
+                  "name": "sin_dominio_punto",
+                  "passed": true,
+                  "detail": "devolvió false"
+                },
+                {
+                  "name": "vacio",
+                  "passed": true,
+                  "detail": "devolvió false"
+                },
+                {
+                  "name": "con_espacio",
+                  "passed": true,
+                  "detail": "devolvió false"
+                }
+              ]
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return regex.test(email);\n}",
+          "error": null,
+          "systemPromptEnviado": true
+        },
+        "python": {
+          "exito": true,
+          "duracionMs": 10958,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            },
+            "funcional": {
+              "soportado": true,
+              "ok": true,
+              "puntuacion": 100,
+              "casos": [
+                {
+                  "name": "archivo_existente",
+                  "passed": true,
+                  "detail": "devolvió 'contenido de prueba\\n'"
+                },
+                {
+                  "name": "archivo_ausente",
+                  "passed": true,
+                  "detail": "devolvió None"
+                }
+              ]
+            }
+          },
+          "codigo": "def leer_archivo(ruta):\n    try:\n        with open(ruta, 'r') as archivo:\n            return archivo.read()\n    except FileNotFoundError:\n        print(f\"Error: El archivo '{ruta}' no fue encontrado.\")\n    except PermissionError:\n        print(f\"Error: No se tiene permiso para leer '{ruta}'.\")\n    except Exception as e:\n        print(f\"Ocurrió un error inesperado al leer el archivo: {e}\")\n    return None",
+          "error": null,
+          "systemPromptEnviado": true
+        }
+      }
+    },
+    "p06": {
+      "exito": true,
+      "duracionMs": 53833,
+      "continuacion": null,
+      "funcional": {
+        "soportado": true,
+        "ok": true,
+        "puntuacion": 100,
+        "casos": [
+          {
+            "name": "html_con_formulario",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "js_escucha_eventos",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "js_referencia_ids",
+            "passed": true,
+            "detail": "3 IDs referenciados"
+          },
+          {
+            "name": "ids_coinciden",
+            "passed": true,
+            "detail": "todos existen"
+          },
+          {
+            "name": "enlaza_css",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "enlaza_js",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "css_con_reglas",
+            "passed": true,
+            "detail": ""
+          }
+        ]
+      },
+      "bloquesEncontrados": [
+        "html",
+        "css",
+        "js"
+      ],
+      "archivosEvaluados": {
+        "html": true,
+        "css": true,
+        "js": true,
+        "cssIncrustado": false,
+        "jsIncrustado": false
+      },
+      "calidad": {
+        "html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "form": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 91
+        },
+        "css": {
+          "checks": {
+            "body": true,
+            "hover": false,
+            "mediaQuery": true,
+            "variables": true,
+            "boxSizing": false,
+            "hexColor": true,
+            "transicion": false,
+            "noHTML": true
+          },
+          "puntuacion": 63
+        },
+        "js": {
+          "checks": {
+            "eventListener": true,
+            "dom": true,
+            "funcion": false,
+            "validacion": true,
+            "noJQuery": true,
+            "noHTML": true
+          },
+          "puntuacion": 83,
+          "sintaxis": {
+            "valida": true,
+            "error": null
+          }
+        }
+      },
+      "puntuacionMedia": 79,
+      "codigo": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Consultar</button>\n    </form>\n</body>\n</html>",
+        "css": ":root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: var(--text-color);\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    font-weight: bold;\n}\n\ninput {\n    padding: 10px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: var(--primary-color);\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}",
+        "js": "document.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value;\n        const edad = document.getElementById('edad').value;\n        const contacto = document.getElementById('contacto').value;\n\n        if (nombre && edad && contacto) {\n            alert(`¡Hola, ${nombre}! A ${edad} años. Contacto: ${contacto}`);\n        } else {\n            alert('Por favor, complete todos los campos.');\n        }\n    });\n});"
+      },
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        <button type=\"submit\">Consultar</button>\n    </form>\n</body>\n</html>\n```\n\n```css\n:root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f4f4f9;\n    color: var(--text-color);\n    margin: 0;\n    padding: 20px;\n}\n\nheader {\n    text-align: center;\n    margin-bottom: 30px;\n}\n\nform {\n    display: flex;\n    flex-direction: column;\n    gap: 15px;\n}\n\nlabel {\n    font-weight: bold;\n}\n\ninput {\n    padding: 10px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    padding: 10px 20px;\n    background-color: var(--primary-color);\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\n@media (max-width: 600px) {\n    form {\n        flex-direction: column;\n    }\n}\n```\n\n```js\ndocument.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value;\n        const edad = document.getElementById('edad').value;\n        const contacto = document.getElementById('contacto').value;\n\n        if (nombre && edad && contacto) {\n            alert(`¡Hola, ${nombre}! A ${edad} años. Contacto: ${contacto}`);\n        } else {\n            alert('Por favor, complete todos los campos.');\n        }\n    });\n});\n```",
+      "error": null,
+      "systemPromptEnviado": true
+    }
+  }
+}

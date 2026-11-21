@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T15:10:21.521Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "quality"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "p05_enhanced": {
+      "exito": true,
+      "duracionMs": 17536,
+      "intentos": 2,
+      "mejoras": [
+        "system_prompt_code_en",
+        "fewshot_javascript"
+      ],
+      "calidad": {
+        "checks": {
+          "tieneContenido": true,
+          "tieneComentarios": false,
+          "noPlaceholders": true,
+          "noExplicacion": true
+        },
+        "puntuacion": 75,
+        "sintaxis": {
+          "valida": true,
+          "error": null
+        }
+      },
+      "codigo": "function isValidEmail(email) {\n    const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    if (regex.test(email)) {\n        return true;\n    } else {\n        return false;\n    }\n}",
+      "error": null
+    }
+  }
+}

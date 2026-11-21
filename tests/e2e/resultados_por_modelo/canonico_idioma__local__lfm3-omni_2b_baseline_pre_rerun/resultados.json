@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T15:12:16.836Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "idioma"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "idioma": {
+      "es": {
+        "code": {
+          "exito": true,
+          "duracionMs": 27939,
+          "systemPrompt": "Eres un programador experto. Genera SOLO código funcional, bien comentado y listo para usar.\n\nREGLAS ESTRICTAS:\n1. No incluyas explicaciones previas ni postéricas salvo comentarios dentro del código.\n2. No uses bloques de markdown ``` a menos que se te pida explícitamente.\n3. El código debe ser válido, seguir buenas prácticas y no requerir dependencias externas no mencionadas.\n4. Incluye manejo de errores cuando sea apropiado.\n5. Usa nombres de variables y funciones descriptivos en español o inglés según el contexto.",
+          "systemPromptChars": 522,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": true,
+              "noPlaceholders": false,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  // Verifica que el email tenga al menos un carácter antes del @\n  if (!email || email.length === 0) {\n    return false;\n  }\n\n  // Verifica que haya exactamente un carácter @\n  if (!email.includes('@')) {\n    return false;\n  }\n\n  // Extrae la parte después del @\n  const localPart = email.split('@')[1];\n\n  // Verifica que el local part no esté vacío\n  if (!localPart) {\n    return false;\n  }\n\n  // Verifica que el local part contenga al menos un punto\n  if (!localPart.includes('.')) {\n    return false;\n  }\n\n  // Verifica que el local part no comience con un punto\n  if (localPart.startsWith('.')) {\n    return false;\n  }\n\n  // Verifica que el local part no termine con un punto\n  if (localPart.endsWith('.')) {\n    return false;\n  }\n\n  // Verifica que el local part no comience con un número\n  if (localPart.startsWith('0')) {\n    return false;\n  }\n\n  // Verifica que el local part no termine con un número\n  if (localPart.endsWith('0')) {\n    return false;\n  }\n\n  // Si todos los checks pasan, es un email válido\n  return true;\n}",
+          "error": null
+        },
+        "web": {
+          "exito": true,
+          "duracionMs": 66491,
+          "systemPrompt": "Eres un desarrollador web experto. Genera archivos HTML5, CSS y JavaScript válidos, semánticos y listos para producción.\n\nREGLAS ESTRICTAS:\n1. HTML: semántico, incluye DOCTYPE, enlaces a CSS y JS, accesible.\n2. CSS: responsive (mobile-first), usa variables CSS, box-sizing: border-box, media queries.\n3. JavaScript: vanilla (sin frameworks), maneja eventos, validación de formularios, DOM ready.\n4. NO devuelvas texto explicativo fuera del código solicitado.\n5. Cada archivo debe ser independiente y funcional.",
+          "systemPromptChars": 510,
+          "calidad": {
+            "puntuacion": 45,
+            "bloques": [
+              "html",
+              "css",
+              "javascript"
+            ],
+            "detalle": {
+              "html": {
+                "checks": {
+                  "doctype": true,
+                  "html": true,
+                  "head": true,
+                  "body": true,
+                  "header": true,
+                  "form": false,
+                  "linkCSS": true,
+                  "linkJS": false,
+                  "accesible": false,
+                  "cssSeparado": true,
+                  "jsSeparado": true
+                },
+                "puntuacion": 73
+              },
+              "css": {
+                "checks": {
+                  "body": true,
+                  "hover": true,
+                  "mediaQuery": false,
+                  "variables": false,
+                  "boxSizing": true,
+                  "hexColor": true,
+                  "transicion": false,
+                  "noHTML": true
+                },
+                "puntuacion": 63
+              },
+              "js": null
+            }
+          },
+          "codigo": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n        <nav>\n            <a href=\"#\" class=\"logo\">VetClinic</a>\n            <ul>\n                <li><a href=\"#\" class=\"link\">Información</a></li>\n                <li><a href=\"#\" class=\"link\">Horarios</a></li>\n                <li><a href=\"#\" class=\"link\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section class=\"hero\">\n            <h2>Bienvenidos a nuestra clínica</h2>\n            <p>Ofrecemos cuidados de alta calidad para su animal.</p>\n        </section>\n        <section class=\"services\">\n            <h2>Servicios</h2>\n            <ul>\n                <li>Chequeos de salud</li>\n                <li>Vacunaciones</li>\n                <li>Exámenes clínicos</li>\n            </ul>\n        </section>\n        <section class=\"testimonials\">\n            <h2>Testimonios</h2>\n            <p>“¡Muy feliz con la atención de nuestra clínica!” – Juan Pérez</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2024 Clínica Veterinaria. Todos los derechos reservados.</p>\n    </footer>\n</body>\n</html>\n```\n\n```css\n* {\n    box-sizing: border-box;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 0;\n    background-color: #f4f4f9;\n}\n\nheader {\n    background-color: #333;\n    color: #fff;\n    padding: 1rem;\n    text-align: center;\n}\n\nheader h1 {\n    margin: 0;\n}\n\nnav {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    gap: 1rem;\n}\n\n.logo {\n    font-size: 1.5rem;\n    color: #fff;\n}\n\n.link {\n    color: #fff;\n    text-decoration: none;\n}\n\n.link:hover {\n    text-decoration: underline;\n}\n\n.hero {\n    background-color: #f9f9f9;\n    padding: 2rem;\n    text-align: center;\n}\n\n.hero h2 {\n    margin: 0 0 1rem 0;\n}\n\n.services {\n    background-color: #fff;\n    padding: 2rem;\n    text-align: center;\n}\n\n.services h2 {\n    margin: 0 0 1rem 0;\n}\n\ntestimonials {\n    background-color: #f9f9f9;\n    padding: 2rem;\n    text-align: center;\n}\n\ntestimonials h2 {\n    margin: 0 0 1rem 0;\n}\n```\n\n```javascript\ndocument.addEventListener('DOMContentLoaded', function() {\n    console.log('Document loaded successfully');\n});\n```",
+          "error": null
+        }
+      },
+      "en": {
+        "code": {
+          "exito": true,
+          "duracionMs": 4384,
+          "systemPrompt": "You are an expert programmer. Generate ONLY functional, well-commented code ready to use.\n\nSTRICT RULES:\n1. Do not include explanations before or after the code, except comments within the code.\n2. Do not use markdown code blocks (```) unless explicitly requested.\n3. Code must be valid, follow best practices, and not require external dependencies not mentioned.\n4. Include error handling when appropriate.\n5. Use descriptive variable and function names in Spanish or English as appropriate.",
+          "systemPromptChars": 492,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return regex.test(email);\n}",
+          "error": null
+        },
+        "web": {
+          "exito": true,
+          "duracionMs": 106554,
+          "systemPrompt": "You are an expert web developer. Generate valid, semantic, production-ready HTML5, CSS and JavaScript files.\n\nSTRICT RULES:\n1. HTML: semantic, include DOCTYPE, links to CSS and JS, accessible.\n2. CSS: responsive (mobile-first), use CSS variables, box-sizing: border-box, media queries.\n3. JavaScript: vanilla (no frameworks), event handling, form validation, DOM ready.\n4. Do NOT return explanatory text outside the requested code.\n5. Each file must be independent and functional.",
+          "systemPromptChars": 480,
+          "calidad": {
+            "puntuacion": 30,
+            "bloques": [
+              "html"
+            ],
+            "detalle": {
+              "html": {
+                "checks": {
+                  "doctype": true,
+                  "html": true,
+                  "head": true,
+                  "body": true,
+                  "header": true,
+                  "form": true,
+                  "linkCSS": true,
+                  "linkJS": true,
+                  "accesible": true,
+                  "cssSeparado": true,
+                  "jsSeparado": false
+                },
+                "puntuacion": 91
+              },
+              "css": null,
+              "js": null
+            }
+          },
+          "codigo": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria - Consultas y Cuidado</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header class=\"header\">\n        <div class=\"logo\">\n            <img src=\"clinic-logo.png\" alt=\"Clínica Veterinaria\">\n        </div>\n        <nav class=\"nav\">\n            <ul class=\"nav-links\">\n                <li><a href=\"#home\">Inicio</a></li>\n                <li><a href=\"#services\">Servicios</a></li>\n                <li><a href=\"#contact\">Contacto</a></li>\n                <li><a href=\"#about\">Acerca de</a></li>\n            </ul>\n        </nav>\n    </header>\n\n    <main class=\"main\">\n        <section id=\"home\" class=\"home\">\n            <h1 class=\"home-heading\">Bienvenidos a Clínica Veterinaria</h1>\n            <p class=\"home-description\">\n                Ofrecemos cuidados veterinarios de alta calidad en un ambiente amigable y profesional.\n                Desde chequeos de salud preventivos hasta tratamientos avanzados, nosotros nos encargamos de cada detalle para garantizar el bienestar de sus mascotas.\n            </p>\n            <div class=\"hero\">\n                <img src=\"hero-image.jpg\" alt=\"Clínica Veterinaria\">\n                <div class=\"hero-text\">\n                    <strong>Nuestro Equipo Experto</strong>\n                    <span>Con más de 15 años de experiencia en el cuidado de animales</span>\n                </div>\n            </div>\n        </section>\n\n        <section id=\"services\" class=\"services\">\n            <h2 class=\"services-heading\">Servicios</h2>\n            <div class=\"services-grid\">\n                <div class=\"service-card\">\n                    <h3>Chequeo de Salud Preventivo</h3>\n                    <p>Evaluación completa de salud, vacunaciones y análisis de sangre.</p>\n                </div>\n                <div class=\"service-card\">\n                    <h3>Tratamientos Avanzados</h3>\n                    <p>Diagnósticos y tratamientos especializados para mascotas.</p>\n                </div>\n                <div class=\"service-card\">\n                    <h3>Alimentación Especializada</h3>\n                    <p>Planes nutricionales personalizados para cada animal.</p>\n                </div>\n                <div class=\"service-card\">\n                    <h3>Cuidado Postoperatorio</h3>\n                    <p>Atención especial tras cirugías y procedimientos médicos.</p>\n                </div>\n            </div>\n        </section>\n\n        <section id=\"contact\" class=\"contact\">\n            <h2 class=\"contact-heading\">Contacto</h2>\n            <form class=\"contact-form\" id=\"contact-form\">\n                <div class=\"form-group\">\n                    <label for=\"name\">Nombre</label>\n                    <input type=\"text\" id=\"name\" required>\n                </div>\n                <div class=\"form-group\">\n                    <label for=\"email\">Correo Electrónico</label>\n                    <input type=\"email\" id=\"email\" required>\n                </div>\n                <div class=\"form-group\">\n                    <label for=\"phone\">Teléfono</label>\n                    <input type=\"tel\" id=\"phone\" required>\n                </div>\n                <div class=\"form-group\">\n                    <label for=\"message\">Mensaje</label>\n                    <textarea id=\"message\" rows=\"4\" required></textarea>\n                </div>\n                <button type=\"submit\" class=\"submit-btn\">Envíe su información</button>\n            </form>\n        </section>\n\n        <section id=\"about\" class=\"about\">\n            <h2 class=\"about-heading\">Acerca de</h2>\n            <div class=\"about-content\">\n                <p>Clínica Veterinaria es nuestra misión: brindar el mejor cuidado veterinario a los animales de nuestra comunidad.</p>\n                <p>Nuestro objetivo es ofrecer servicios de calidad, atención personalizada y un ambiente seguro para todos los animales.</p>\n                <p>Estamos comprometidos en la salud y el bienestar de cada mascota, desde la prevención hasta el tratamiento avanzado.</p>\n            </div>\n        </section>\n    </main>\n\n    <footer class=\"footer\">\n        <div class=\"footer-grid\">\n            <div class=\"footer-row\">\n                <div class=\"footer-item\">\n                    <a href=\"#\" class=\"footer-link\">Información Legal</a>\n                </div>\n                <div class=\"footer-item\">\n                    <a href=\"#\" class=\"footer-link\">Política de Privacidad</a>\n                </div>\n            </div>\n            <div class=\"footer-row\">\n                <div class=\"footer-item\">\n                    <a href=\"#\" class=\"footer-link\">Contacto</a>\n                </div>\n                <div class=\"footer-item\">\n                    <a href=\"#\" class=\"footer-link\">Sitios Web</a>\n                </div>\n            </div>\n        </div>\n    </footer>\n\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```\n\n```css\n/* style.css */\n:root {\n    --primary-color: #2c3e50;\n    --secondary-color: #e74c3",
+          "error": null
+        }
+      }
+    }
+  }
+}

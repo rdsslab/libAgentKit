@@ -1,0 +1,22 @@
+{
+  "p01": {
+    "exito": true,
+    "duracionMs": 7508,
+    "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario (UI) dinámicas y reaccionables sin necesidad de gestionar el estado del navegador manualmente. Su función principal es fac",
+    "error": null
+  },
+  "p05": {
+    "exito": true,
+    "duracionMs": 5766,
+    "calidad": 80,
+    "refusal": false,
+    "error": null
+  },
+  "p05py": {
+    "exito": true,
+    "duracionMs": 7043,
+    "calidad": 60,
+    "refusal": false,
+    "error": null
+  }
+}

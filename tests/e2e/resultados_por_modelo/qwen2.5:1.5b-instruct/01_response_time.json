@@ -1,0 +1,17 @@
+{
+  "prueba": "01_response_time",
+  "modelo": "qwen2.5:1.5b-instruct",
+  "exito": true,
+  "error": null,
+  "duracionMs": 7745,
+  "respuesta": "React es una biblioteca de JavaScript utilizada para construir interfaces de usuario. Sirve para simplificar la creación y mantenimiento de aplicaciones web y móviles. React proporciona componentes reutilizables y un patrón de diseño que permite a los desarrolladores crear interfaces visuales altamente personalizables y mantenibles.",
+  "longitud": 334,
+  "tokens": 118,
+  "tokensPorSegundo": 9.85,
+  "contexto": {
+    "used_tokens": 118,
+    "limit_tokens": 0,
+    "used_percent": null,
+    "estimated": false
+  }
+}

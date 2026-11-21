@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T15:10:21.521Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "quality"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5-coder:3b",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p05_enhanced": {
+      "exito": true,
+      "duracionMs": 52690,
+      "intentos": 1,
+      "mejoras": [
+        "system_prompt_code_en",
+        "fewshot_javascript",
+        "validacion_ok_p100"
+      ],
+      "calidad": {
+        "checks": {
+          "tieneContenido": true,
+          "tieneComentarios": true,
+          "noPlaceholders": true,
+          "noExplicacion": true
+        },
+        "puntuacion": 100,
+        "sintaxis": {
+          "valida": true,
+          "error": null
+        }
+      },
+      "codigo": "function isValidEmail(email) {\n    // Expresión regular para validar un email básico\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    \n    // Comprueba si el email coincide con la expresión regular\n    return emailRegex.test(email);\n}\n\n// Ejemplo de uso:\nconsole.log(isValidEmail(\"example@example.com\")); // true\nconsole.log(isValidEmail(\"invalid-email\")); // false",
+      "error": null
+    }
+  }
+}

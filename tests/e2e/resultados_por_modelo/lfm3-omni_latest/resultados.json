@@ -1,0 +1,106 @@
+{
+  "05_code_generation": {
+    "exito": true,
+    "resultados": [
+      {
+        "tarea": "javascript_funcion_utilitaria",
+        "lenguaje": "javascript",
+        "exito": true,
+        "duracionMs": 7086,
+        "error": null,
+        "archivoGuardado": true,
+        "calidad": {
+          "tieneComentarios": false,
+          "noPlaceholders": true,
+          "noTextoExplicativo": true,
+          "tieneFuncion": true,
+          "tieneRegex": true,
+          "tieneRetorno": true,
+          "puntuacion": 83
+        }
+      },
+      {
+        "tarea": "python_lectura_archivo",
+        "lenguaje": "python",
+        "exito": true,
+        "duracionMs": 7161,
+        "error": null,
+        "archivoGuardado": true,
+        "calidad": {
+          "tieneComentarios": false,
+          "noPlaceholders": true,
+          "noTextoExplicativo": true,
+          "tieneFuncion": false,
+          "tieneManejoErrores": true,
+          "tieneAperturaArchivo": true,
+          "puntuacion": 67
+        }
+      }
+    ]
+  },
+  "06_landing_page_html": {
+    "exito": true,
+    "resultados": {
+      "html": {
+        "exito": true,
+        "duracionMs": 46694,
+        "error": null,
+        "archivoCreado": true,
+        "calidad": {
+          "checks": {
+            "tieneDoctype": true,
+            "tieneHtml": true,
+            "tieneBody": true,
+            "tieneCSSLink": false,
+            "tieneJSScript": false,
+            "tieneHeader": true,
+            "tieneForm": false
+          },
+          "puntuacion": 79,
+          "contaminacionCSS": {
+            "estaContaminado": false,
+            "puntuacion": 100
+          }
+        }
+      },
+      "css": {
+        "exito": true,
+        "duracionMs": 40138,
+        "error": null,
+        "archivoCreado": true,
+        "calidad": {
+          "checks": {
+            "tieneBody": true,
+            "tieneHover": false,
+            "tieneMediaQuery": false,
+            "tieneColorHex": true,
+            "tieneTransition": false,
+            "tieneVariables": true
+          },
+          "puntuacion": 50
+        }
+      },
+      "js": {
+        "exito": true,
+        "duracionMs": 39935,
+        "error": null,
+        "archivoCreado": true,
+        "calidad": {
+          "checks": {
+            "tieneEventListener": false,
+            "tieneSeleccionDOM": false,
+            "tieneForm": true,
+            "noJQuery": true,
+            "tieneFuncion": false
+          },
+          "puntuacion": 70,
+          "contaminacionHTML": {
+            "estaContaminado": false,
+            "patronesEncontrados": [],
+            "puntuacion": 100
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T03:19:12.709Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "quality",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "resumen": [
+    {
+      "model": "lfm3-omni:2b",
+      "entorno": "local",
+      "suite": "quality",
+      "p01": null,
+      "p02": null,
+      "p03": null,
+      "p04": null,
+      "p05": "75% · func 100%",
+      "p06": null
+    },
+    {
+      "model": "lfm3-omni:latest",
+      "entorno": "remoto",
+      "suite": "quality",
+      "p01": null,
+      "p02": null,
+      "p03": null,
+      "p04": null,
+      "p05": "75% · func 100%",
+      "p06": null
+    },
+    {
+      "model": "qwen2.5-coder:3b",
+      "entorno": "remoto",
+      "suite": "quality",
+      "p01": null,
+      "p02": null,
+      "p03": null,
+      "p04": null,
+      "p05": "100% · func 100%",
+      "p06": null
+    }
+  ]
+}

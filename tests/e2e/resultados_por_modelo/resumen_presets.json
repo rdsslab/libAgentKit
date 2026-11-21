@@ -1,0 +1,267 @@
+{
+  "lfm3-omni:latest": {
+    "01_response_time": {
+      "exito": true,
+      "duracionMs": 15034,
+      "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario dinámicas y reaccionables sin necesidad de gestionar el estado del componente manualmente. Su función principal es facilit",
+      "error": null,
+      "tokens": 92,
+      "tokensPorSegundo": 4.44,
+      "contexto": {
+        "used_tokens": 92,
+        "limit_tokens": 8192,
+        "used_percent": 1.12,
+        "estimated": false
+      },
+      "config": {
+        "temperature": 0.7,
+        "maxTokens": 1024,
+        "num_ctx": 8192,
+        "taskType": "chat",
+        "timeoutMs": 120000
+      }
+    },
+    "03_response_coherence": {
+      "exito": false,
+      "recuerdaNombre": false,
+      "recuerdaClinica": false,
+      "recuerdaServicios": false,
+      "resultados": [
+        {
+          "turno": 1,
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "¡Hola María! Es un gusto conocerte. ¡Patitas Felices suena como un nombre muy cariñoso y acogedor para una clínica veterinaria! \n\n¿Cómo puedo ayudarte hoy? ¿Tienes alguna consulta específica, necesitas información sobre vacunas, tratamientos o algo más? Estoy aquí para ayudarte.",
+          "exito": true,
+          "duracionMs": 8016,
+          "error": null
+        },
+        {
+          "turno": 2,
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Hola! Me alegra que compartas esta información. ¿Hay algo en lo que pueda ayudarte hoy? Por ejemplo:\n\n- ¿Necesitas información sobre servicios específicos (consultas, cirugías, hospitalización)?\n- ¿Quieres que redacte un texto para un sitio web, un formulario o un anuncio?\n- ¿Hay alguna pregunta sobre los animales que atendemos?\n\nEstoy aquí para ayudarte.",
+          "exito": true,
+          "duracionMs": 10715,
+          "error": null
+        },
+        {
+          "turno": 3,
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "No puedo recordar tu nombre ni el nombre de tu clínica, ya que no tengo acceso a esa información personal. Estoy diseñado para ser una herramienta neutral y sin memorizar datos privados de los usuarios. Si necesitas recordar algo, puedes escribirlo aquí y puedo ayudarte a recordarlo.",
+          "exito": true,
+          "duracionMs": 7677,
+          "error": null
+        },
+        {
+          "turno": 4,
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "",
+          "exito": false,
+          "duracionMs": 181375,
+          "error": "Request timed out."
+        }
+      ]
+    },
+    "04_long_context_compaction": {
+      "exito": false,
+      "umbralCompactacion": 25,
+      "resultados": [
+        {
+          "turno": 1,
+          "respuesta": "",
+          "exito": false,
+          "duracionMs": 181321,
+          "contexto": null,
+          "error": "Request timed out."
+        },
+        {
+          "turno": 2,
+          "respuesta": "Mensaje 2: Los gatos necesitan arenero limpio, comida de calidad, y revisiones veterinarias anuales para detectar problemas temprano.",
+          "exito": true,
+          "duracionMs": 5669,
+          "contexto": {
+            "used_tokens": 84,
+            "limit_tokens": 32768,
+            "used_percent": 0.26,
+            "estimated": false
+          },
+          "error": null
+        },
+        {
+          "turno": 3,
+          "respuesta": "Aquí tienes el mensaje 3 redactado de forma clara, profesional y atractiva:\n\n**Mensaje 3: Cuidado de las aves**\n\nLas aves requieren un entorno adecuado para prosperar. Es fundamental proporcionarles jaulas espaciosas que les permitan moverse libremente, una dieta variada compuesta por semillas y frutas frescas, y una socialización diaria con sus dueños para asegurar su bienestar emocional y físico.\n\n***\n\n**Opción alternativa (más corta y directa):**\n\n**Mensaje 3: Bienestar de las aves**\n\nLas aves necesitan un hábitat adecuado con jaulas amplias, una alimentación variada (semillas y frutas) y la interacción diaria con sus dueños para garantizar su salud y felicidad.",
+          "exito": true,
+          "duracionMs": 18135,
+          "contexto": {
+            "used_tokens": 222,
+            "limit_tokens": 32768,
+            "used_percent": 0.68,
+            "estimated": false
+          },
+          "error": null
+        },
+        {
+          "turno": 4,
+          "respuesta": "Aquí tienes varias opciones para redactar el mensaje 4, dependiendo del tono que quieras darle:\n\n**Opción 1: Formal y Profesional (Ideal para correos electrónicos o informes)**\n> \"Los conejos requieren una dieta equilibrada que incluya heno ilimitado, verduras frescas y un espacio adecuado para saltar y realizar ejercicio.\"\n\n**Opción 2: Directa y Concisa (Ideal para notas rápidas)**\n> \"Los conejos necesitan heno ilimitado, verduras frescas y espacio para saltar y hacer ejercicio.\"\n\n**Opción 3: Enfocada en las necesidades básicas (Ideal para guías o manuales)**\n> \"Para mantener la salud de los conejos, es fundamental proporcionar heno ilimitado, verduras frescas y un área segura para que puedan saltar y hacer ejercicio.\"\n\n**Opción 4: Con un tono más amigable (Ideal para mensajes de cuidado o educación)**\n> \"Los conejos necesitan heno ilimitado, verduras frescas y espacio para saltar y hacer ejercicio para que estén saludables.\"\n\n**Consejo:** Si estás escribiendo un documento técnico, la **Opción 1** suele ser la más recomendada porque es clara, objetiva y fácil de entender.",
+          "exito": true,
+          "duracionMs": 29698,
+          "contexto": {
+            "used_tokens": 333,
+            "limit_tokens": 32768,
+            "used_percent": 1.02,
+            "estimated": false
+          },
+          "error": null
+        },
+        {
+          "turno": 5,
+          "respuesta": "**Mensaje 5:**  \nLas mascotas exóticas como iguanas y serpientes necesitan terrarios con control de temperatura y humedad específico.  \n\n**Explicación:**  \nEste mensaje destaca la importancia de proporcionar condiciones ambientales adecuadas para las mascotas exóticas. Las iguanas y serpientes requieren temperaturas y niveles de humedad específicos para su salud y bienestar, ya que no pueden adaptarse a condiciones inadecuadas. Un ambiente controlado es esencial para evitar estrés, enfermedades y problemas de salud.",
+          "exito": true,
+          "duracionMs": 12038,
+          "contexto": {
+            "used_tokens": 159,
+            "limit_tokens": 32768,
+            "used_percent": 0.49,
+            "estimated": false
+          },
+          "error": null
+        }
+      ]
+    },
+    "05_code_generation": {
+      "exito": true,
+      "resultados": [
+        {
+          "tarea": "javascript_funcion_utilitaria",
+          "lenguaje": "javascript",
+          "exito": true,
+          "duracionMs": 52638,
+          "error": null,
+          "archivoGuardado": true,
+          "calidad": {
+            "checks": {
+              "tieneComentarios": true,
+              "noPlaceholders": true,
+              "noTextoExplicativoFuera": true,
+              "tieneFuncion": true,
+              "tieneRegex": true,
+              "tieneRetorno": true
+            },
+            "puntuacion": 100
+          },
+          "config": {
+            "temperature": 0.2,
+            "maxTokens": 512,
+            "num_ctx": 16384,
+            "taskType": "code",
+            "timeoutMs": 300000
+          }
+        },
+        {
+          "tarea": "python_lectura_archivo",
+          "lenguaje": "python",
+          "exito": true,
+          "duracionMs": 10542,
+          "error": null,
+          "archivoGuardado": true,
+          "calidad": {
+            "checks": {
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noTextoExplicativoFuera": true,
+              "tieneFuncion": true,
+              "tieneManejoErrores": true,
+              "tieneAperturaArchivo": true
+            },
+            "puntuacion": 83
+          },
+          "config": {
+            "temperature": 0.2,
+            "maxTokens": 512,
+            "num_ctx": 16384,
+            "taskType": "code",
+            "timeoutMs": 300000
+          }
+        }
+      ]
+    },
+    "06_landing_page_html": {
+      "exito": true,
+      "resultados": {
+        "html": {
+          "exito": true,
+          "duracionMs": 53759,
+          "error": null,
+          "chars": 1479,
+          "archivoCreado": true,
+          "calidad": {
+            "checks": {
+              "tieneDoctype": true,
+              "tieneHtml": true,
+              "tieneBody": false,
+              "tieneCSS": false,
+              "tieneJS": false,
+              "tieneHeader": false,
+              "tieneForm": false
+            },
+            "puntuacion": 29
+          },
+          "config": {
+            "temperature": 0.3,
+            "maxTokens": 512,
+            "num_ctx": 16384,
+            "taskType": "web",
+            "timeoutMs": 300000
+          }
+        },
+        "css": {
+          "exito": true,
+          "duracionMs": 53251,
+          "error": null,
+          "chars": 1381,
+          "archivoCreado": true,
+          "calidad": {
+            "checks": {
+              "tieneBody": true,
+              "tieneHover": true,
+              "tieneMediaQuery": false,
+              "tieneColorHex": true,
+              "tieneTransition": true
+            },
+            "puntuacion": 80
+          },
+          "config": {
+            "temperature": 0.3,
+            "maxTokens": 512,
+            "num_ctx": 16384,
+            "taskType": "web",
+            "timeoutMs": 300000
+          }
+        },
+        "js": {
+          "exito": true,
+          "duracionMs": 59793,
+          "error": null,
+          "chars": 1531,
+          "archivoCreado": true,
+          "calidad": {
+            "checks": {
+              "tieneEventListener": false,
+              "tieneSeleccionDOM": false,
+              "tieneForm": true,
+              "noJQuery": true,
+              "tieneFuncion": false
+            },
+            "puntuacion": 40
+          },
+          "config": {
+            "temperature": 0.3,
+            "maxTokens": 512,
+            "num_ctx": 16384,
+            "taskType": "web",
+            "timeoutMs": 300000
+          }
+        }
+      }
+    }
+  }
+}

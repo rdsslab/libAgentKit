@@ -1,0 +1,60 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patitas Felices</title>
+</head>
+<body>
+    <header>
+        <h1>Patitas Felices</h1>
+    </header>
+    <main>
+        <section id="hero">
+            <h2>Bienvenidos a Patitas Felices</h2>
+            <p>Nuestra clínica veterinaria se enorgullece de cuidar la salud de sus mascotas con atención, compasión y experiencia.</p>
+        </section>
+        <section id="servicios">
+            <h2>Servicios</h2>
+            <ul>
+                <li>Chequeos de salud regulares</li>
+                <li>Vacunas y preventivos</li>
+                <li>Exámenes odontológicos</li>
+                <li>Tratamientos especializados</li>
+            </ul>
+        </section>
+        <section id="precios">
+            <h2>Precios</h2>
+            <table>
+                <tr>
+                    <th>Servicio</th>
+                    <th>Precio</th>
+                </tr>
+                <tr>
+                    <td>Chequeo completo</td>
+                    <td>500$</td>
+                </tr>
+                <tr>
+                    <td>Vacuna de cachorro</td>
+                    <td>120$</td>
+                </tr>
+                <tr>
+                    <td>Examen odontológico</td>
+                    <td>300$</td>
+                </tr>
+            </table>
+        </section>
+        <section id="formulario">
+            <h2>Formulario de Consulta</h2>
+            <form action="/formulario" method="POST">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                
+                <label for="telefono">Teléfono:</label>
+                <input type="text" id="telefono" name="telefono" required>
+                
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required>
+                
+                <label for="tipo">Tipo de servicio:</label

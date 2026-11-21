@@ -1,0 +1,13 @@
+FROM qwen2.5:1.5b-instruct
+
+# Parámetros optimizados para respuestas rápidas y eficientes
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER repeat_penalty 1.1
+PARAMETER seed 42
+PARAMETER num_ctx 32768
+PARAMETER num_predict 512
+
+# Sistema optimizado para respuestas rápidas y concisas
+SYSTEM """Eres un asistente eficiente y directo. Responde de forma breve y precisa. Cuando se te pida código, proporciona solo el código esencial sin explicaciones innecesarias."""

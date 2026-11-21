@@ -1,0 +1,69 @@
+{
+  "qwen2.5-coder:3b": {
+    "05_code_generation": {
+      "exito": true,
+      "resultados": [
+        {
+          "tarea": "javascript_funcion_utilitaria",
+          "lenguaje": "javascript",
+          "exito": true,
+          "duracionMs": 22028,
+          "error": null,
+          "archivoGuardado": true,
+          "calidad": {
+            "tieneComentarios": true,
+            "noPlaceholders": true,
+            "noTextoExplicativo": true,
+            "tieneFuncion": true,
+            "tieneRegex": true,
+            "tieneRetorno": true,
+            "puntuacion": 100
+          }
+        },
+        {
+          "tarea": "python_lectura_archivo",
+          "lenguaje": "python",
+          "exito": true,
+          "duracionMs": 13093,
+          "error": null,
+          "archivoGuardado": true,
+          "calidad": {
+            "tieneComentarios": false,
+            "noPlaceholders": true,
+            "noTextoExplicativo": true,
+            "tieneFuncion": false,
+            "tieneManejoErrores": true,
+            "tieneAperturaArchivo": true,
+            "puntuacion": 67
+          }
+        }
+      ]
+    },
+    "06_landing_page_html": {
+      "exito": false,
+      "resultados": {
+        "html": {
+          "exito": false,
+          "duracionMs": 181263,
+          "error": "Request timed out.",
+          "archivoCreado": false,
+          "calidad": null
+        },
+        "css": {
+          "exito": false,
+          "duracionMs": 181489,
+          "error": "Request timed out.",
+          "archivoCreado": false,
+          "calidad": null
+        },
+        "js": {
+          "exito": false,
+          "duracionMs": 181288,
+          "error": "Request timed out.",
+          "archivoCreado": false,
+          "calidad": null
+        }
+      }
+    }
+  }
+}

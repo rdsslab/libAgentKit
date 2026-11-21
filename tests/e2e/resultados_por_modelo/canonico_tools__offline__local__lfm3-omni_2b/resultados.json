@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T03:56:28.771Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "tools",
+    "modo": "offline",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "p02": {
+      "exito": true,
+      "ip": {
+        "exito": true,
+        "duracionMs": 14010,
+        "ipEsperada": "192.168.100.129",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "respuestaIncluyeIp": true,
+        "toolChoiceForzado": false,
+        "respuesta": "192.168.100.129",
+        "ejecuciones": [
+          {
+            "tool": "get_local_ip",
+            "toolName": "get_local_ip",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {},
+            "result": {
+              "ok": true,
+              "ip": "192.168.100.129"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 14010,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 120000,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      },
+      "web": {
+        "exito": true,
+        "duracionMs": 12281,
+        "datoEsperado": "Quito",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "resultadosContienenDato": true,
+        "respuestaContieneDato": true,
+        "usedWeb": true,
+        "webQuery": "capital de Ecuador",
+        "webSource": "fixture-offline",
+        "toolChoiceForzado": false,
+        "respuesta": "Quito",
+        "resultadosWeb": [
+          {
+            "title": "Capital de Ecuador: Quito",
+            "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=1",
+            "snippet": "Según la fuente fixture, la capital de Ecuador es Quito."
+          },
+          {
+            "title": "Resultado fixture 2 para capital de Ecuador",
+            "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=2",
+            "snippet": "Dato complementario del fixture sin conexión."
+          },
+          {
+            "title": "Resultado fixture 3 para capital de Ecuador",
+            "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=3",
+            "snippet": "Dato complementario del fixture sin conexión."
+          }
+        ],
+        "ejecuciones": [
+          {
+            "tool": "web_search",
+            "toolName": "web_search",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {
+              "query": "capital de Ecuador"
+            },
+            "result": {
+              "ok": true,
+              "source": "fixture-offline",
+              "results": [
+                {
+                  "title": "Capital de Ecuador: Quito",
+                  "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=1",
+                  "snippet": "Según la fuente fixture, la capital de Ecuador es Quito."
+                },
+                {
+                  "title": "Resultado fixture 2 para capital de Ecuador",
+                  "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=2",
+                  "snippet": "Dato complementario del fixture sin conexión."
+                },
+                {
+                  "title": "Resultado fixture 3 para capital de Ecuador",
+                  "url": "https://fixture.local/?q=capital%20de%20Ecuador&n=3",
+                  "snippet": "Dato complementario del fixture sin conexión."
+                }
+              ],
+              "note": "",
+              "query": "capital de Ecuador"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 12281,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 200000,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      }
+    }
+  }
+}

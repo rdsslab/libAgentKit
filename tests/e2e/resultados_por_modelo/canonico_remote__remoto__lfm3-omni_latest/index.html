@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Veterinaria</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Clínica Veterinaria</h1>
+    </header>
+    <form action="/formulario" method="POST">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad" required>
+        <label for="contacto">Contacto:</label>
+        <input type="text" id="contacto" name="contacto" required>
+        <button type="submit">Solicitar Consulta</button>
+    </form>
+</body>
+</html>

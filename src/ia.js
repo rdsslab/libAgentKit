@@ -23,6 +23,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 import { normalizeMcpServer } from "./mcp.js";
+import { normalizeToolArguments } from "./utils/tool-arguments.js";
 
 const DEFAULT_CLIENT_NAME = "agentkit-runtime";
 const DEFAULT_CLIENT_VERSION = "1.0.0";
@@ -260,15 +261,6 @@ const normalizeDefaultQueryObject = (query) => {
 	}
 
 	return Object.keys(normalized).length > 0 ? normalized : undefined;
-};
-
-const normalizeToolArguments = (value) => {
-	if (isPlainObject(value)) {
-		return value;
-	}
-
-	const parsed = safeJsonParse(value, {});
-	return isPlainObject(parsed) ? parsed : {};
 };
 
 const normalizeToolSchema = (schema) => {
@@ -2241,10 +2233,57 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 			});
 
 		this.model = this.providerConfig.model.trim();
-		this.temperature = this.providerConfig.temperature;
+		this.temperature = this._clamp(this.providerConfig.temperature, 0, 2, 0.7);
 		this.maxTokens = this.providerConfig.maxTokens ?? this.providerConfig.max_tokens;
+		this.topP = this._clamp(this.providerConfig.topP ?? this.providerConfig.top_p, 0, 1, 0.9);
+		this.topK = this._clamp(Math.floor(this.providerConfig.topK ?? this.providerConfig.top_k ?? 0), 1, 100, 40);
+		this.repeatPenalty = this._clamp(this.providerConfig.repeatPenalty ?? this.providerConfig.repeat_penalty, 1, 2, 1.1);
+		this.seed = this.providerConfig.seed;
 		this.toolChoice = this.providerConfig.toolChoice ?? this.providerConfig.tool_choice;
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? (isAzure ? "azure-openai" : DEFAULT_PROVIDER);
+		// Ollama's OpenAI-compatible endpoint rejects top_k / repeat_penalty /
+		// options.num_ctx. They are accepted in config but only sent when the
+		// caller explicitly opts into a server that supports them.
+		this.sendNativeProviderParams = this.providerConfig.sendNativeProviderParams === true
+			|| this.providerConfig.nativeProviderParams === true;
+	}
+
+	/**
+	 * Construye el cuerpo de la petición. Los parámetros específicos de Ollama
+	 * (top_k, repeat_penalty, options.num_ctx) NO se envían por defecto.
+	 * `num_ctx` sigue usándose como límite para métricas/compactación.
+	 */
+	buildCompletionRequest(messages, tools = []) {
+		const request = {
+			model: this.model,
+			temperature: this.temperature,
+			max_tokens: this.maxTokens,
+			top_p: this.topP,
+			seed: this.seed,
+			messages: toOpenAIMessages(messages),
+			tools: tools.length > 0 ? tools : undefined,
+			tool_choice: tools.length > 0 ? this.toolChoice : undefined,
+		};
+
+		if (this.sendNativeProviderParams) {
+			request.top_k = this.topK;
+			request.repeat_penalty = this.repeatPenalty;
+			const numCtx = Number(this.providerConfig.num_ctx);
+			if (Number.isFinite(numCtx) && numCtx > 0) {
+				request.options = { num_ctx: numCtx };
+			}
+		}
+
+		return request;
+	}
+
+	/**
+	 * Clampa un valor numérico entre min y max, devolviendo default si es NaN o null.
+	 */
+	_clamp(value, min, max, defaultValue) {
+		const n = Number(value);
+		if (!Number.isFinite(n)) return defaultValue;
+		return Math.min(Math.max(n, min), max);
 	}
 
 	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
@@ -2285,14 +2324,7 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 
 		for (let round = 0; round < roundsLimit; round += 1) {
 			const requestSignal = this.createRequestSignal(signal);
-			const completionRequest = {
-				model: this.model,
-				temperature: this.temperature,
-				max_tokens: this.maxTokens,
-				messages: toOpenAIMessages(messages),
-				tools: tools.length > 0 ? tools : undefined,
-				tool_choice: tools.length > 0 ? this.toolChoice : undefined,
-			};
+			const completionRequest = this.buildCompletionRequest(messages, tools);
 
 			const requestStartedAt = Date.now();
 			const requestOptions = requestSignal ? { signal: requestSignal } : undefined;
@@ -2339,6 +2371,56 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 			const assistantMessage = completion?.choices?.[0]?.message;
 			if (!assistantMessage) {
 				throw new Error("The AI service returned a completion without message.");
+			}
+
+			let assistantText = normalizeMessageContentToString(assistantMessage.content);
+			const assistantHasToolCalls = Array.isArray(assistantMessage.tool_calls)
+				&& assistantMessage.tool_calls.length > 0;
+
+			// Retry automático con temperatura reducida si la respuesta está vacía
+			// o es demasiado corta. Si ya hay tool calls, el texto suele estar
+			// vacío por diseño: reintentar duplicaba la petición (y podía repetir
+			// la herramienta) antes de ejecutarla.
+			if (
+				round < roundsLimit - 1 &&
+				!assistantHasToolCalls &&
+				(!assistantText || assistantText.trim().length < 10)
+			) {
+				// temperature=0 es una configuración válida y debe conservarse.
+				const retryTemperature = this.temperature > 0
+					? Math.max(0, this.temperature * 0.5)
+					: 0;
+				const retryRequest = {
+					...completionRequest,
+					temperature: retryTemperature,
+					max_tokens: this.maxTokens,
+				};
+				const retryStartedAt = Date.now();
+				const retryCompletion = await this.runProviderRequest(
+					() => this.client.chat.completions.create(retryRequest, requestOptions),
+					{ signal },
+				);
+				const retryMessage = retryCompletion?.choices?.[0]?.message;
+				if (retryMessage) {
+					const retryText = normalizeMessageContentToString(retryMessage.content);
+					if (retryText && retryText.trim().length >= 10) {
+						usageSamples.push(normalizeUsagePayload(retryCompletion?.usage, {
+							response: retryCompletion,
+							timingMs: Date.now() - retryStartedAt,
+							messages,
+							contextLimit,
+						}));
+						// Conservar los tool calls originales: un reintento por texto
+						// vacío no debe descartar una llamada a herramienta válida.
+						assistantMessage.content = retryText;
+						if (!assistantMessage.tool_calls && retryMessage.tool_calls) {
+							assistantMessage.tool_calls = retryMessage.tool_calls;
+						}
+						assistantText = retryText;
+						// No hacer `continue`: el flujo normal registrará el mensaje
+						// y procesará los tool calls.
+					}
+				}
 			}
 
 			const explicitToolCalls = Array.isArray(assistantMessage.tool_calls)
@@ -2545,6 +2627,239 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 			reason: "max_tool_rounds_exceeded",
 			usage: mergeUsageSamples(usageSamples),
 		});
+	}
+}
+
+/**
+ * Adapter nativo de Ollama (`/api/chat`).
+ *
+ * El endpoint `/v1/chat/completions` de Ollama ignora `options`, `top_k` y
+ * `repeat_penalty`, así que `num_ctx` solo servía para métricas. Este adapter
+ * habla el endpoint nativo, donde esas opciones SÍ cambian la ventana real.
+ * Reutiliza el bucle de herramientas de `OpenAICompatibleAdapter` mediante un
+ * cliente con la misma forma (`chat.completions.create`).
+ */
+const normalizeOllamaBaseUrl = (value) => String(value || "http://localhost:11434")
+	.trim()
+	.replace(/\/+$/, "")
+	.replace(/\/v1$/i, "");
+
+const parseNativeToolArguments = (value) => {
+	if (isPlainObject(value)) return value;
+	const parsed = safeJsonParse(value, {});
+	return isPlainObject(parsed) ? parsed : {};
+};
+
+const toNativeMessages = (messages = []) => {
+	const toolNamesById = new Map();
+	return messages.map((message) => {
+		if (message.role === "tool") {
+			return {
+				role: "tool",
+				content: normalizeMessageContentToString(message.content),
+				tool_name: toolNamesById.get(message.tool_call_id) || "tool",
+			};
+		}
+
+		const parts = normalizeContentParts(message.content);
+		const images = (parts.images || [])
+			.map((image) => {
+				const url = String(imageDescriptorToDataUrl(image) || "");
+				return url.startsWith("data:") ? url.slice(url.indexOf(",") + 1) : url;
+			})
+			.filter(Boolean);
+		const native = { role: message.role, content: parts.text || "" };
+		if (images.length) native.images = images;
+
+		const calls = Array.isArray(message.tool_calls) ? message.tool_calls : [];
+		if (calls.length) {
+			native.tool_calls = calls.map((call) => {
+				const name = call?.function?.name || call?.name || "tool";
+				if (call?.id) toolNamesById.set(call.id, name);
+				return {
+					function: {
+						name,
+						arguments: parseNativeToolArguments(call?.function?.arguments),
+					},
+				};
+			});
+		}
+		return native;
+	});
+};
+
+const toNativeTools = (tools = []) => tools.map((tool) => ({
+	type: "function",
+	function: {
+		name: tool?.function?.name,
+		description: tool?.function?.description,
+		parameters: normalizeToolSchema(tool?.function?.parameters),
+	},
+}));
+
+const toNativeToolChoice = (toolChoice) => {
+	if (toolChoice == null) return undefined;
+	if (typeof toolChoice === "string") {
+		const value = toolChoice.trim().toLowerCase();
+		return ["auto", "none", "required"].includes(value) ? value : undefined;
+	}
+	if (isPlainObject(toolChoice)) {
+		// Ollama admite "required" pero no forzar una función concreta.
+		if (toolChoice.type === "function") return "required";
+		const value = String(toolChoice.type || "").trim().toLowerCase();
+		return ["auto", "none", "required"].includes(value) ? value : undefined;
+	}
+	return undefined;
+};
+
+const buildNativeOptions = (request = {}, providerConfig = {}) => {
+	const options = {};
+	const add = (key, value) => {
+		const number = Number(value);
+		if (Number.isFinite(number)) options[key] = number;
+	};
+	add("temperature", request.temperature);
+	add("top_p", request.top_p);
+	add("top_k", request.top_k);
+	add("repeat_penalty", request.repeat_penalty);
+	add("seed", request.seed);
+	add("num_predict", request.max_tokens);
+	add("num_ctx", request.options?.num_ctx ?? providerConfig.num_ctx ?? providerConfig.numCtx);
+	return Object.keys(options).length ? options : undefined;
+};
+
+const buildNativeBody = (request = {}, providerConfig = {}) => {
+	const body = {
+		model: request.model,
+		messages: toNativeMessages(request.messages),
+		stream: Boolean(request.stream),
+	};
+	const options = buildNativeOptions(request, providerConfig);
+	if (options) body.options = options;
+	if (Array.isArray(request.tools) && request.tools.length) body.tools = toNativeTools(request.tools);
+	const choice = toNativeToolChoice(request.tool_choice);
+	if (choice) body.tool_choice = choice;
+	if (providerConfig.keep_alive != null) body.keep_alive = providerConfig.keep_alive;
+	return body;
+};
+
+const nativeUsage = (data = {}) => {
+	const prompt = Number(data.prompt_eval_count) || 0;
+	const completion = Number(data.eval_count) || 0;
+	return {
+		prompt_tokens: prompt,
+		completion_tokens: completion,
+		total_tokens: prompt + completion,
+	};
+};
+
+const nativeCompletionFromResponse = (data = {}, model = "") => {
+	const message = data?.message || {};
+	const toolCalls = (Array.isArray(message.tool_calls) ? message.tool_calls : []).map((call, index) => ({
+		id: call?.id || `call_native_${index + 1}`,
+		type: "function",
+		function: {
+			name: call?.function?.name || call?.name || "tool",
+			arguments: JSON.stringify(parseNativeToolArguments(call?.function?.arguments ?? call?.arguments)),
+		},
+	}));
+	return {
+		id: data?.id || `chatcmpl-native-${Date.now()}`,
+		object: "chat.completion",
+		model: data?.model || model,
+		choices: [{
+			index: 0,
+			message: {
+				role: "assistant",
+				content: typeof message.content === "string" ? message.content : "",
+				tool_calls: toolCalls.length ? toolCalls : undefined,
+			},
+			finish_reason: toolCalls.length ? "tool_calls" : "stop",
+		}],
+		usage: nativeUsage(data),
+	};
+};
+
+const requestNativeChat = async ({ baseUrl, headers, body, signal }) => {
+	const response = await fetch(`${baseUrl}/api/chat`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...headers },
+		body: JSON.stringify(body),
+		signal,
+	});
+	if (!response.ok) {
+		const detail = (await response.text()).slice(0, 500);
+		throw new Error(`Ollama nativo devolvió ${response.status}: ${detail}`);
+	}
+	return response;
+};
+
+async function* streamNativeChatCompletion({ baseUrl, headers, body, signal }) {
+	const response = await requestNativeChat({ baseUrl, headers, body, signal });
+	const reader = response.body?.getReader();
+	if (!reader) throw new Error("Ollama nativo no devolvió un stream legible.");
+
+	const decoder = new TextDecoder();
+	let buffer = "";
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) break;
+		buffer += decoder.decode(value, { stream: true });
+		let newlineIndex;
+		while ((newlineIndex = buffer.indexOf("\n")) >= 0) {
+			const line = buffer.slice(0, newlineIndex).trim();
+			buffer = buffer.slice(newlineIndex + 1);
+			if (!line) continue;
+			let event;
+			try {
+				event = JSON.parse(line);
+			} catch {
+				continue;
+			}
+			const delta = {};
+			if (typeof event?.message?.content === "string" && event.message.content) {
+				delta.content = event.message.content;
+			}
+			const calls = Array.isArray(event?.message?.tool_calls) ? event.message.tool_calls : [];
+			if (calls.length) {
+				delta.tool_calls = calls.map((call, index) => ({
+					index,
+					id: call?.id || `call_native_${index + 1}`,
+					type: "function",
+					function: {
+						name: call?.function?.name || call?.name || "tool",
+						arguments: JSON.stringify(parseNativeToolArguments(call?.function?.arguments)),
+					},
+				}));
+			}
+			yield {
+				choices: [{ index: 0, delta, finish_reason: event?.done ? "stop" : null }],
+				usage: event?.done ? nativeUsage(event) : undefined,
+			};
+		}
+	}
+}
+
+class OllamaNativeAdapter extends OpenAICompatibleAdapter {
+	constructor(providerConfig) {
+		super(providerConfig);
+		const baseUrl = normalizeOllamaBaseUrl(
+			this.providerConfig.baseUrl ?? this.providerConfig.baseURL ?? "http://localhost:11434",
+		);
+		const headers = normalizeHeadersObject(this.providerConfig.headers);
+		const create = (request, requestOptions = {}) => {
+			const body = buildNativeBody(request, this.providerConfig);
+			if (body.stream) {
+				return streamNativeChatCompletion({ baseUrl, headers, body, signal: requestOptions.signal });
+			}
+			return requestNativeChat({ baseUrl, headers, body, signal: requestOptions.signal })
+				.then((response) => response.json())
+				.then((data) => nativeCompletionFromResponse(data, request.model));
+		};
+		this.client = { chat: { completions: { create } } };
+		// En el endpoint nativo las opciones sí son reales: num_ctx, top_k, etc.
+		this.sendNativeProviderParams = true;
+		this.provider = "ollama-native";
 	}
 }
 
@@ -3061,6 +3376,8 @@ registerBuiltinAdapter("openai-compatible", (providerConfig) => new OpenAICompat
 registerBuiltinAdapter("azure", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));
 registerBuiltinAdapter("azure-openai", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));
 registerBuiltinAdapter("ollama", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));
+registerBuiltinAdapter("ollama-native", (providerConfig) => new OllamaNativeAdapter(providerConfig));
+registerBuiltinAdapter("ollama_native", (providerConfig) => new OllamaNativeAdapter(providerConfig));
 registerBuiltinAdapter("openrouter", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));
 registerBuiltinAdapter("deepseek", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));
 registerBuiltinAdapter("groq", (providerConfig) => new OpenAICompatibleAdapter(providerConfig));

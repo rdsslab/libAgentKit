@@ -1,0 +1,156 @@
+{
+  "01_response_time": {
+    "exito": true,
+    "duracionMs": 45968,
+    "respuesta": "React es un framework de JavaScript utilizado para construir interfaces de usuario. Aunque es una biblioteca, se puede integrar con proyectos de cualquier lado y funciona con cualquier lenguaje de backend, incluyendo Node.js. React es una arquitectura modular y orientada a componentes, lo que permite a los desarrolladores dividir un proyecto en pequeñas piezas que pueden ser modificadas independientemente. Esto facilita el mantenimiento y la reutilización de código. Además, React permite una rápida y segura actualización de la vista, ya que se actualiza solo la parte necesaria del componente en lugar de reemplazar completamente la vista. Esta funcionalidad es crucial en aplicaciones móviles, web y de desktop, y permite a los desarrolladores crear aplicaciones de una forma más eficiente y eficaz.",
+    "longitud": 806,
+    "tokens": 222,
+    "tokensPorSegundo": 3.86,
+    "contexto": {
+      "used_tokens": 222,
+      "limit_tokens": 0,
+      "used_percent": null,
+      "estimated": false
+    }
+  },
+  "03_response_coherence": {
+    "exito": true,
+    "resultados": [
+      {
+        "turno": 1,
+        "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+        "exito": true
+      },
+      {
+        "turno": 2,
+        "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+        "exito": true
+      },
+      {
+        "turno": 3,
+        "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+        "exito": true
+      },
+      {
+        "turno": 4,
+        "usuario": "¿Qué servicios ofrecemos en la clínica?",
+        "exito": true
+      }
+    ],
+    "recuerdaNombre": false,
+    "recuerdaClinica": false,
+    "recuerdaServicios": false
+  },
+  "04_long_context_compaction": {
+    "exito": true,
+    "umbralCompactacion": 25,
+    "resultados": [
+      {
+        "turno": 1,
+        "mensaje": "Mensaje 1: Información extensa sobre cuidado de mascotas. Los perros necesitan paseos diarios, alimentación balanceada y visitas regulares al veterinario.",
+        "exito": true,
+        "contexto": {
+          "used_tokens": 82,
+          "limit_tokens": 0,
+          "used_percent": null,
+          "estimated": false
+        }
+      },
+      {
+        "turno": 2,
+        "mensaje": "Mensaje 2: Los gatos necesitan arenero limpio, comida de calidad, y revisiones veterinarias anuales para detectar problemas temprano.",
+        "exito": true,
+        "contexto": {
+          "used_tokens": 39,
+          "limit_tokens": 0,
+          "used_percent": null,
+          "estimated": false
+        }
+      },
+      {
+        "turno": 3,
+        "mensaje": "Mensaje 3: Las aves requieren jaulas espaciosas, dieta variada de semillas y frutas, y socialización diaria con sus dueños.",
+        "exito": true,
+        "contexto": {
+          "used_tokens": 54,
+          "limit_tokens": 0,
+          "used_percent": null,
+          "estimated": false
+        }
+      },
+      {
+        "turno": 4,
+        "mensaje": "Mensaje 4: Los conejos necesitan heno ilimitado, verduras frescas, y espacio para saltar y hacer ejercicio.",
+        "exito": true,
+        "contexto": {
+          "used_tokens": 65,
+          "limit_tokens": 0,
+          "used_percent": null,
+          "estimated": false
+        }
+      },
+      {
+        "turno": 5,
+        "mensaje": "Mensaje 5: Las mascotas exóticas como iguanas y serpientes necesitan terrarios con control de temperatura y humedad específico.",
+        "exito": true,
+        "contexto": {
+          "used_tokens": 39,
+          "limit_tokens": 0,
+          "used_percent": null,
+          "estimated": false
+        }
+      }
+    ],
+    "recuerdaNombre": false,
+    "recuerdaClinica": false
+  },
+  "05_code_generation": {
+    "exito": true,
+    "resultados": [
+      {
+        "tarea": "javascript_funcion_utilitaria",
+        "lenguaje": "javascript",
+        "exito": true,
+        "archivoGuardado": false,
+        "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/codigo_javascript_funcion_utilitaria.js",
+        "tokens": 39,
+        "tokensPorSegundo": 9.62
+      },
+      {
+        "tarea": "python_lectura_archivo",
+        "lenguaje": "python",
+        "exito": true,
+        "archivoGuardado": false,
+        "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/codigo_python_lectura_archivo.py",
+        "tokens": 83,
+        "tokensPorSegundo": 9.62
+      }
+    ]
+  },
+  "06_landing_page_html": {
+    "exito": true,
+    "resultados": {
+      "html": {
+        "exito": true,
+        "error": null,
+        "chars": 0,
+        "archivoCreado": false,
+        "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/index.html"
+      },
+      "css": {
+        "exito": true,
+        "error": null,
+        "chars": 0,
+        "archivoCreado": false,
+        "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/style.css"
+      },
+      "js": {
+        "exito": true,
+        "error": null,
+        "chars": 0,
+        "archivoCreado": false,
+        "archivoRuta": "/home/edwinspire/Desarrollo/libAgentKit/tests/e2e/resultados_por_modelo/qwen2.5:1.5b-instruct/script.js"
+      }
+    }
+  }
+}

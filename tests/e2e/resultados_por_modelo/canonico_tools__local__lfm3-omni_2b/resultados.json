@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "fecha": "2026-11-21T04:01:00.021Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "tools",
+    "modo": "real",
+    "provider": "ollama"
+  },
+  "target": {
+    "label": "local",
+    "model": "lfm3-omni:2b",
+    "baseUrl": "http://localhost:11434"
+  },
+  "pruebas": {
+    "p02": {
+      "exito": true,
+      "ip": {
+        "exito": true,
+        "duracionMs": 9859,
+        "ipEsperada": "192.168.100.129",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "respuestaIncluyeIp": true,
+        "toolChoiceForzado": false,
+        "respuesta": "192.168.100.129",
+        "ejecuciones": [
+          {
+            "tool": "get_local_ip",
+            "toolName": "get_local_ip",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {},
+            "result": {
+              "ok": true,
+              "ip": "192.168.100.129"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 9859,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 120000,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      },
+      "web": {
+        "exito": true,
+        "duracionMs": 11312,
+        "datoEsperado": "Quito",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "resultadosContienenDato": true,
+        "respuestaContieneDato": true,
+        "usedWeb": true,
+        "webQuery": "capital de Ecuador",
+        "webSource": "duckduckgo",
+        "toolChoiceForzado": false,
+        "respuesta": "Quito",
+        "resultadosWeb": [
+          {
+            "title": "Quito - Wikipedia",
+            "url": "https://en.wikipedia.org/wiki/Quito",
+            "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+          },
+          {
+            "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+            "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+            "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+          },
+          {
+            "title": "Ecuador - Wikipedia, la enciclopedia libre",
+            "url": "https://es.wikipedia.org/wiki/Ecuador",
+            "snippet": "El nombre « Ecuador » hace referencia al ecuador terrestre, la línea imaginaria de latitud 0° que atraviesa el territorio del país y divide la Tierra en los hemisferios norte y sur. En San Antonio de Pichincha se encuentra el monumento de la Mitad del Mundo, construido para representar y conmemorar..."
+          }
+        ],
+        "ejecuciones": [
+          {
+            "tool": "web_search",
+            "toolName": "web_search",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {
+              "query": "capital de Ecuador"
+            },
+            "result": {
+              "ok": true,
+              "source": "duckduckgo",
+              "results": [
+                {
+                  "title": "Quito - Wikipedia",
+                  "url": "https://en.wikipedia.org/wiki/Quito",
+                  "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+                },
+                {
+                  "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+                  "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+                  "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+                },
+                {
+                  "title": "Ecuador - Wikipedia, la enciclopedia libre",
+                  "url": "https://es.wikipedia.org/wiki/Ecuador",
+                  "snippet": "El nombre « Ecuador » hace referencia al ecuador terrestre, la línea imaginaria de latitud 0° que atraviesa el territorio del país y divide la Tierra en los hemisferios norte y sur. En San Antonio de Pichincha se encuentra el monumento de la Mitad del Mundo, construido para representar y conmemorar..."
+                }
+              ],
+              "note": "",
+              "query": "capital de Ecuador"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 11312,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "lfm3-omni:2b",
+          "baseUrl": "http://localhost:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 384,
+          "timeoutMs": 186775,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": null
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "prueba": "03_response_coherence",
+  "modelo": "functiongemma:latest",
+  "servidor": "http://192.168.100.126:11434",
+  "fecha": "2026-11-19T14:21:41.233Z",
+  "resultados": [
+    {
+      "turn": 1,
+      "user": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+      "response": "¿En qué tipo de atención médica o clínica veterinaria te refieres?",
+      "success": true,
+      "durationMs": 2785
+    },
+    {
+      "turn": 2,
+      "user": "Ofrecemos consultas, cirugías, vacunación y hospitalización para perros y gatos.",
+      "response": "¡Claro! ¿En qué tipo de atención médica o clínica veterinaria te refieres?",
+      "success": true,
+      "durationMs": 1444
+    },
+    {
+      "turn": 3,
+      "user": "¿Recuerdas mi nombre y el nombre de mi clínica?",
+      "response": "Por favor, proporciona mi nombre y el nombre de mi clínica veterinaria.",
+      "success": true,
+      "durationMs": 617
+    },
+    {
+      "turn": 4,
+      "user": "¿Qué servicios ofrecemos?",
+      "response": "Para ofrecer mejores precios y atención, me gustaría saber si tienen disponibilidad para consultas o cirugías veterinarias. ¿En qué tipo de atención médica o clínica veterinaria te refieres?",
+      "success": true,
+      "durationMs": 1428
+    }
+  ],
+  "verificacion": {
+    "recuerda_nombre": false,
+    "recuerda_clinica": false,
+    "recuerda_servicios": true
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T17:07:51.857Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ]
+  },
+  "resumen": [
+    {
+      "model": "lfm3-omni:2b",
+      "entorno": "local",
+      "suite": "idioma",
+      "p01": null,
+      "p02": null,
+      "p03": null,
+      "p04": null,
+      "p05": null,
+      "p06": null
+    }
+  ]
+}

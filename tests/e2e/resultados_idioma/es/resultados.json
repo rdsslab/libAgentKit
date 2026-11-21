@@ -1,0 +1,69 @@
+{
+  "p01": {
+    "exito": true,
+    "duracionMs": 14415,
+    "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario (UI) dinámicas y reaccionables sin necesidad de gestionar el estado del ",
+    "tokens": 97,
+    "error": null
+  },
+  "p03": {
+    "exito": false,
+    "recuerdaNombre": false,
+    "recuerdaClinica": false,
+    "recuerdaServicios": false
+  },
+  "p04": {
+    "exito": true,
+    "turnos": 5
+  },
+  "p05": {
+    "exito": true,
+    "tareas": [
+      {
+        "tarea": "js_email",
+        "exito": true,
+        "duracionMs": 8020,
+        "calidad": 100,
+        "refusal": false,
+        "error": null
+      },
+      {
+        "tarea": "py_leer",
+        "exito": true,
+        "duracionMs": 7414,
+        "calidad": 60,
+        "refusal": false,
+        "error": null
+      }
+    ]
+  },
+  "p06": {
+    "exito": true,
+    "resultados": {
+      "html": {
+        "exito": true,
+        "duracionMs": 57357,
+        "calidad": 86,
+        "refusal": false,
+        "contaminacion": false,
+        "error": null
+      },
+      "css": {
+        "exito": true,
+        "duracionMs": 49369,
+        "calidad": 67,
+        "refusal": false,
+        "contaminacion": false,
+        "error": null
+      },
+      "js": {
+        "exito": true,
+        "duracionMs": 49208,
+        "calidad": 80,
+        "refusal": false,
+        "contaminacion": false,
+        "error": null
+      }
+    }
+  }
+}

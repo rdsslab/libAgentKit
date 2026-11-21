@@ -1,0 +1,198 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T15:17:34.681Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "remote"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "lfm3-omni:latest",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p01": {
+      "exito": true,
+      "duracionMs": 7733,
+      "tokensPorSegundo": 5.58,
+      "respuesta": "React es una biblioteca de JavaScript que permite crear interfaces de usuario interactivas y dinámicas. Sirve para desarrollar aplicaciones web modernas y escalables sin necesidad de reinventar la rueda.",
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "lfm3-omni:latest",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "chat",
+        "maxTokens": 256,
+        "timeoutMs": 90000,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 8192
+      }
+    },
+    "p03": {
+      "exito": true,
+      "historialEnviado": true,
+      "recuerdaNombre": true,
+      "recuerdaClinica": true,
+      "recuerdaServicios": true,
+      "turnos": [
+        {
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "Hola María, ¡me alegra conocerte! Patitas Felices suena como un nombre muy cariñoso para una clínica. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 4696,
+          "error": null
+        },
+        {
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Perfecto! Esa es una amplia gama de servicios. ¿Qué te gustaría que hiciera hoy?",
+          "exito": true,
+          "duracionMs": 5636,
+          "error": null
+        },
+        {
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "¡Claro! Mi nombre es María y mi clínica se llama Patitas Felices.",
+          "exito": true,
+          "duracionMs": 4398,
+          "error": null
+        },
+        {
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "Ofrecemos consultas, cirugías y hospitalización para perros, gatos, aves y conejos.",
+          "exito": true,
+          "duracionMs": 5734,
+          "error": null
+        }
+      ]
+    },
+    "p04": {
+      "exito": true,
+      "compactionTriggered": true,
+      "compaction": {
+        "triggered": true,
+        "thresholdPercent": 25,
+        "contextLimit": 16384,
+        "estimatedTokens": 5900,
+        "usedPercent": 36.01,
+        "before": 93,
+        "after": 6,
+        "strategy": "summary"
+      },
+      "recuerdaDato": true,
+      "respuesta": "verdeota-73",
+      "error": null
+    },
+    "p05": {
+      "exito": true,
+      "puntuacionMedia": 75,
+      "salidas": {
+        "javascript": {
+          "exito": true,
+          "duracionMs": 5937,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n  const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return regex.test(email);\n}",
+          "error": null,
+          "systemPromptEnviado": true
+        },
+        "python": {
+          "exito": true,
+          "duracionMs": 32538,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "def leer_archivo(ruta):\n    try:\n        with open(ruta, 'r') as archivo:\n            return archivo.read()\n    except FileNotFoundError:\n        print(f\"Error: El archivo '{ruta}' no fue encontrado.\")\n    except PermissionError:\n        print(f\"Error: No se tiene permiso para leer '{ruta}'.\")\n    except Exception as e:\n        print(f\"Ocurrió un error inesperado: {e}\")\n    return None",
+          "error": null,
+          "systemPromptEnviado": true
+        }
+      }
+    },
+    "p06": {
+      "exito": true,
+      "duracionMs": 96869,
+      "bloquesEncontrados": [
+        "html",
+        "css"
+      ],
+      "archivosEvaluados": {
+        "html": true,
+        "css": true,
+        "js": false,
+        "cssIncrustado": false,
+        "jsIncrustado": false
+      },
+      "calidad": {
+        "html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "form": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 91
+        },
+        "css": {
+          "checks": {
+            "body": true,
+            "hover": true,
+            "mediaQuery": false,
+            "variables": true,
+            "boxSizing": false,
+            "hexColor": true,
+            "transicion": false,
+            "noHTML": true
+          },
+          "puntuacion": 63
+        },
+        "js": null
+      },
+      "puntuacionMedia": 51,
+      "codigo": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        \n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        \n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        \n        <button type=\"submit\">Solicitar Cita</button>\n    </form>\n</body>\n</html>",
+        "css": ":root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n    --border-color: #ccc;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 0;\n    background-color: #f4f4f9;\n}\n\nheader {\n    background-color: var(--primary-color);\n    color: #fff;\n    padding: 1rem;\n    text-align: center;\n}\n\nform {\n    max-width: 600px;\n    margin: 2rem auto;\n    background-color: #fff;\n    padding: 1.5rem;\n    border: 1px solid #ccc;\n    border-radius: 8px;\n    box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n}\n\nlabel {\n    display: block;\n    margin-bottom: 0.5rem;\n}\n\ninput {\n    width: 100%;\n    padding: 0.5rem;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    background-color: var(--primary-color);\n    color: #fff;\n    padding: 0.75rem 1.5rem;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\nbutton:hover {\n    background-color: #45a049;\n}"
+      },
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Clínica Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n    <script src=\"script.js\" defer></script>\n</head>\n<body>\n    <header>\n        <h1>Clínica Veterinaria</h1>\n    </header>\n    <form action=\"/formulario\" method=\"POST\">\n        <label for=\"nombre\">Nombre:</label>\n        <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n        \n        <label for=\"edad\">Edad:</label>\n        <input type=\"number\" id=\"edad\" name=\"edad\" required>\n        \n        <label for=\"contacto\">Contacto:</label>\n        <input type=\"text\" id=\"contacto\" name=\"contacto\" required>\n        \n        <button type=\"submit\">Solicitar Cita</button>\n    </form>\n</body>\n</html>\n```\n\n```css\n:root {\n    --primary-color: #4CAF50;\n    --secondary-color: #FF9800;\n    --text-color: #333;\n    --border-color: #ccc;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 0;\n    background-color: #f4f4f9;\n}\n\nheader {\n    background-color: var(--primary-color);\n    color: #fff;\n    padding: 1rem;\n    text-align: center;\n}\n\nform {\n    max-width: 600px;\n    margin: 2rem auto;\n    background-color: #fff;\n    padding: 1.5rem;\n    border: 1px solid #ccc;\n    border-radius: 8px;\n    box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n}\n\nlabel {\n    display: block;\n    margin-bottom: 0.5rem;\n}\n\ninput {\n    width: 100%;\n    padding: 0.5rem;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n}\n\nbutton {\n    background-color: var(--primary-color);\n    color: #fff;\n    padding: 0.75rem 1.5rem;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}\n\nbutton:hover {\n    background-color: #45a049;\n}\n```\n\n```js\ndocument.addEventListener('DOMContentLoaded', function() {\n    const form = document.querySelector('form');\n    form.addEventListener('submit', function(e) {\n        e.preventDefault();\n        const nombre = document.getElementById('nombre').value",
+      "error": null,
+      "systemPromptEnviado": true
+    }
+  }
+}

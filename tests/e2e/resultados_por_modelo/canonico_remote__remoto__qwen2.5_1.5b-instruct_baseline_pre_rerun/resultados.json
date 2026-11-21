@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T14:48:55.193Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "remote"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5:1.5b-instruct",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p01": {
+      "exito": true,
+      "duracionMs": 13561,
+      "tokensPorSegundo": 3.47,
+      "respuesta": "React es un framework JavaScript utilizado para construir interfaces de usuario (UI) interactibles y dinámicas. Sirve para simplificar la creación y mantenimiento de aplicaciones web, especialmente para proyectos de grandes escala.",
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "qwen2.5:1.5b-instruct",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "chat",
+        "maxTokens": 256,
+        "timeoutMs": 90000,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 8192
+      }
+    },
+    "p03": {
+      "exito": true,
+      "historialEnviado": true,
+      "recuerdaNombre": true,
+      "recuerdaClinica": true,
+      "recuerdaServicios": true,
+      "turnos": [
+        {
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "¡Hola María! Es un gusto conocerte con tu clínica veterinaria Patitas Felices. ¿Cómo puedo ayudarte hoy para celebrar tu especialidad?",
+          "exito": true,
+          "duracionMs": 4953,
+          "error": null
+        },
+        {
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Excelente, María! Tu clínica veterinaria Patitas Felices tiene una amplia gama de servicios veterinarios. ¿Cómo puedo ayudarte hoy para que puedas celebrar tu clínica?",
+          "exito": true,
+          "duracionMs": 8610,
+          "error": null
+        },
+        {
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "Por supuesto, María. Tú eres María y tu clínica veterinaria es Patitas Felices.",
+          "exito": true,
+          "duracionMs": 5835,
+          "error": null
+        },
+        {
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "En la clínica Patitas Felices ofrecemos servicios veterinarios para perros, gatos, aves y conejos. Estamos especializados en consultas, cirugías y hospitalización.",
+          "exito": true,
+          "duracionMs": 10908,
+          "error": null
+        }
+      ]
+    },
+    "p04": {
+      "exito": true,
+      "compactionTriggered": true,
+      "compaction": {
+        "triggered": true,
+        "thresholdPercent": 25,
+        "contextLimit": 16384,
+        "estimatedTokens": 5900,
+        "usedPercent": 36.01,
+        "before": 93,
+        "after": 6,
+        "strategy": "summary"
+      },
+      "recuerdaDato": true,
+      "respuesta": "El color favorito del equipo es verdeota-73.",
+      "error": null
+    },
+    "p05": {
+      "exito": true,
+      "puntuacionMedia": 75,
+      "salidas": {
+        "javascript": {
+          "exito": true,
+          "duracionMs": 9642,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;\n    return emailRegex.test(email);\n}",
+          "error": null,
+          "systemPromptEnviado": true
+        },
+        "python": {
+          "exito": true,
+          "duracionMs": 9511,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "def leer_archivo(ruta):\n    try:\n        with open(ruta, 'r', encoding='utf-8') as archivo:\n            contenido = archivo.read()\n            return contenido\n    except FileNotFoundError:\n        return \"El archivo no existe.\"\n    except IOError:\n        return \"Error al leer el archivo.\"",
+          "error": null,
+          "systemPromptEnviado": true
+        }
+      }
+    },
+    "p06": {
+      "exito": true,
+      "duracionMs": 71766,
+      "bloquesEncontrados": [
+        "html"
+      ],
+      "archivosEvaluados": {
+        "html": true,
+        "css": false,
+        "js": false,
+        "cssIncrustado": false,
+        "jsIncrustado": false
+      },
+      "calidad": {
+        "html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "form": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 91
+        },
+        "css": null,
+        "js": null
+      },
+      "puntuacionMedia": 30,
+      "codigo": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Veterinaria Online</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#inicio\">Inicio</a></li>\n                <li><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"inicio\">\n            <h1>Bienvenido a la Clínica Veterinaria Online</h1>\n            <p>¡Somos tu veterinaria de confianza! Con más de 10 años de experiencia, ofrecemos un servicio de calidad para tu mascota.</p>\n            <form id=\"formulario\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section id=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Examen de la salud</li>\n                <li>Atención a urgencias</li>\n                <li>Atención a crías</li>\n                <li>Atención a ancianos</li>\n            </ul>\n        </section>\n        <section id=\"contacto\">\n            <h2>Contactanos</h2>\n            <p>Por favor, envíanos tu consulta o solicitud de atención.</p>\n            <form id=\"formulario-contacto\">\n                <label for=\"nombre-contacto\">Nombre:</label>\n                <input type=\"text\" id=\"nombre-contacto\" name=\"nombre-contacto\" required>\n                <label for=\"email-contacto\">Email:</label>\n                <input type=\"email\" id=\"email-contacto\" name=\"email-contacto\" required>\n                <label for=\"mensaje-contacto\">Mensaje:</label>\n                <textarea id=\"mensaje-contacto\" name=\"mensaje-contacto\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>"
+      },
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Veterinaria Online</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#inicio\">Inicio</a></li>\n                <li><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"inicio\">\n            <h1>Bienvenido a la Clínica Veterinaria Online</h1>\n            <p>¡Somos tu veterinaria de confianza! Con más de 10 años de experiencia, ofrecemos un servicio de calidad para tu mascota.</p>\n            <form id=\"formulario\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section id=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Examen de la salud</li>\n                <li>Atención a urgencias</li>\n                <li>Atención a crías</li>\n                <li>Atención a ancianos</li>\n            </ul>\n        </section>\n        <section id=\"contacto\">\n            <h2>Contactanos</h2>\n            <p>Por favor, envíanos tu consulta o solicitud de atención.</p>\n            <form id=\"formulario-contacto\">\n                <label for=\"nombre-contacto\">Nombre:</label>\n                <input type=\"text\" id=\"nombre-contacto\" name=\"nombre-contacto\" required>\n                <label for=\"email-contacto\">Email:</label>\n                <input type=\"email\" id=\"email-contacto\" name=\"email-contacto\" required>\n                <label for=\"mensaje-contacto\">Mensaje:</label>\n                <textarea id=\"mensaje-contacto\" name=\"mensaje-contacto\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```",
+      "error": null,
+      "systemPromptEnviado": true
+    }
+  }
+}

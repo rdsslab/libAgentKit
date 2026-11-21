@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T17:17:14.172Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "remote"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5:1.5b-instruct",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p01": {
+      "exito": true,
+      "duracionMs": 9411,
+      "tokensPorSegundo": 4.57,
+      "respuesta": "React es una biblioteca de JavaScript utilizada para construir aplicaciones web. Sirve para simplificar el manejo de la visibilidad, el estado y el comportamiento de un sitio web o aplicación.",
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "qwen2.5:1.5b-instruct",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "chat",
+        "presetTaskType": "chat",
+        "maxTokens": 256,
+        "timeoutMs": 90000,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 8192,
+        "toolChoice": null
+      }
+    },
+    "p02": {
+      "exito": true,
+      "ip": {
+        "exito": true,
+        "duracionMs": 12701,
+        "ipEsperada": "192.168.100.129",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "respuestaIncluyeIp": true,
+        "toolChoiceForzado": true,
+        "respuesta": "La dirección IPv4 de la máquina local es 192.168.100.129.",
+        "ejecuciones": [
+          {
+            "tool": "get_local_ip",
+            "toolName": "get_local_ip",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {},
+            "result": {
+              "ok": true,
+              "ip": "192.168.100.129"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 6758,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          },
+          {
+            "duracionMs": 5943,
+            "exito": true,
+            "toolChoiceForzado": true,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "qwen2.5:1.5b-instruct",
+          "baseUrl": "http://192.168.100.126:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 256,
+          "timeoutMs": 120000,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": {
+            "type": "function",
+            "function": {
+              "name": "get_local_ip"
+            }
+          }
+        }
+      },
+      "web": {
+        "exito": true,
+        "duracionMs": 14332,
+        "datoEsperado": "Quito",
+        "herramientaLlamada": true,
+        "herramientaOk": true,
+        "resultadosContienenDato": true,
+        "respuestaContieneDato": true,
+        "usedWeb": true,
+        "webQuery": "Capital de Ecuador",
+        "webSource": "duckduckgo",
+        "toolChoiceForzado": true,
+        "respuesta": "La capital de Ecuador es Quito.",
+        "resultadosWeb": [
+          {
+            "title": "Quito - Wikipedia, la enciclopedia libre",
+            "url": "https://es.wikipedia.org/wiki/Quito",
+            "snippet": "Quito, oficialmente San Francisco de Quito, es la capital de la República del Ecuador . Asimismo, es la capital de la provincia de Pichincha y cabecera cantonal del Distrito Metropolitano de Quito. Se ubica en el norte de la Sierra ecuatoriana, sobre la hoya del río Guayllabamba, en las laderas ori..."
+          },
+          {
+            "title": "Quito - Wikipedia",
+            "url": "https://en.wikipedia.org/wiki/Quito",
+            "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+          },
+          {
+            "title": "Ecuador - Wikipedia, la enciclopedia libre",
+            "url": "https://es.wikipedia.org/wiki/Ecuador",
+            "snippet": "Ecuador , a oficialmente República del Ecuador , b es un país soberano ubicado en la región noroccidental de América del Sur. Está constituido como un Estado social, democrático, de derecho y plurinacional, cuya forma de gobierno es la de una república presidencialista, unitaria y descentralizada. ..."
+          },
+          {
+            "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+            "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+            "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+          }
+        ],
+        "ejecuciones": [
+          {
+            "tool": "web_search",
+            "toolName": "web_search",
+            "ok": true,
+            "deduplicated": false,
+            "arguments": {
+              "query": "Capital de Ecuador"
+            },
+            "result": {
+              "ok": true,
+              "source": "duckduckgo",
+              "results": [
+                {
+                  "title": "Quito - Wikipedia, la enciclopedia libre",
+                  "url": "https://es.wikipedia.org/wiki/Quito",
+                  "snippet": "Quito, oficialmente San Francisco de Quito, es la capital de la República del Ecuador . Asimismo, es la capital de la provincia de Pichincha y cabecera cantonal del Distrito Metropolitano de Quito. Se ubica en el norte de la Sierra ecuatoriana, sobre la hoya del río Guayllabamba, en las laderas ori..."
+                },
+                {
+                  "title": "Quito - Wikipedia",
+                  "url": "https://en.wikipedia.org/wiki/Quito",
+                  "snippet": "Quito (Spanish pronunciation: [ˈkito] ⓘ; Quechua: Kitu), officially San Francisco de Quito, is the capital of Ecuador , and the province of Pichincha. It is the largest city in Pichincha and the second-largest city in Ecuador , with an estimated population of 1.7 million in the city and 2.8 million..."
+                },
+                {
+                  "title": "Ecuador - Wikipedia, la enciclopedia libre",
+                  "url": "https://es.wikipedia.org/wiki/Ecuador",
+                  "snippet": "Ecuador , a oficialmente República del Ecuador , b es un país soberano ubicado en la región noroccidental de América del Sur. Está constituido como un Estado social, democrático, de derecho y plurinacional, cuya forma de gobierno es la de una república presidencialista, unitaria y descentralizada. ..."
+                },
+                {
+                  "title": "Conoce las 24 provincias y capitales del Ecuador (Mapa)",
+                  "url": "https://www.tramitesbasicos.com/provincias-y-capitales-del-ecuador/",
+                  "snippet": "Encuentra las 24 provincias y capitales del Ecuador , repartidas en cuatro regiones geográficas. La capital del Ecuador es Quito, que también es la segunda capital más alta del mundo."
+                }
+              ],
+              "note": "",
+              "query": "Capital de Ecuador"
+            }
+          }
+        ],
+        "intentos": [
+          {
+            "duracionMs": 2863,
+            "exito": true,
+            "toolChoiceForzado": false,
+            "error": null
+          },
+          {
+            "duracionMs": 11469,
+            "exito": true,
+            "toolChoiceForzado": true,
+            "error": null
+          }
+        ],
+        "error": null,
+        "config": {
+          "model": "qwen2.5:1.5b-instruct",
+          "baseUrl": "http://192.168.100.126:11434",
+          "taskType": "tools",
+          "presetTaskType": "chat",
+          "maxTokens": 256,
+          "timeoutMs": 120000,
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "top_k": 40,
+          "repeat_penalty": 1.1,
+          "num_ctx": 8192,
+          "toolChoice": {
+            "type": "function",
+            "function": {
+              "name": "web_search"
+            }
+          }
+        }
+      }
+    },
+    "p03": {
+      "exito": true,
+      "historialEnviado": true,
+      "recuerdaNombre": true,
+      "recuerdaClinica": true,
+      "recuerdaServicios": true,
+      "turnos": [
+        {
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "Hola María! Encantada de conocerte. ¿Cómo puedo ayudarte con tu clínica veterinaria?",
+          "exito": true,
+          "duracionMs": 2662,
+          "error": null
+        },
+        {
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "Entendido, María. Aquí tienes algunos consejos para administrar tu clínica veterinaria:\n\n1. **Formación de la Equipo**: Asegúrate de que tus trabajadores estén bien formados y capacitados para la atención veterinaria.\n\n2. **Protección Legal**: Mantén un registro de tus clientes y asegúrate de cumplir con todas las leyes de tu área.\n\n3. **Contabilidad**: Mantén tus libros de contabilidad actualizados y asegúrate de que cuenten con un sistema seguro para la administración de la información.\n\n4. **Seguridad en el Laboratorio**: Mantén un control riguroso sobre los materiales y los medicamentos para prevenir accidentes y malos hábitos.\n\n5. **Almacenamiento de Medicamentos**: Sé consciente de los requisitos de almacenamiento de los medicamentos y asegúrate de que estén en su lugar de trabajo, no en el interior de tu clínica.\n\n6. **Servicio de Atención al Cliente**: Establece un servicio de atención al cliente con protocolos claros para que los clientes vean resuelto su problema de manera rápida y eficiente.\n\n7. **Innovación en",
+          "exito": true,
+          "duracionMs": 27444,
+          "error": null
+        },
+        {
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "Por supuesto, María, y mi nombre es Asistentante. Tu clínica veterinaria se llama Patitas Felices.",
+          "exito": true,
+          "duracionMs": 3890,
+          "error": null
+        },
+        {
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "La clínica veterinaria de Patitas Felices ofrece una amplia gama de servicios para mascotas. Estos incluyen:\n\n- Consultas veterinarias para perros, gatos, aves y conejos.\n- Cirugías.\n- Hospitalización.\n\nEn particular, ofrecemos atención veterinaria de alta calidad y profesional, con un enfoque en el bienestar y la felicidad de los animales.",
+          "exito": true,
+          "duracionMs": 9626,
+          "error": null
+        }
+      ]
+    },
+    "p04": {
+      "exito": true,
+      "compactionTriggered": true,
+      "compaction": {
+        "triggered": true,
+        "thresholdPercent": 25,
+        "contextLimit": 16384,
+        "estimatedTokens": 5900,
+        "usedPercent": 36.01,
+        "before": 93,
+        "after": 6,
+        "strategy": "summary"
+      },
+      "recuerdaDato": true,
+      "respuesta": "El color favorito del equipo es verdeota-73.",
+      "error": null
+    },
+    "p05": {
+      "exito": true,
+      "puntuacionMedia": 75,
+      "salidas": {
+        "javascript": {
+          "exito": true,
+          "duracionMs": 6759,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "function isValidEmail(email) {\n    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;\n    return emailRegex.test(email);\n}",
+          "error": null,
+          "systemPromptEnviado": true
+        },
+        "python": {
+          "exito": true,
+          "duracionMs": 7133,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": false,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "def leer_archivo(ruta):\n    try:\n        with open(ruta, 'r', encoding='utf-8') as archivo:\n            contenido = archivo.read()\n            return contenido\n    except FileNotFoundError:\n        return \"El archivo no existe.\"\n    except IOError:\n        return \"Error al leer el archivo.\"",
+          "error": null,
+          "systemPromptEnviado": true
+        }
+      }
+    },
+    "p06": {
+      "exito": true,
+      "duracionMs": 64684,
+      "bloquesEncontrados": [
+        "html"
+      ],
+      "archivosEvaluados": {
+        "html": true,
+        "css": false,
+        "js": false,
+        "cssIncrustado": false,
+        "jsIncrustado": false
+      },
+      "calidad": {
+        "html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "form": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 91
+        },
+        "css": null,
+        "js": null
+      },
+      "puntuacionMedia": 30,
+      "codigo": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Veterinaria Online</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#inicio\">Inicio</a></li>\n                <li><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"inicio\">\n            <h1>Bienvenido a la Clínica Veterinaria Online</h1>\n            <p>¡Somos tu veterinaria de confianza! Con más de 10 años de experiencia, ofrecemos un servicio de calidad para tu mascota.</p>\n            <form id=\"formulario\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section id=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Examen de la salud</li>\n                <li>Atención a urgencias</li>\n                <li>Atención a crías</li>\n                <li>Atención a ancianos</li>\n            </ul>\n        </section>\n        <section id=\"contacto\">\n            <h2>Contactanos</h2>\n            <p>Por favor, envíanos tu consulta o solicitud de atención.</p>\n            <form id=\"formulario-contacto\">\n                <label for=\"nombre-contacto\">Nombre:</label>\n                <input type=\"text\" id=\"nombre-contacto\" name=\"nombre-contacto\" required>\n                <label for=\"email-contacto\">Email:</label>\n                <input type=\"email\" id=\"email-contacto\" name=\"email-contacto\" required>\n                <label for=\"mensaje-contacto\">Mensaje:</label>\n                <textarea id=\"mensaje-contacto\" name=\"mensaje-contacto\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>"
+      },
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Veterinaria Online</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <nav>\n            <ul>\n                <li><a href=\"#inicio\">Inicio</a></li>\n                <li><a href=\"#servicios\">Servicios</a></li>\n                <li><a href=\"#contacto\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"inicio\">\n            <h1>Bienvenido a la Clínica Veterinaria Online</h1>\n            <p>¡Somos tu veterinaria de confianza! Con más de 10 años de experiencia, ofrecemos un servicio de calidad para tu mascota.</p>\n            <form id=\"formulario\">\n                <label for=\"nombre\">Nombre:</label>\n                <input type=\"text\" id=\"nombre\" name=\"nombre\" required>\n                <label for=\"telefono\">Teléfono:</label>\n                <input type=\"tel\" id=\"telefono\" name=\"telefono\" required>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n        <section id=\"servicios\">\n            <h2>Nuestros Servicios</h2>\n            <ul>\n                <li>Examen de la salud</li>\n                <li>Atención a urgencias</li>\n                <li>Atención a crías</li>\n                <li>Atención a ancianos</li>\n            </ul>\n        </section>\n        <section id=\"contacto\">\n            <h2>Contactanos</h2>\n            <p>Por favor, envíanos tu consulta o solicitud de atención.</p>\n            <form id=\"formulario-contacto\">\n                <label for=\"nombre-contacto\">Nombre:</label>\n                <input type=\"text\" id=\"nombre-contacto\" name=\"nombre-contacto\" required>\n                <label for=\"email-contacto\">Email:</label>\n                <input type=\"email\" id=\"email-contacto\" name=\"email-contacto\" required>\n                <label for=\"mensaje-contacto\">Mensaje:</label>\n                <textarea id=\"mensaje-contacto\" name=\"mensaje-contacto\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```",
+      "error": null,
+      "systemPromptEnviado": true
+    }
+  }
+}

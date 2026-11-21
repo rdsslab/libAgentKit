@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "fecha": "2026-11-20T15:03:38.317Z",
+    "coreVersion": "0.4.0",
+    "commit": "67570fd",
+    "node": "v24.21.0",
+    "presets": [
+      "chat",
+      "code",
+      "web",
+      "longContext",
+      "reasoning"
+    ],
+    "suite": "remote"
+  },
+  "target": {
+    "label": "remoto",
+    "model": "qwen2.5-coder:3b",
+    "baseUrl": "http://192.168.100.126:11434"
+  },
+  "pruebas": {
+    "p01": {
+      "exito": true,
+      "duracionMs": 33125,
+      "tokensPorSegundo": 0.91,
+      "respuesta": "React es un framework JavaScript popular para construir interfaces de usuario. Sirve para crear aplicaciones web dinámicas y reutilizables.",
+      "error": null,
+      "systemPromptEnviado": true,
+      "config": {
+        "model": "qwen2.5-coder:3b",
+        "baseUrl": "http://192.168.100.126:11434",
+        "taskType": "chat",
+        "maxTokens": 256,
+        "timeoutMs": 90000,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "repeat_penalty": 1.1,
+        "num_ctx": 8192
+      }
+    },
+    "p03": {
+      "exito": true,
+      "historialEnviado": true,
+      "recuerdaNombre": true,
+      "recuerdaClinica": true,
+      "recuerdaServicios": true,
+      "turnos": [
+        {
+          "usuario": "Mi nombre es María y tengo una clínica veterinaria llamada Patitas Felices.",
+          "respuesta": "¡Hola, María! Me alegra saber que tienes una clínica veterinaria llamada Patitas Felices. Como asistente, puedo ayudarte con muchas cosas, desde recomendaciones médicas para tu mascota hasta asesoramiento sobre cuidado de tu animal. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 22369,
+          "error": null
+        },
+        {
+          "usuario": "Atendemos perros, gatos, aves y conejos. Ofrecemos consultas, cirugías y hospitalización.",
+          "respuesta": "¡Genial! La Clínica Patitas Felices parece tener una gran variedad de servicios para tu mascota. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 14031,
+          "error": null
+        },
+        {
+          "usuario": "¿Puedes recordar cuál es mi nombre y el nombre de mi clínica?",
+          "respuesta": "¡Por supuesto! Me alegra saber que te encuentras bien, María. Tu nombre es María y la clínica es Patitas Felices. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 40544,
+          "error": null
+        },
+        {
+          "usuario": "¿Qué servicios ofrecemos en la clínica?",
+          "respuesta": "En la Clínica Patitas Felices ofrecemos consultas médicas, cirugías y hospitalización. También trabajamos con perros, gatos, aves y conejos. ¿En qué puedo ayudarte hoy?",
+          "exito": true,
+          "duracionMs": 11092,
+          "error": null
+        }
+      ]
+    },
+    "p04": {
+      "exito": true,
+      "compactionTriggered": true,
+      "compaction": {
+        "triggered": true,
+        "thresholdPercent": 25,
+        "contextLimit": 16384,
+        "estimatedTokens": 5900,
+        "usedPercent": 36.01,
+        "before": 93,
+        "after": 6,
+        "strategy": "summary"
+      },
+      "recuerdaDato": true,
+      "respuesta": "Verdeota-73",
+      "error": null
+    },
+    "p05": {
+      "exito": true,
+      "puntuacionMedia": 88,
+      "salidas": {
+        "javascript": {
+          "exito": true,
+          "duracionMs": 91371,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": true,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 75,
+            "sintaxis": {
+              "valida": false,
+              "error": "/tmp/agentkit-syntax-GLlUhV/snippet.mjs:30\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com\n                                                                     \n\nSyntaxError: Unexpected end of input\n    at checkSyntax (node:internal/main/check_syntax:84:5)\n\nNode.js v24.21.0"
+            }
+          },
+          "codigo": "```javascript\nfunction isValidEmail(email) {\n  // Expresión regular para validar un email básico\n  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  \n  // Comprueba si el email coincide con la expresión regular\n  return emailRegex.test(email);\n}\n\n// Ejemplos de uso:\nconsole.log(isValidEmail(\"example@example.com\")); // true\nconsole.log(isValidEmail(\"invalid-email\")); // false\nconsole.log(isValidEmail(\"user@domain.co.uk\")); // true\nconsole.log(isValidEmail(\"user@domain\")); // false\nconsole.log(isValidEmail(\"user@domain.c\")); // false\nconsole.log(isValidEmail(\"user@domain..com\")); // false\nconsole.log(isValidEmail(\"user@domain.com.\")); // false\nconsole.log(isValidEmail(\"user@domain.com@\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.co.uk\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk.\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com.co.uk\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com.co.uk.\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com.co.uk@\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com.co.uk@domain.com\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com.co.uk@domain.com.co.uk\")); // false\nconsole.log(isValidEmail(\"user@domain.com@domain.com.co.uk@domain.com",
+          "error": null,
+          "systemPromptEnviado": true
+        },
+        "python": {
+          "exito": true,
+          "duracionMs": 43747,
+          "calidad": {
+            "checks": {
+              "tieneContenido": true,
+              "tieneComentarios": true,
+              "noPlaceholders": true,
+              "noExplicacion": true
+            },
+            "puntuacion": 100,
+            "sintaxis": {
+              "valida": true,
+              "error": null
+            }
+          },
+          "codigo": "def leer_archivo(ruta):\n    try:\n        # Abre el archivo en modo lectura\n        with open(ruta, 'r') as archivo:\n            # Lee el contenido del archivo\n            contenido = archivo.read()\n            return contenido\n    except FileNotFoundError:\n        # Maneja el error si el archivo no se encuentra\n        print(f\"Error: El archivo {ruta} no se encontró.\")\n        return None\n    except Exception as e:\n        # Maneja cualquier otro error que pueda ocurrir\n        print(f\"Error al leer el archivo {ruta}: {e}\")\n        return None",
+          "error": null,
+          "systemPromptEnviado": true
+        }
+      }
+    },
+    "p06": {
+      "exito": true,
+      "duracionMs": 130428,
+      "bloquesEncontrados": [
+        "html"
+      ],
+      "archivosEvaluados": {
+        "html": true,
+        "css": false,
+        "js": false,
+        "cssIncrustado": false,
+        "jsIncrustado": false
+      },
+      "calidad": {
+        "html": {
+          "checks": {
+            "doctype": true,
+            "html": true,
+            "head": true,
+            "body": true,
+            "header": true,
+            "form": true,
+            "linkCSS": true,
+            "linkJS": true,
+            "accesible": true,
+            "cssSeparado": true,
+            "jsSeparado": false
+          },
+          "puntuacion": 91
+        },
+        "css": null,
+        "js": null
+      },
+      "puntuacionMedia": 30,
+      "codigo": {
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Landing Page Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <h1>Bienvenido a nuestra Clínica Veterinaria</h1>\n        <nav>\n            <ul>\n                <li><a href=\"#about\">Sobre Nosotros</a></li>\n                <li><a href=\"#services\">Servicios</a></li>\n                <li><a href=\"#contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"about\">\n            <h2>Sobre Nosotros</h2>\n            <p>En nuestra clínica veterinaria, cuidamos cada mascota con amor y profesionalismo. Ofrecemos servicios de alta calidad y atención personalizada.</p>\n        </section>\n        <section id=\"services\">\n            <h2>Servicios</h2>\n            <ul>\n                <li>Cirugía veterinaria</li>\n                <li>Vacunación y desparasitación</li>\n                <li>Consulta médica</li>\n                <li>Tratamiento de enfermedades</li>\n            </ul>\n        </section>\n        <section id=\"contact\">\n            <h2>Contacto</h2>\n            <form id=\"contactForm\">\n                <label for=\"name\">Nombre:</label>\n                <input type=\"text\" id=\"name\" name=\"name\" required>\n                <label for=\"email\">Email:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n                <label for=\"message\">Mensaje:</label>\n                <textarea id=\"message\" name=\"message\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Clínica Veterinaria. Todos los derechos reservados.</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>"
+      },
+      "respuestaCruda": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Landing Page Veterinaria</title>\n    <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n    <header>\n        <h1>Bienvenido a nuestra Clínica Veterinaria</h1>\n        <nav>\n            <ul>\n                <li><a href=\"#about\">Sobre Nosotros</a></li>\n                <li><a href=\"#services\">Servicios</a></li>\n                <li><a href=\"#contact\">Contacto</a></li>\n            </ul>\n        </nav>\n    </header>\n    <main>\n        <section id=\"about\">\n            <h2>Sobre Nosotros</h2>\n            <p>En nuestra clínica veterinaria, cuidamos cada mascota con amor y profesionalismo. Ofrecemos servicios de alta calidad y atención personalizada.</p>\n        </section>\n        <section id=\"services\">\n            <h2>Servicios</h2>\n            <ul>\n                <li>Cirugía veterinaria</li>\n                <li>Vacunación y desparasitación</li>\n                <li>Consulta médica</li>\n                <li>Tratamiento de enfermedades</li>\n            </ul>\n        </section>\n        <section id=\"contact\">\n            <h2>Contacto</h2>\n            <form id=\"contactForm\">\n                <label for=\"name\">Nombre:</label>\n                <input type=\"text\" id=\"name\" name=\"name\" required>\n                <label for=\"email\">Email:</label>\n                <input type=\"email\" id=\"email\" name=\"email\" required>\n                <label for=\"message\">Mensaje:</label>\n                <textarea id=\"message\" name=\"message\" required></textarea>\n                <button type=\"submit\">Enviar</button>\n            </form>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2023 Clínica Veterinaria. Todos los derechos reservados.</p>\n    </footer>\n    <script src=\"script.js\"></script>\n</body>\n</html>\n```\n\n```css\n:root {\n    --primary-color: #007BFF;\n    --secondary-color: #28a745;\n    --text-color: #333;\n    --background-color: #f8f9fa;\n}\n\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 0;\n    background-color: var(--background-color);\n    color: var(--text-color);\n}\n\nheader {\n    background-color: var(--primary-color);\n    color",
+      "error": null,
+      "systemPromptEnviado": true
+    }
+  }
+}
