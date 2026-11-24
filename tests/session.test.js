@@ -111,6 +111,58 @@ test("AgentSession: avisa, compacta al 90% y deja solo system + resumen", async 
 	assert.equal(calls[6].history[0].role, "system");
 });
 
+test("AgentSession: summarizeWithModel usa el historial de la sesión y no el askAgentFn del host", async () => {
+	const summaryCalls = [];
+	const { session, calls } = makeSession({
+		context: { limit: 1000, thresholdPercent: 90, maxSummaryChars: 500 },
+		summarizeWithModel: {
+			maxInputChars: 4000,
+			askFn: async (request) => {
+				summaryCalls.push(request);
+				return { text: "- Ana prefiere respuestas cortas." };
+			},
+		},
+		askAgentFn: () => ({ text: "ok" }),
+	});
+
+	await session.ask("Hola, soy Ana");
+	await session.ask("Prefiero respuestas cortas.");
+	for (let index = 0; index < 3; index += 1) {
+		await session.ask(`Datos ${index}: ${"a".repeat(80)}`);
+	}
+	session.contextLimitOverride = 60;
+	await session.ask("¿Y ahora?");
+
+	assert.equal(summaryCalls.length, 1, "la sesión resumió una sola vez");
+	const request = summaryCalls[0];
+	assert.equal(request.preSearch, false, "el resumen no busca en la web");
+	assert.deepEqual(request.tools, {}, "el resumen no ofrece herramientas");
+	assert.match(request.system, /archivist/i);
+	assert.match(request.messages[0].content, /Hola, soy Ana/, "recibió el historial de la sesión");
+	assert.match(request.messages[0].content, /Prefiero respuestas cortas/, "recibió los turnos recientes");
+	assert.equal(calls.length, 6, "el askAgentFn del host solo generó respuestas");
+	assert.match(session.summary, /Ana prefiere respuestas cortas/);
+	assert.ok(!session.summary.includes("- user:"), "no usó el truncamiento determinista");
+});
+
+test("AgentSession: un rechazo del summarizer cae al resumen determinista", async () => {
+	const { session } = makeSession({
+		context: { limit: 1000, thresholdPercent: 90, maxSummaryChars: 500 },
+		summarizeWithModel: {
+			askFn: async () => ({ text: "No tengo acceso a la conversación." }),
+		},
+		askAgentFn: () => ({ text: "ok" }),
+	});
+
+	await session.ask("Hola, soy Ana");
+	await session.ask("Me gusta el café.");
+	session.contextLimitOverride = 60;
+	await session.ask("¿Y ahora?");
+
+	assert.match(session.summary, /- user: Hola, soy Ana/, "fallback determinista de la sesión");
+	assert.ok(!session.summary.includes("No tengo acceso"), "el rechazo no se guarda");
+});
+
 test("AgentSession: un turno entrante sobredimensionado avisa pero no compacta", async () => {
 	const { session, events } = makeSession({
 		context: { limit: 40, thresholdPercent: 90 },

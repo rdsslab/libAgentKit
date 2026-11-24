@@ -80,6 +80,57 @@ const defaultSummarize = async (messages = []) => messages
 	.map((message) => `- ${message?.role || "unknown"}: ${short(messageText(message), 320)}`)
 	.join("\n");
 
+// Optional model-written summaries live here, next to the history they use.
+// The host only enables the mode; it does not supply the prompt or re-read SQL.
+const MODEL_SUMMARY_MAX_INPUT_CHARS = 12000;
+const MODEL_SUMMARY_MAX_LINE_CHARS = 900;
+const MODEL_SUMMARY_REFUSAL_RE = /^(?:unable\s+to\s+summariz|cannot\s+summariz|can't\s+summariz|no\s+puedo\s+resumir|no\s+puedo\s+ayudar)\b/i;
+
+const modelSummaryPrompt = (maxChars) =>
+	"You are a conversation archivist. Extract only what a future agent needs to continue: " +
+	"names, concrete facts, preferences, decisions, pending tasks and useful context. " +
+	`Write at most ${maxChars} characters, in short lines starting with "- ", ` +
+	"in the same language as the conversation. Do not answer the questions, do not invent facts, " +
+	"do not explain this task, do not repeat greetings and never include refusal phrases. " +
+	"Return an empty string if there is nothing useful.";
+
+const buildModelSummaryTranscript = (messages = [], maxChars = MODEL_SUMMARY_MAX_INPUT_CHARS) => {
+	const lines = [];
+	let used = 0;
+	const list = Array.isArray(messages) ? messages : [];
+	for (let index = list.length - 1; index >= 0; index -= 1) {
+		const message = list[index] || {};
+		const role = message.role === "assistant" ? "assistant" : message.role === "system" ? "system" : "user";
+		const text = messageText(message).replace(/\s+/g, " ").trim();
+		if (!text) continue;
+		const line = `- ${role}: ${short(text, MODEL_SUMMARY_MAX_LINE_CHARS)}`;
+		if (used + line.length + 1 > maxChars) break;
+		lines.push(line);
+		used += line.length + 1;
+	}
+	return lines.reverse().join("\n");
+};
+
+const boundModelSummary = (text, maxChars) => {
+	const kept = [];
+	let used = 0;
+	for (const raw of String(text || "").replace(/\r/g, "").split(/\n+/)) {
+		const line = raw.trim();
+		if (!line) continue;
+		if (used + line.length + 1 > maxChars) break;
+		kept.push(line);
+		used += line.length + 1;
+	}
+	return kept.join("\n");
+};
+
+const looksLikeModelSummaryRefusal = (text) => {
+	const value = String(text || "").trim();
+	if (!value) return true;
+	if (looksLikeNoAnswer(value)) return true;
+	return MODEL_SUMMARY_REFUSAL_RE.test(normalizeForMatch(value));
+};
+
 const INJECTION_TYPES = ["media", "documents", "web", "tools"];
 const DEFAULT_CHARS_PER_TOKEN = { media: 4, documents: 4, web: 2, tools: 2 };
 
@@ -103,6 +154,9 @@ export class AgentSession {
 	 * @param {object} [options.context] `limit`, `thresholdPercent`, `maxSummaryChars`,
 	 *   `injectionBudgetRatio`, `compactionCooldownTurns` and verification band.
 	 * @param {(messages: Array, options: object) => Promise<string>} [options.summarize]
+	 * @param {boolean|object} [options.summarizeWithModel] Let the session write
+	 *   compactions with its own provider. An object may carry `askFn`, `prompt`,
+	 *   `provider`, `maxInputChars` and `maxOutputChars`.
 	 * @param {(options: object) => Promise<object>} [options.webSearchFn] Search implementation. Defaults to `webSearch()`.
 	 * @param {Function} [options.countTokens] `async ({text, provider, signal}) => number`.
 	 * @param {"full"|"compact"} [options.eventLevel] `compact` buffers deltas into
@@ -115,6 +169,7 @@ export class AgentSession {
 		memory = {},
 		context = {},
 		summarize,
+		summarizeWithModel = false,
 		config,
 		configOptions,
 		webSearchFn,
@@ -132,6 +187,8 @@ export class AgentSession {
 		this.webSearchFn = typeof webSearchFn === "function" ? webSearchFn : null;
 		this.streaming = streaming !== false;
 		this.summarize = typeof summarize === "function" ? summarize : null;
+		this.summarizeWithModel = summarizeWithModel === true || isPlainObject(summarizeWithModel);
+		this.summarizeModelOptions = isPlainObject(summarizeWithModel) ? summarizeWithModel : {};
 		this.config = config ?? null;
 		this.configOptions = configOptions;
 
@@ -457,6 +514,42 @@ export class AgentSession {
 	}
 
 	/**
+	 * Writes the compaction summary with the session's own provider. It calls
+	 * `askAgent()` directly, never `askAgentFn`: that callback belongs to the
+	 * host's chat turn (tools, files, web search) and must not run to summarize.
+	 *
+	 * @param {Array<object>} messages
+	 * @param {object} [options]
+	 * @param {AbortSignal} [options.signal]
+	 * @returns {Promise<string>} Empty text means "use defaultSummarize".
+	 */
+	async modelSummarize(messages = [], { signal } = {}) {
+		const options = this.summarizeModelOptions;
+		const maxInputChars = Math.max(1000, finite(options.maxInputChars ?? MODEL_SUMMARY_MAX_INPUT_CHARS, MODEL_SUMMARY_MAX_INPUT_CHARS));
+		const maxOutputChars = Math.min(this.maxSummaryChars, Math.max(200, finite(options.maxOutputChars ?? this.maxSummaryChars, this.maxSummaryChars)));
+		const transcript = buildModelSummaryTranscript(messages, maxInputChars);
+		if (!transcript) return "";
+		const askFn = typeof options.askFn === "function" ? options.askFn : defaultAskAgent;
+		try {
+			const result = await askFn({
+				provider: isPlainObject(options.provider) ? options.provider : this.provider,
+				system: String(options.prompt || modelSummaryPrompt(maxOutputChars)),
+				messages: [{ role: "user", content: `CONVERSACIÓN:\n${transcript}` }],
+				preSearch: false,
+				tools: {},
+				maxToolRounds: 1,
+				signal,
+			});
+			const text = String((result && result.text) || "");
+			if (looksLikeModelSummaryRefusal(text)) return "";
+			return boundModelSummary(text, maxOutputChars);
+		} catch {
+			// The deterministic summarizer is the safety net for provider errors.
+			return "";
+		}
+	}
+
+	/**
 	 * Builds one flat, bounded summary message. Prior summaries are flattened,
 	 * never nested, so repeated compactions do not grow without limit.
 	 *
@@ -508,7 +601,11 @@ export class AgentSession {
 			...(text ? [{ role: "user", content: String(text) }] : []),
 		];
 		if (source.length) {
-			const summarizer = typeof summarize === "function" ? summarize : defaultSummarize;
+			const summarizer = typeof summarize === "function"
+				? summarize
+				: this.summarizeWithModel
+					? (messages, summaryOptions) => this.modelSummarize(messages, summaryOptions)
+					: defaultSummarize;
 			let recent = "";
 			try {
 				recent = String(await summarizer(source, { signal }) || "").trim();
