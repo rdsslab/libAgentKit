@@ -16,7 +16,9 @@ import path from "node:path";
 
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
 
+/** Canonical project-local config path, relative to the project root. @type {string} */
 export const PROJECT_CONFIG_CANONICAL = path.join("agentkit", "config.json");
+/** Legacy project-local config paths, still read for compatibility. @type {ReadonlyArray<string>} */
 export const PROJECT_CONFIG_LEGACY = Object.freeze([
 	"agentkit.config.json",
 	path.join(".agentkit", "config.json"),
@@ -39,6 +41,15 @@ const deepMerge = (base, override) => {
 	return out;
 };
 
+/**
+ * Resolves the OS-specific directory that holds the global config.
+ *
+ * @param {object} [options]
+ * @param {string} [options.platform=process.platform] Platform override for tests.
+ * @param {object} [options.env=process.env] Environment override for tests.
+ * @param {string} [options.home=os.homedir()] Home override for tests.
+ * @returns {string} Absolute directory path.
+ */
 export const getGlobalConfigDir = ({ platform = process.platform, env = process.env, home = os.homedir() } = {}) => {
 	if (platform === "win32") {
 		const appData = env.APPDATA || path.join(home, "AppData", "Roaming");
@@ -51,13 +62,30 @@ export const getGlobalConfigDir = ({ platform = process.platform, env = process.
 	return path.join(xdg, "agentkit");
 };
 
+/**
+ * @param {object} [options] Same seams as `getGlobalConfigDir()`.
+ * @returns {string} Absolute path of the global `config.json`.
+ */
 export const getGlobalConfigPath = (options = {}) => path.join(getGlobalConfigDir(options), "config.json");
 
+/**
+ * Creates a directory recursively when needed.
+ *
+ * @param {string} dirPath
+ * @returns {string} The resolved directory path.
+ */
 export const ensureDir = (dirPath) => {
 	fs.mkdirSync(dirPath, { recursive: true });
 	return dirPath;
 };
 
+/**
+ * Reads and validates a JSON config file.
+ *
+ * @param {string} filePath
+ * @returns {{path: string, config: object}} Resolved path and parsed object.
+ * @throws {Error} When the file cannot be read or is not a JSON object.
+ */
 export const readJsonFile = (filePath) => {
 	const resolved = path.resolve(filePath);
 	let raw;
@@ -77,14 +105,28 @@ export const readJsonFile = (filePath) => {
 	}
 };
 
+/**
+ * @param {string} filePath
+ * @returns {{path: string, config: object}|null} Null when the file does not exist.
+ */
 export const readJsonFileIfExists = (filePath) => {
 	const resolved = path.resolve(filePath);
 	if (!fs.existsSync(resolved)) return null;
 	return readJsonFile(resolved);
 };
 
+/** File mode used for global config, which may contain secrets. @type {number} */
 export const GLOBAL_CONFIG_MODE = 0o600;
 
+/**
+ * Writes pretty-printed JSON, creating parent directories as needed.
+ *
+ * @param {string} filePath
+ * @param {object} data
+ * @param {object} [options]
+ * @param {number} [options.mode] Optional POSIX mode, also applied after writing.
+ * @returns {string} Resolved path.
+ */
 export const writeJsonFile = (filePath, data, { mode } = {}) => {
 	const resolved = path.resolve(filePath);
 	ensureDir(path.dirname(resolved));
@@ -100,6 +142,10 @@ export const writeJsonFile = (filePath, data, { mode } = {}) => {
  * Resolves `env:VAR` references to their value. A missing variable resolves to
  * `undefined` so the provider layer can report the failure clearly. Everything
  * else is returned untouched, which keeps existing literal tokens working.
+ *
+ * @param {*} value
+ * @param {object} [env=process.env]
+ * @returns {*} Resolved value, or undefined when a referenced variable is missing.
  */
 export const resolveSecretReference = (value, env = process.env) => {
 	if (typeof value !== "string") return value;
@@ -109,7 +155,13 @@ export const resolveSecretReference = (value, env = process.env) => {
 	return typeof resolved === "string" && resolved.length > 0 ? resolved : undefined;
 };
 
-/** Deep copy of a config with every `env:VAR` secret reference resolved. */
+/**
+ * Deep copy of a config with every `env:VAR` secret reference resolved.
+ *
+ * @param {*} config
+ * @param {object} [env=process.env]
+ * @returns {*} Deep copy with secrets resolved.
+ */
 export const resolveConfigSecrets = (config, env = process.env) => {
 	if (Array.isArray(config)) return config.map((item) => resolveConfigSecrets(item, env));
 	if (!isPlainObject(config)) return resolveSecretReference(config, env);
@@ -120,6 +172,14 @@ export const resolveConfigSecrets = (config, env = process.env) => {
 	return out;
 };
 
+/**
+ * Searches upward from `cwd` for canonical or legacy project config.
+ *
+ * @param {object} [options]
+ * @param {string} [options.cwd=process.cwd()]
+ * @param {string} [options.stopAt] Directory where the upward search stops.
+ * @returns {string|null} Absolute config path, or null when none exists.
+ */
 export const findProjectConfigPath = ({ cwd = process.cwd(), stopAt } = {}) => {
 	let current = path.resolve(cwd);
 	const root = path.parse(current).root;
@@ -140,6 +200,7 @@ export const findProjectConfigPath = ({ cwd = process.cwd(), stopAt } = {}) => {
 	return null;
 };
 
+/** @returns {object} Fresh default config with embedded-safe capabilities. */
 export const defaultConfig = () => ({
 	version: 1,
 	language: "en",
@@ -171,8 +232,27 @@ export const defaultConfig = () => ({
 	mode: "build",
 	mcpServers: [],
 	terminal: {},
+	// Media is optional by design: with no `stt.providers`, audio/video
+	// attachments degrade to a visible warning instead of failing the call.
+	stt: {
+		providers: {},
+		defaultProvider: undefined,
+		language: undefined,
+		timeoutMs: undefined,
+	},
+	media: {
+		maxFrames: 6,
+		frameWidth: 640,
+		onError: "degrade", // degrade | throw
+	},
 });
 
+/**
+ * Loads global config, merged over `defaultConfig()` when present.
+ *
+ * @param {object} [options] Same seams as `getGlobalConfigDir()`.
+ * @returns {{path: string, exists: boolean, config: object}}
+ */
 export const loadGlobalConfig = (options = {}) => {
 	const configPath = getGlobalConfigPath(options);
 	const loaded = readJsonFileIfExists(configPath);
@@ -182,6 +262,11 @@ export const loadGlobalConfig = (options = {}) => {
 	return { path: loaded.path, exists: true, config: deepMerge(defaultConfig(), loaded.config) };
 };
 
+/**
+ * @param {object} [options]
+ * @param {string} [options.cwd=process.cwd()]
+ * @returns {{path: string|null, exists: boolean, config: object}} Empty config when no project file exists.
+ */
 export const loadProjectConfig = ({ cwd = process.cwd() } = {}) => {
 	const configPath = findProjectConfigPath({ cwd });
 	if (!configPath) return { path: null, exists: false, config: {} };
@@ -189,6 +274,16 @@ export const loadProjectConfig = ({ cwd = process.cwd() } = {}) => {
 	return { path: loaded.path, exists: true, config: loaded.config };
 };
 
+/**
+ * Merges global and project config and reports where each came from.
+ * Project values win; `language` falls back to `tui.language` then `"en"`.
+ *
+ * @param {object} [options]
+ * @param {string} [options.cwd=process.cwd()]
+ * @param {object} [options.globalOptions] Seams for `loadGlobalConfig()`.
+ * @returns {{globalPath: string, globalExists: boolean, projectPath: string|null,
+ *   projectExists: boolean, global: object, project: object, config: object}}
+ */
 export const loadEffectiveConfig = ({ cwd = process.cwd(), globalOptions } = {}) => {
 	const global = loadGlobalConfig(globalOptions);
 	const project = loadProjectConfig({ cwd });
@@ -207,6 +302,13 @@ export const loadEffectiveConfig = ({ cwd = process.cwd(), globalOptions } = {})
 	};
 };
 
+/**
+ * Merges over the defaults and writes global config with owner-only permissions.
+ *
+ * @param {object} config
+ * @param {object} [options] Same seams as `getGlobalConfigDir()`.
+ * @returns {{path: string, config: object}}
+ */
 export const saveGlobalConfig = (config, options = {}) => {
 	const configPath = getGlobalConfigPath(options);
 	const base = defaultConfig();
@@ -217,6 +319,15 @@ export const saveGlobalConfig = (config, options = {}) => {
 	return { path: configPath, config: merged };
 };
 
+/**
+ * Writes project config to an existing file or to the canonical location.
+ *
+ * @param {object} config
+ * @param {object} [options]
+ * @param {string} [options.cwd=process.cwd()]
+ * @param {boolean} [options.canonical=true] Use the canonical path for new files.
+ * @returns {{path: string, config: object}}
+ */
 export const saveProjectConfig = (config, { cwd = process.cwd(), canonical = true } = {}) => {
 	const existing = findProjectConfigPath({ cwd });
 	const configPath = existing || path.join(path.resolve(cwd), canonical ? PROJECT_CONFIG_CANONICAL : PROJECT_CONFIG_LEGACY[0]);

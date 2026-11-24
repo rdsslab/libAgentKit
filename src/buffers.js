@@ -25,6 +25,12 @@ const looksLikeBase64 = (value) => {
 	return /=/.test(compact) || /[+/]/.test(compact);
 };
 
+/**
+ * Guesses a MIME type from a filename extension.
+ *
+ * @param {string} fileName
+ * @returns {string} MIME type, or `application/octet-stream` when unknown.
+ */
 export const guessMimeTypeFromName = (fileName) => {
 	const name = String(fileName || "").toLowerCase();
 	const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : "";
@@ -70,8 +76,18 @@ export const guessMimeTypeFromName = (fileName) => {
 	return map[ext] || "application/octet-stream";
 };
 
+/**
+ * @param {*} value
+ * @returns {boolean} True when the value is a `data:` URL string.
+ */
 export const isDataUrl = (value) => typeof value === "string" && /^data:/i.test(value.trim());
 
+/**
+ * Parses a data URL into bytes and metadata.
+ *
+ * @param {string} value
+ * @returns {{mimeType: string, base64: boolean, data: Buffer}|null} Null when the URL is invalid.
+ */
 export const parseDataUrl = (value) => {
 	const match = String(value || "").trim().match(DATA_URL_RE);
 	if (!match) {
@@ -155,6 +171,13 @@ export const toBuffer = (input, options = {}) => {
 	throw new TypeError("Unsupported binary input. Use a Buffer, ArrayBuffer, base64 string or data URL.");
 };
 
+/**
+ * Converts binary input into a base64 data URL for vision APIs.
+ *
+ * @param {*} input Same shapes as `toBuffer()`.
+ * @param {string} [mimeType]
+ * @returns {string}
+ */
 export const toDataUrl = (input, mimeType = "application/octet-stream") => {
 	if (isDataUrl(input)) {
 		return String(input).trim();
@@ -169,6 +192,10 @@ export const toDataUrl = (input, mimeType = "application/octet-stream") => {
 /**
  * Resolves `{ data, mimeType, fileName }` from a loose media descriptor.
  * Accepted shapes: Buffer, data URL, base64 string, or an object with those fields.
+ *
+ * @param {*} input
+ * @param {object} [defaults] `mimeType`, `fileName` or `encoding` fallbacks.
+ * @returns {{data: Buffer, mimeType: string, fileName: string}}
  */
 export const normalizeBinaryDescriptor = (input, defaults = {}) => {
 	const objectInput = isPlainObject(input) ? input : { data: input };
@@ -193,6 +220,10 @@ export const normalizeBinaryDescriptor = (input, defaults = {}) => {
 	return { data, mimeType, fileName };
 };
 
+/**
+ * @param {string} mimeType
+ * @returns {boolean} True for text-like MIME types, including JSON/XML/YAML.
+ */
 export const isTextMimeType = (mimeType) => {
 	const type = String(mimeType || "").toLowerCase();
 	return type.startsWith("text/")
@@ -203,6 +234,9 @@ export const isTextMimeType = (mimeType) => {
 		|| type.includes("x-www-form-urlencoded");
 };
 
+/** @param {string} mimeType @returns {boolean} */
 export const isImageMimeType = (mimeType) => /^image\//i.test(String(mimeType || ""));
+/** @param {string} mimeType @returns {boolean} */
 export const isAudioMimeType = (mimeType) => /^audio\//i.test(String(mimeType || ""));
+/** @param {string} mimeType @returns {boolean} */
 export const isVideoMimeType = (mimeType) => /^video\//i.test(String(mimeType || ""));

@@ -16,6 +16,11 @@ const messageText = (message) => {
 	try { return JSON.stringify(content ?? ""); } catch { return String(content ?? ""); }
 };
 
+/**
+ * @param {object} usage `askAgent()` usage containing `context.used_percent`.
+ * @param {number} [thresholdPercent=90]
+ * @returns {boolean} True when the reported usage reaches the threshold.
+ */
 export const shouldAutoCompact = (usage, thresholdPercent = 90) => {
 	const pct = Number(usage?.context?.used_percent);
 	const threshold = Number(thresholdPercent);
@@ -23,6 +28,14 @@ export const shouldAutoCompact = (usage, thresholdPercent = 90) => {
 	return pct >= threshold;
 };
 
+/**
+ * Drops older non-system messages and inserts a note about what was removed.
+ *
+ * @param {Array<object>} [messages]
+ * @param {object} [options]
+ * @param {number} [options.keepLastMessages=12]
+ * @returns {Array<object>} System messages, compaction note and recent turns.
+ */
 export const compactMessagesTruncate = (messages = [], { keepLastMessages = 12 } = {}) => {
 	const list = Array.isArray(messages) ? messages : [];
 	const system = list.filter((m) => m?.role === "system");
@@ -36,6 +49,14 @@ export const compactMessagesTruncate = (messages = [], { keepLastMessages = 12 }
 	return [...system, ...note, ...kept];
 };
 
+/**
+ * Builds the prompt used to ask a model for a continuity summary.
+ *
+ * @param {Array<object>} [messages]
+ * @param {object} [options]
+ * @param {number} [options.maxMessages=40] Recent non-system messages to include.
+ * @returns {string} A plain-text summarization prompt.
+ */
 export const buildCompactionSummaryPrompt = (messages = [], { maxMessages = 40 } = {}) => {
 	const list = (Array.isArray(messages) ? messages : []).filter((m) => m?.role !== "system");
 	const slice = list.slice(-Math.max(1, Number(maxMessages) || 40));
@@ -50,14 +71,29 @@ export const buildCompactionSummaryPrompt = (messages = [], { maxMessages = 40 }
 	].join("\n");
 };
 
+/**
+ * Replaces older turns with one summary system message. `keepLastMessages: 0`
+ * is valid and keeps only the summary.
+ *
+ * @param {object} [options]
+ * @param {Array<object>} [options.messages]
+ * @param {(messages: Array<object>) => Promise<string>|string} [options.summarize]
+ * @param {number} [options.keepLastMessages=6]
+ * @returns {Promise<Array<object>>} System messages, summary and recent turns.
+ */
 export const compactMessagesWithSummary = async ({ messages = [], summarize, keepLastMessages = 6 } = {}) => {
 	const list = Array.isArray(messages) ? messages : [];
 	const system = list.filter((m) => m?.role === "system");
 	const nonSystem = list.filter((m) => m?.role !== "system");
-	if (nonSystem.length <= keepLastMessages) return list.slice();
+	// `0` is a legitimate value: an AgentSession keeps ONLY the summary and
+	// drops every turn. `Number(0) || 6` used to silently keep six messages.
+	const keep = Number.isFinite(Number(keepLastMessages))
+		? Math.max(0, Number(keepLastMessages))
+		: 6;
+	if (nonSystem.length <= keep) return list.slice();
 
-	const toSummarize = nonSystem.slice(0, Math.max(0, nonSystem.length - keepLastMessages));
-	const kept = nonSystem.slice(-Math.max(1, Number(keepLastMessages) || 6));
+	const toSummarize = nonSystem.slice(0, Math.max(0, nonSystem.length - keep));
+	const kept = keep > 0 ? nonSystem.slice(-keep) : [];
 	let summaryText = "";
 	if (typeof summarize === "function") {
 		try {
@@ -76,6 +112,16 @@ export const compactMessagesWithSummary = async ({ messages = [], summarize, kee
 	return [...system, summaryMessage, ...kept];
 };
 
+/**
+ * Generic compaction entry point used by `askAgent()`.
+ *
+ * @param {object} [options]
+ * @param {Array<object>} [options.messages]
+ * @param {"summary"|"truncate"|"hybrid"} [options.strategy=summary]
+ * @param {Function} [options.summarize]
+ * @param {number} [options.keepLastMessages=12]
+ * @returns {Promise<Array<object>>} Compacted messages.
+ */
 export const compactMessages = async ({ messages = [], strategy = "summary", summarize, keepLastMessages = 12 } = {}) => {
 	const mode = String(strategy || "summary").toLowerCase();
 	if (mode === "truncate") return compactMessagesTruncate(messages, { keepLastMessages });

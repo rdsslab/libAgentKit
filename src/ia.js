@@ -108,6 +108,7 @@ const BUILTIN_PROVIDER_PRESETS = {
 	},
 };
 
+/** Built-in provider defaults keyed by provider name. @type {Readonly<Record<string, object>>} */
 export const AI_PROVIDER_PRESETS = Object.freeze({
 	...BUILTIN_PROVIDER_PRESETS,
 });
@@ -430,6 +431,24 @@ const emitTextDelta = (onTextDelta, delta, meta = {}) => {
 	}
 };
 
+/**
+ * Provider reasoning events (OpenAI `reasoning_content`, Anthropic
+ * `thinking_delta`, Gemini thought parts) are best-effort observers. A UI that
+ * only wants a spinner can keep using `onTextDelta`; a UI that wants the real
+ * reasoning text receives it through `onThinking(delta, meta)`.
+ */
+const emitThinking = (onThinking, delta, meta = {}) => {
+	if (typeof onThinking !== "function" || typeof delta !== "string" || delta.length === 0) {
+		return false;
+	}
+	try {
+		onThinking(delta, meta);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const shouldFallbackStreaming = (error, emitted, signal) => {
 	if (emitted) return false;
 	if (signal?.aborted) return false;
@@ -437,7 +456,7 @@ const shouldFallbackStreaming = (error, emitted, signal) => {
 };
 
 /** Rebuilds the plain completion shape from an OpenAI-compatible SSE stream. */
-const collectOpenAIStream = async (stream, onTextDelta, meta = {}) => {
+const collectOpenAIStream = async (stream, onTextDelta, meta = {}, onThinking) => {
 	let text = "";
 	let usage;
 	let emitted = false;
@@ -449,6 +468,10 @@ const collectOpenAIStream = async (stream, onTextDelta, meta = {}) => {
 		if (typeof delta?.content === "string" && delta.content.length > 0) {
 			text += delta.content;
 			emitted = emitTextDelta(onTextDelta, delta.content, meta) || emitted;
+		}
+		const reasoning = delta?.reasoning_content ?? delta?.reasoning;
+		if (typeof reasoning === "string" && reasoning.length > 0) {
+			emitThinking(onThinking, reasoning, meta);
 		}
 		for (const call of delta?.tool_calls || []) {
 			const index = Number(call.index ?? 0);
@@ -480,7 +503,7 @@ const collectOpenAIStream = async (stream, onTextDelta, meta = {}) => {
 };
 
 /** Rebuilds an Anthropic message from its streaming events. */
-const collectAnthropicStream = async (stream, onTextDelta, meta = {}) => {
+const collectAnthropicStream = async (stream, onTextDelta, meta = {}, onThinking) => {
 	const content = [];
 	let usage;
 	let emitted = false;
@@ -501,6 +524,11 @@ const collectAnthropicStream = async (stream, onTextDelta, meta = {}) => {
 				const text = event.delta.text || "";
 				if (block?.type === "text") block.text = `${block.text || ""}${text}`;
 				emitted = emitTextDelta(onTextDelta, text, meta) || emitted;
+			}
+			if (event.delta?.type === "thinking_delta") {
+				const reasoning = event.delta.thinking ?? event.delta.text ?? "";
+				if (block?.type === "thinking") block.thinking = `${block.thinking || ""}${reasoning}`;
+				emitThinking(onThinking, reasoning, meta);
 			}
 			if (event.delta?.type === "input_json_delta" && block?.type === "tool_use") {
 				block.partialJson = `${block.partialJson || ""}${event.delta.partial_json || ""}`;
@@ -533,13 +561,29 @@ const getGeminiChunkText = (chunk) => {
 	}
 };
 
+/** Gemini marks reasoning parts with `thought: true` in the response candidates. */
+const getGeminiThoughtText = (payload) => {
+	try {
+		const parts = payload?.candidates?.[0]?.content?.parts;
+		if (!Array.isArray(parts)) return "";
+		return parts
+			.filter((part) => part?.thought === true && typeof part.text === "string")
+			.map((part) => part.text)
+			.join("");
+	} catch {
+		return "";
+	}
+};
+
 /** Rebuilds a Gemini response from `generateContentStream()` chunks. */
-const collectGeminiStream = async (stream, onTextDelta, meta = {}) => {
+const collectGeminiStream = async (stream, onTextDelta, meta = {}, onThinking) => {
 	let text = "";
 	let emitted = false;
 	const functionCalls = [];
 
 	for await (const chunk of stream) {
+		const thought = getGeminiThoughtText(chunk);
+		if (thought) emitThinking(onThinking, thought, meta);
 		const part = getGeminiChunkText(chunk);
 		if (part) {
 			text += part;
@@ -897,12 +941,41 @@ const normalizeImageDescriptor = (value, fallbackMimeType = "image/jpeg") => {
 };
 
 /**
- * Splits a message content into text plus images. Content may be a string, an
- * array of parts or a provider-native object.
+ * Splits a message content into text, images, audio and video. Content may be a
+ * string, an array of parts or a provider-native object (OpenAI image_url /
+ * input_audio, Anthropic image+source, Gemini inlineData).
  */
 const normalizeContentParts = (content) => {
 	const textParts = [];
 	const images = [];
+	const audio = [];
+	const video = [];
+
+	const collectMedia = (part, kind) => {
+		let value = part;
+		if (kind === "audio" && isPlainObject(part.input_audio)) {
+			const format = String(part.input_audio.format || "wav").replace(/^\./, "");
+			value = {
+				mimeType: `audio/${format}`,
+				base64: part.input_audio.data,
+			};
+		} else if (isPlainObject(part.inlineData)) {
+			value = part.inlineData;
+		} else if (isPlainObject(part.source)) {
+			value = {
+				mimeType: part.source.media_type ?? part.source.mimeType,
+				base64: part.source.data,
+				url: part.source.url,
+			};
+		}
+
+		const descriptor = normalizeImageDescriptor(value, kind === "audio" ? "audio/wav" : "video/mp4");
+		if (descriptor) {
+			(kind === "audio" ? audio : video).push(descriptor);
+		}
+	};
+
+	const isMediaMime = (mimeType, kind) => String(mimeType || "").toLowerCase().startsWith(`${kind}/`);
 
 	const collect = (part) => {
 		if (part == null) {
@@ -937,12 +1010,40 @@ const normalizeContentParts = (content) => {
 			return;
 		}
 
-		if (isPlainObject(part.source) || isPlainObject(part.image_url) || part.inlineData || part.image || part.dataUrl) {
-			const image = normalizeImageDescriptor(part);
-			if (image) {
-				images.push(image);
-				return;
+		if (type === "audio" || type === "input_audio" || type === "inputAudio") {
+			collectMedia(part, "audio");
+			return;
+		}
+
+		if (type === "video" || type === "input_video" || type === "inputVideo") {
+			collectMedia(part, "video");
+			return;
+		}
+
+		if (isPlainObject(part.inlineData)) {
+			const mimeType = part.inlineData.mimeType ?? part.inlineData.mime_type;
+			if (isMediaMime(mimeType, "audio")) {
+				collectMedia(part, "audio");
+			} else if (isMediaMime(mimeType, "video")) {
+				collectMedia(part, "video");
+			} else {
+				const image = normalizeImageDescriptor(part);
+				if (image) images.push(image);
 			}
+			return;
+		}
+
+		if (isPlainObject(part.source) || isPlainObject(part.image_url) || part.image || part.dataUrl) {
+			const mediaType = part.source?.media_type ?? part.source?.mimeType;
+			if (isMediaMime(mediaType, "audio")) {
+				collectMedia(part, "audio");
+			} else if (isMediaMime(mediaType, "video")) {
+				collectMedia(part, "video");
+			} else {
+				const image = normalizeImageDescriptor(part);
+				if (image) images.push(image);
+			}
+			return;
 		}
 
 		if (typeof part.text === "string") {
@@ -964,6 +1065,8 @@ const normalizeContentParts = (content) => {
 	return {
 		text: textParts.join("\n").trim(),
 		images,
+		audio,
+		video,
 	};
 };
 
@@ -987,13 +1090,38 @@ const normalizeImagesOption = (images) => {
 		.filter(Boolean);
 };
 
+const normalizeMediaOption = (values, kind) => {
+	if (values == null) {
+		return [];
+	}
+
+	const fallbackMimeType = kind === "audio" ? "audio/wav" : "video/mp4";
+	return normalizeArray(values)
+		.map((value) => normalizeImageDescriptor(value, fallbackMimeType))
+		.filter(Boolean);
+};
+
 /**
- * Appends top-level `images` to the last user message (or a new user message).
- * Messages keep their portable shape; each adapter converts it to its own API.
+ * Portable media part shared by every adapter. Each adapter then decides how to
+ * serialise it (OpenAI `input_audio`, Gemini `inlineData`, etc.).
  */
-const appendImagesToMessages = (messages, images) => {
+const toMediaPart = (kind, descriptor) => ({
+	type: kind,
+	mimeType: descriptor.mimeType || (kind === "audio" ? "audio/wav" : "video/mp4"),
+	...(descriptor.url ? { url: descriptor.url } : { base64: descriptor.base64 }),
+});
+
+/**
+ * Appends top-level `images`, `audio` and `video` to the last user message (or
+ * a new user message). Messages keep their portable shape; each adapter
+ * converts it to its own API. Media already present in the message is kept.
+ */
+const appendMediaToMessages = (messages, { images, audio, video } = {}) => {
 	const normalizedImages = normalizeImagesOption(images);
-	if (!normalizedImages.length) {
+	const normalizedAudio = normalizeMediaOption(audio, "audio");
+	const normalizedVideo = normalizeMediaOption(video, "video");
+
+	if (!normalizedImages.length && !normalizedAudio.length && !normalizedVideo.length) {
 		return messages;
 	}
 
@@ -1021,17 +1149,22 @@ const appendImagesToMessages = (messages, images) => {
 	}
 
 	for (const image of [...parts.images, ...normalizedImages]) {
-		contentParts.push({
-			type: "image",
-			mimeType: image.mimeType || "image/jpeg",
-			...(image.url ? { url: image.url } : { base64: image.base64 }),
-		});
+		contentParts.push(toMediaPart("image", image));
+	}
+	for (const item of [...parts.audio, ...normalizedAudio]) {
+		contentParts.push(toMediaPart("audio", item));
+	}
+	for (const item of [...parts.video, ...normalizedVideo]) {
+		contentParts.push(toMediaPart("video", item));
 	}
 
 	output[targetIndex] = { ...target, content: contentParts };
 
 	return output;
 };
+
+/** Backwards-compatible wrapper used by internal callers. */
+const appendImagesToMessages = (messages, images) => appendMediaToMessages(messages, { images });
 
 
 const splitSystemMessages = (messages, extraSystemText) => {
@@ -2140,14 +2273,21 @@ class BaseProviderAdapter {
 	}
 }
 
+/** OpenAI's `input_audio` only accepts wav/mp3; anything else is sent as wav. */
+const audioFormatFromMime = (mimeType) => {
+	const value = String(mimeType || "").toLowerCase();
+	return value.includes("mpeg") || value.includes("mp3") ? "mp3" : "wav";
+};
+
 const toOpenAIMessages = (messages) => messages.map((message) => {
 	if (message.role === "tool") {
 		return message;
 	}
 
 	const parts = normalizeContentParts(message.content);
+	const hasMedia = parts.images.length || parts.audio.length || parts.video.length;
 
-	if (!parts.images.length) {
+	if (!hasMedia) {
 		return {
 			...message,
 			content: parts.text,
@@ -2167,6 +2307,20 @@ const toOpenAIMessages = (messages) => messages.map((message) => {
 		});
 	}
 
+	for (const audio of parts.audio) {
+		if (audio.base64) {
+			content.push({
+				type: "input_audio",
+				input_audio: {
+					data: audio.base64,
+					format: audioFormatFromMime(audio.mimeType),
+				},
+			});
+		}
+	}
+
+	// OpenAI-compatible chat completions have no `input_video` part. Video is
+	// only forwarded by adapters that declare it in providerSupportedMedia().
 	return {
 		...message,
 		content,
@@ -2286,8 +2440,8 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 		return Math.min(Math.max(n, min), max);
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
-		const messages = appendImagesToMessages(normalizePromptMessages(prompts), images);
+	async run({ prompts, images, audio, video, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta, onThinking } = {}) {
+		const messages = appendMediaToMessages(normalizePromptMessages(prompts), { images, audio, video });
 
 		if (messages.length === 0) {
 			throw new Error("At least one prompt/message is required.");
@@ -2328,9 +2482,10 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 
 			const requestStartedAt = Date.now();
 			const requestOptions = requestSignal ? { signal: requestSignal } : undefined;
+			const meta = { provider: this.provider, model: this.model, round: round + 1 };
 			let streamEmitted = false;
 			let completion;
-			if (typeof onTextDelta !== "function") {
+			if (typeof onTextDelta !== "function" && typeof onThinking !== "function") {
 				completion = await this.runProviderRequest(
 					() => this.client.chat.completions.create(completionRequest, requestOptions),
 					{ signal },
@@ -2345,11 +2500,10 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 						}, requestOptions),
 						{ signal },
 					);
-					const meta = { provider: this.provider, model: this.model, round: round + 1 };
 					const collected = await collectOpenAIStream(stream, (delta, eventMeta) => {
 						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
 						emitTextDelta(onTextDelta, delta, eventMeta);
-					}, meta);
+					}, meta, onThinking);
 					completion = collected.completion;
 				} catch (error) {
 					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
@@ -2369,6 +2523,10 @@ class OpenAICompatibleAdapter extends BaseProviderAdapter {
 			}));
 
 			const assistantMessage = completion?.choices?.[0]?.message;
+			const nonStreamReasoning = assistantMessage?.reasoning_content ?? assistantMessage?.reasoning;
+			if (typeof nonStreamReasoning === "string" && nonStreamReasoning.length > 0) {
+				emitThinking(onThinking, nonStreamReasoning, meta);
+			}
 			if (!assistantMessage) {
 				throw new Error("The AI service returned a completion without message.");
 			}
@@ -2789,7 +2947,7 @@ const requestNativeChat = async ({ baseUrl, headers, body, signal }) => {
 	});
 	if (!response.ok) {
 		const detail = (await response.text()).slice(0, 500);
-		throw new Error(`Ollama nativo devolvió ${response.status}: ${detail}`);
+		throw new Error(`Native Ollama returned ${response.status}: ${detail}`);
 	}
 	return response;
 };
@@ -2797,7 +2955,7 @@ const requestNativeChat = async ({ baseUrl, headers, body, signal }) => {
 async function* streamNativeChatCompletion({ baseUrl, headers, body, signal }) {
 	const response = await requestNativeChat({ baseUrl, headers, body, signal });
 	const reader = response.body?.getReader();
-	if (!reader) throw new Error("Ollama nativo no devolvió un stream legible.");
+	if (!reader) throw new Error("Native Ollama did not return a readable stream.");
 
 	const decoder = new TextDecoder();
 	let buffer = "";
@@ -2819,6 +2977,12 @@ async function* streamNativeChatCompletion({ baseUrl, headers, body, signal }) {
 			const delta = {};
 			if (typeof event?.message?.content === "string" && event.message.content) {
 				delta.content = event.message.content;
+			}
+			// Modelos con razonamiento (p. ej. qwen3) lo emiten en `thinking`;
+			// otros adaptadores compatibles usan `reasoning`.
+			const thinking = event?.message?.thinking ?? event?.message?.reasoning;
+			if (typeof thinking === "string" && thinking) {
+				delta.reasoning = thinking;
 			}
 			const calls = Array.isArray(event?.message?.tool_calls) ? event.message.tool_calls : [];
 			if (calls.length) {
@@ -2976,8 +3140,8 @@ class AnthropicAdapter extends BaseProviderAdapter {
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? "anthropic";
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
-		const normalizedMessages = appendImagesToMessages(normalizePromptMessages(prompts), images);
+	async run({ prompts, images, audio, video, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta, onThinking } = {}) {
+		const normalizedMessages = appendMediaToMessages(normalizePromptMessages(prompts), { images, audio, video });
 
 		if (normalizedMessages.length === 0) {
 			throw new Error("At least one prompt/message is required.");
@@ -3002,9 +3166,10 @@ class AnthropicAdapter extends BaseProviderAdapter {
 			};
 			const requestSignal = this.createRequestSignal(signal);
 			const requestOptions = requestSignal ? { signal: requestSignal } : undefined;
+			const meta = { provider: this.provider, model: this.model, round: round + 1 };
 			let streamEmitted = false;
 			let response;
-			if (typeof onTextDelta !== "function") {
+			if (typeof onTextDelta !== "function" && typeof onThinking !== "function") {
 				response = await this.runProviderRequest(() => this.client.messages.create(params), { signal });
 			} else {
 				try {
@@ -3012,11 +3177,10 @@ class AnthropicAdapter extends BaseProviderAdapter {
 						() => this.client.messages.stream(params, requestOptions),
 						{ signal },
 					);
-					const meta = { provider: this.provider, model: this.model, round: round + 1 };
 					const collected = await collectAnthropicStream(stream, (delta, eventMeta) => {
 						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
 						emitTextDelta(onTextDelta, delta, eventMeta);
-					}, meta);
+					}, meta, onThinking);
 					response = collected.response;
 				} catch (error) {
 					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
@@ -3025,6 +3189,11 @@ class AnthropicAdapter extends BaseProviderAdapter {
 			}
 
 			const assistantContent = Array.isArray(response?.content) ? response.content : [];
+			for (const block of assistantContent) {
+				if (block?.type === "thinking" && typeof block.thinking === "string" && block.thinking) {
+					emitThinking(onThinking, block.thinking, meta);
+				}
+			}
 			messages.push({
 				role: "assistant",
 				content: assistantContent,
@@ -3188,6 +3357,20 @@ const convertToGeminiContents = (messages) => {
 			}
 		}
 
+		for (const [items, fallbackMimeType] of [
+			[parts.audio, "audio/wav"],
+			[parts.video, "video/mp4"],
+		]) {
+			for (const item of items) {
+				const mimeType = item.mimeType || fallbackMimeType;
+				if (item.base64) {
+					geminiParts.push({ inlineData: { mimeType, data: item.base64 } });
+				} else if (item.url) {
+					geminiParts.push({ fileData: { mimeType, fileUri: item.url } });
+				}
+			}
+		}
+
 		if (!geminiParts.length) {
 			continue;
 		}
@@ -3231,8 +3414,8 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 		this.provider = this.providerConfig.modelProvider ?? this.providerConfig.provider ?? "google-gemini";
 	}
 
-	async run({ prompts, images, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta } = {}) {
-		const normalizedMessages = appendImagesToMessages(normalizePromptMessages(prompts), images);
+	async run({ prompts, images, audio, video, runtime, maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS, includeDiagnostics = false, signal, onTextDelta, onThinking } = {}) {
+		const normalizedMessages = appendMediaToMessages(normalizePromptMessages(prompts), { images, audio, video });
 
 		if (normalizedMessages.length === 0) {
 			throw new Error("At least one prompt/message is required.");
@@ -3265,9 +3448,10 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 					toolConfig: tools.length > 0 ? toolConfig : undefined,
 				},
 			};
+			const meta = { provider: this.provider, model: this.model, round: round + 1 };
 			let streamEmitted = false;
 			let response;
-			if (typeof onTextDelta !== "function") {
+			if (typeof onTextDelta !== "function" && typeof onThinking !== "function") {
 				response = await this.runProviderRequest(() => this.client.models.generateContent(params), { signal });
 			} else {
 				try {
@@ -3275,11 +3459,10 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 						() => this.client.models.generateContentStream(params),
 						{ signal },
 					);
-					const meta = { provider: this.provider, model: this.model, round: round + 1 };
 					const collected = await collectGeminiStream(stream, (delta, eventMeta) => {
 						if (typeof delta === "string" && delta.length > 0) streamEmitted = true;
 						emitTextDelta(onTextDelta, delta, eventMeta);
-					}, meta);
+					}, meta, onThinking);
 					response = collected.response;
 				} catch (error) {
 					if (!shouldFallbackStreaming(error, streamEmitted, signal)) throw error;
@@ -3287,6 +3470,8 @@ class GoogleGenAIAdapter extends BaseProviderAdapter {
 				}
 			}
 
+			const nonStreamThought = getGeminiThoughtText(response);
+			if (nonStreamThought) emitThinking(onThinking, nonStreamThought, meta);
 			const functionCalls = Array.isArray(response?.functionCalls) ? response.functionCalls : [];
 			const modelParts = [];
 
@@ -3389,6 +3574,13 @@ registerBuiltinAdapter("google", (providerConfig) => new GoogleGenAIAdapter(prov
 registerBuiltinAdapter("gemini", (providerConfig) => new GoogleGenAIAdapter(providerConfig));
 registerBuiltinAdapter("google-gemini", (providerConfig) => new GoogleGenAIAdapter(providerConfig));
 
+/**
+ * Registers or replaces an adapter factory for a provider name.
+ *
+ * @param {string} providerName
+ * @param {(config: object) => object} factory Returns an adapter with `run()`.
+ * @returns {void}
+ */
 export const registerAIProviderAdapter = (providerName, factory) => {
 	const providerKey = normalizeProviderKey(providerName);
 
@@ -3403,6 +3595,12 @@ export const registerAIProviderAdapter = (providerName, factory) => {
 	providerAdapterFactories.set(providerKey, factory);
 };
 
+/**
+ * Resolves the config and returns the matching provider adapter.
+ *
+ * @param {object} [providerConfig]
+ * @returns {object} Adapter with `run()`.
+ */
 export const createAIProviderAdapter = (providerConfig = {}) => {
 	const resolvedConfig = resolveProviderConfig(providerConfig);
 	const providerKey = normalizeProviderKey(
@@ -3423,7 +3621,19 @@ export const createAIProviderAdapter = (providerConfig = {}) => {
 	return factory(resolvedConfig);
 };
 
+/** Persistent provider client with attached local tools and MCP servers. */
 export class AIProviderMCPClient {
+	/**
+	 * @param {object} [options]
+	 * @param {object} [options.provider] Provider config.
+	 * @param {Array<object>} [options.mcpServers]
+	 * @param {object} [options.toolHandlers] Local tool handlers.
+	 * @param {string} [options.clientName]
+	 * @param {string} [options.clientVersion]
+	 * @param {number} [options.maxToolRounds=6]
+	 * @param {boolean} [options.includeDiagnostics=false]
+	 * @param {Function} [options.approveToolCall]
+	 */
 	constructor({
 		provider,
 		mcpServers = [],
@@ -3447,46 +3657,89 @@ export class AIProviderMCPClient {
 		this.adapter = createAIProviderAdapter(provider);
 	}
 
+	/**
+	 * Connects MCP servers once and returns the client for chaining.
+	 *
+	 * @returns {Promise<AIProviderMCPClient>}
+	 */
 	async connect() {
 		await this.runtime.connect();
 		return this;
 	}
 
+	/** @returns {Promise<Array<object>>} Tools offered by local handlers and MCP servers. */
 	async listTools() {
 		await this.connect();
 		return this.runtime.getToolCatalog();
 	}
 
+	/**
+	 * Runs one model turn with the attached tools.
+	 *
+	 * @param {object} [options]
+	 * @param {Array<object>} [options.prompts]
+	 * @param {Array} [options.images]
+	 * @param {Array} [options.audio]
+	 * @param {Array} [options.video]
+	 * @param {number} [options.maxToolRounds]
+	 * @param {boolean} [options.includeDiagnostics]
+	 * @param {AbortSignal} [options.signal]
+	 * @param {Function} [options.onTextDelta]
+	 * @param {Function} [options.onThinking]
+	 * @returns {Promise<object>} Provider diagnostics envelope with `text` and `toolExecutions`.
+	 */
 	async run({
 		prompts,
 		images,
+		audio,
+		video,
 		maxToolRounds = this.maxToolRounds,
 		includeDiagnostics = this.includeDiagnostics,
 		signal,
 		onTextDelta,
+		onThinking,
 	} = {}) {
 		await this.connect();
 
 		return this.adapter.run({
 			prompts,
 			images,
+			audio,
+			video,
 			runtime: this.runtime,
 			maxToolRounds,
 			includeDiagnostics,
 			signal,
 			onTextDelta,
+			onThinking,
 		});
 	}
 
+	/** @returns {Promise<void>} Closes MCP transports. */
 	async close() {
 		await this.runtime.close();
 	}
 }
 
+/**
+ * @param {object} [options] Same options as the `AIProviderMCPClient` constructor.
+ * @returns {AIProviderMCPClient}
+ */
 export const createAIProviderMCPClient = (options = {}) => {
 	return new AIProviderMCPClient(options);
 };
 
+/**
+ * Lists tools available to a provider, closing the client afterwards.
+ *
+ * @param {object} [options]
+ * @param {object} [options.provider]
+ * @param {Array<object>} [options.mcpServers]
+ * @param {string} [options.clientName]
+ * @param {string} [options.clientVersion]
+ * @param {Function} [options.approveToolCall]
+ * @returns {Promise<Array<object>>}
+ */
 export const listMcpToolsForProvider = async ({
 	provider,
 	mcpServers = [],
@@ -3509,6 +3762,15 @@ export const listMcpToolsForProvider = async ({
 	}
 };
 
+/**
+ * Lists tools from MCP servers without creating a provider adapter.
+ *
+ * @param {object} [options]
+ * @param {Array<object>} [options.mcpServers]
+ * @param {string} [options.clientName]
+ * @param {string} [options.clientVersion]
+ * @returns {Promise<Array<object>>}
+ */
 export const listMcpTools = async ({
 	mcpServers = [],
 	clientName = DEFAULT_CLIENT_NAME,
@@ -3528,12 +3790,36 @@ export const listMcpTools = async ({
 	}
 };
 
+/**
+ * Raw provider call with local tools and MCP servers attached.
+ * Unlike `askAgent()`, this applies no policies, memory, grounding or compaction.
+ *
+ * @param {object} [options]
+ * @param {object} [options.provider] Explicit provider config.
+ * @param {Array<object>} [options.mcpServers]
+ * @param {object} [options.toolHandlers]
+ * @param {Array<object>} [options.prompts] Provider-ready prompt messages.
+ * @param {Array} [options.images]
+ * @param {Array} [options.audio]
+ * @param {Array} [options.video]
+ * @param {string} [options.clientName]
+ * @param {string} [options.clientVersion]
+ * @param {number} [options.maxToolRounds=6]
+ * @param {boolean} [options.includeDiagnostics=false]
+ * @param {Function} [options.approveToolCall]
+ * @param {AbortSignal} [options.signal]
+ * @param {Function} [options.onTextDelta]
+ * @param {Function} [options.onThinking]
+ * @returns {Promise<object>} Provider diagnostics envelope with `text`.
+ */
 export const askIAWithProviderMCP = async ({
 	provider,
 	mcpServers = [],
 	toolHandlers = {},
 	prompts,
 	images,
+	audio,
+	video,
 	clientName = DEFAULT_CLIENT_NAME,
 	clientVersion = DEFAULT_CLIENT_VERSION,
 	maxToolRounds = DEFAULT_MAX_TOOL_ROUNDS,
@@ -3541,6 +3827,7 @@ export const askIAWithProviderMCP = async ({
 	approveToolCall,
 	signal,
 	onTextDelta,
+	onThinking,
 } = {}) => {
 	const client = new AIProviderMCPClient({
 		provider,
@@ -3557,18 +3844,39 @@ export const askIAWithProviderMCP = async ({
 		return await client.run({
 			prompts,
 			images,
+			audio,
+			video,
 			maxToolRounds,
 			includeDiagnostics,
 			signal,
 			onTextDelta,
+			onThinking,
 		});
 	} finally {
 		await client.close();
 	}
 };
 
+/** Backwards-compatible alias of `askIAWithProviderMCP()`. @type {Function} */
 export const askAIWithTools = askIAWithProviderMCP;
 
+/**
+ * Legacy wrapper that renames `ai` to `provider` before calling `askIAWithProviderMCP()`.
+ *
+ * @param {object} [options]
+ * @param {object} [options.ai] Provider config.
+ * @param {Array<object>} [options.mcpServers]
+ * @param {object} [options.toolHandlers]
+ * @param {Array<object>} [options.prompts]
+ * @param {Array} [options.images]
+ * @param {string} [options.clientName]
+ * @param {string} [options.clientVersion]
+ * @param {number} [options.maxToolRounds]
+ * @param {boolean} [options.includeDiagnostics]
+ * @param {Function} [options.approveToolCall]
+ * @param {AbortSignal} [options.signal]
+ * @returns {Promise<object>}
+ */
 export const askIAWithMCP = async ({
 	ai,
 	mcpServers = [],
@@ -3597,7 +3905,14 @@ export const askIAWithMCP = async ({
 	});
 };
 
+/** Internal seams exposed only for unit tests. @type {Readonly<object>} */
 export const __internalIAForTests = Object.freeze({
+	emitTextDelta,
+	emitThinking,
+	collectOpenAIStream,
+	collectAnthropicStream,
+	collectGeminiStream,
+	getGeminiThoughtText,
 	parseAssistantToolIntent,
 	isLikelyToolCatalogDump,
 	inferAutomaticReadOnlyToolCall,
@@ -3609,6 +3924,8 @@ export const __internalIAForTests = Object.freeze({
 	normalizeContentParts,
 	normalizeImageDescriptor,
 	appendImagesToMessages,
+	appendMediaToMessages,
+	normalizeMediaOption,
 	toOpenAIMessages,
 	convertToAnthropicMessages,
 	convertToGeminiContents,

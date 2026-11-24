@@ -13,25 +13,26 @@
 import { askAgent } from "../agent.js";
 import { getSystemPrompt } from "./system-prompts-en.js";
 
+/** Per-file instructions for common multi-file tasks. @type {Record<string, Array<object>>} */
 export const MULTI_FILE_TEMPLATES = {
   landing: [
     {
       key: "html",
       fileName: "index.html",
       language: "html",
-      instruction: "Incluye DOCTYPE, etiquetas semánticas, header, formulario accesible y enlaces a style.css y script.js. No incrustes CSS ni JS.",
+      instruction: "Include DOCTYPE, semantic tags, a header, an accessible form and links to style.css and script.js. Do not embed CSS or JS.",
     },
     {
       key: "css",
       fileName: "style.css",
       language: "css",
-      instruction: "Incluye :root con variables, box-sizing, estilos de body, :hover y al menos una media query. No incluyas HTML.",
+      instruction: "Include :root variables, box-sizing, body styles, :hover rules and at least one media query. Do not include HTML.",
     },
     {
       key: "js",
       fileName: "script.js",
       language: "javascript",
-      instruction: "Usa JavaScript vanilla, addEventListener, DOM ready y validación de formulario. No incluyas HTML ni CSS.",
+      instruction: "Use vanilla JavaScript, addEventListener, DOM ready and form validation. Do not include HTML or CSS.",
     },
   ],
 };
@@ -46,7 +47,13 @@ const TASK_TYPE_BY_LANGUAGE = {
   py: "code",
 };
 
-/** Los modelos pequeños suelen envolver el CSS/JS en etiquetas aunque se les pida un archivo. */
+/**
+ * Removes a `<style>` or `<script>` wrapper when it covers the whole response.
+ *
+ * @param {string} language
+ * @param {string} [texto]
+ * @returns {string}
+ */
 export function stripWrapperTags(language, texto = "") {
   const value = String(texto || "").trim();
   const normalizado = String(language || "").toLowerCase();
@@ -61,9 +68,19 @@ export function stripWrapperTags(language, texto = "") {
   return value;
 }
 
+/**
+ * @param {string} language File language or extension.
+ * @returns {string} Matching system-prompt task type, defaulting to `code`.
+ */
 export const taskTypeForLanguage = (language) => TASK_TYPE_BY_LANGUAGE[String(language || "").toLowerCase()] || "code";
 
-/** Compone los archivos generados en un único texto con bloques etiquetados. */
+/**
+ * Joins generated files into one text with labelled fenced blocks.
+ *
+ * @param {object} [archivos] Map of key → `{texto}` entries.
+ * @param {Array<object>} [files] File definitions.
+ * @returns {string}
+ */
 export function buildBlockBundle(archivos = {}, files = MULTI_FILE_TEMPLATES.landing) {
   return files
     .filter((file) => archivos[file.key]?.texto)
@@ -84,7 +101,9 @@ export function buildBlockBundle(archivos = {}, files = MULTI_FILE_TEMPLATES.lan
  * @param {AbortSignal} [options.signal]
  * @param {boolean} [options.parallel=false] Genera los archivos en paralelo (por defecto secuencial).
  * @param {number} [options.concurrency=3] Tope de llamadas simultáneas cuando `parallel`.
- * @param {Function} [options.ask] Inyectable en tests; por defecto `askAgent`.
+ * @param {Function} [options.ask] Injectable in tests; defaults to `askAgent`.
+ * @returns {Promise<object>} `files`, `text`, `missing`, `errors` and `usage`,
+ *   plus legacy Spanish aliases for existing callers.
  */
 export async function generateMultiFile({
   provider,
@@ -106,9 +125,9 @@ export async function generateMultiFile({
     const system = getSystemPrompt(taskTypeForLanguage(file.language), idioma);
     const prompt = [
       brief,
-      `Genera ÚNICAMENTE el contenido del archivo ${file.fileName || file.key} (${file.language || "texto"}).`,
+      `Generate ONLY the contents of ${file.fileName || file.key} (${file.language || "text"}).`,
       file.instruction,
-      "Devuelve solo el código del archivo, sin explicaciones ni bloques markdown.",
+      "Return the file code only, with no explanations or markdown fences.",
     ].filter(Boolean).join("\n\n");
 
     const startedAt = Date.now();
@@ -148,7 +167,7 @@ export async function generateMultiFile({
         validacion,
         duracionMs: Date.now() - startedAt,
         usage: resultado?.usage || null,
-        error: texto ? null : "respuesta vacía",
+        error: texto ? null : "empty response",
       };
     } catch (error) {
       archivos[file.key] = {
@@ -184,16 +203,24 @@ export async function generateMultiFile({
   }
 
   const usage = usageByIndex.filter(Boolean);
-  const faltantes = definitions.filter((file) => !archivos[file.key]?.texto).map((file) => file.key);
+  const missing = definitions.filter((file) => !archivos[file.key]?.texto).map((file) => file.key);
+  const text = buildBlockBundle(archivos, definitions);
+  const errors = definitions
+    .filter((file) => archivos[file.key]?.error)
+    .map((file) => ({ key: file.key, error: archivos[file.key].error }));
   return {
-    ok: faltantes.length === 0,
+    ok: missing.length === 0,
+    // English identifiers are canonical; the Spanish ones remain as aliases
+    // so existing callers do not break.
+    files: archivos,
+    missing,
+    text,
+    errors,
     archivos,
-    faltantes,
-    texto: buildBlockBundle(archivos, definitions),
+    faltantes: missing,
+    texto: text,
+    errores: errors,
     usage,
-    errores: definitions
-      .filter((file) => archivos[file.key]?.error)
-      .map((file) => ({ key: file.key, error: archivos[file.key].error })),
   };
 }
 

@@ -29,8 +29,10 @@ const TEXT_FORMATS = {
 	html: { extension: "html", mime: "text/html" },
 };
 
+/** Formats accepted by the `create_file` tool. @type {ReadonlyArray<string>} */
 export const ARTIFACT_FORMATS = ["pdf", "image", ...Object.keys(TEXT_FORMATS)];
 
+/** Model-facing description of the `create_file` tool. @type {string} */
 export const FILE_TOOL_DESCRIPTION =
 	"Genera un archivo y lo envia al usuario. Formatos: pdf, image (png/jpeg), html, text, json, markdown, csv. "
 	+ "Usalo cuando el usuario pida un archivo, un PDF, una imagen, un JSON, un TXT o codigo fuente en un archivo. "
@@ -38,6 +40,7 @@ export const FILE_TOOL_DESCRIPTION =
 	+ "Para pdf e image el contenido puede ser HTML; si no lo es, se muestra como texto preformateado. "
 	+ "Despues de llamarla, responde solo con una confirmacion breve: el archivo ya se envio.";
 
+/** JSON Schema of the `create_file` tool arguments. @type {object} */
 export const FILE_TOOL_PARAMETERS = {
 	type: "object",
 	properties: {
@@ -73,13 +76,20 @@ const escapeHtml = (value) => String(value == null ? "" : value)
 	.replace(/>/g, "&#62;")
 	.replace(/"/g, "&#34;");
 
-/** True when the content already is an HTML document (or a fragment of one). */
+/**
+ * @param {string} text
+ * @returns {boolean} True when the content already is HTML or an HTML fragment.
+ */
 export const looksLikeHtml = (text) => /^\s*(<!doctype\s+html|<html\b|<head\b|<body\b|<div\b|<h[1-6]\b|<p\b|<table\b|<ul\b|<ol\b|<pre\b|<section\b|<article\b|<style\b)/i
 	.test(String(text || ""));
 
 /**
  * Plain text and code are rendered as a preformatted document; content that is
  * already HTML is used as-is (that is the "html -> pdf/image" path).
+ *
+ * @param {string} content
+ * @param {string} [title] Optional heading inserted before the content.
+ * @returns {string} HTML document ready for a PDF/image renderer.
  */
 export const artifactHtml = (content, title) => {
 	const head = '<meta charset="utf-8">';
@@ -99,7 +109,13 @@ export const artifactHtml = (content, title) => {
 	);
 };
 
-/** Filesystem-safe name: only letters, digits, dot, dash and underscore. */
+/**
+ * Filesystem-safe name: only letters, digits, dot, dash and underscore.
+ *
+ * @param {string} name
+ * @param {string} [fallback="archivo"] Used when `name` is empty or a path traversal token.
+ * @returns {string} Sanitized name, at most 80 characters.
+ */
 export const safeFileName = (name, fallback = "archivo") => {
 	const clean = String(name || "")
 		.trim()
@@ -124,7 +140,7 @@ const toBuffer = (value) => {
 	if (typeof value === "string") {
 		return Buffer.from(value, "utf8");
 	}
-	throw new Error("El renderer devolvio un valor que no es un Buffer");
+	throw new Error("The renderer returned a value that is not a Buffer");
 };
 
 /**
@@ -141,20 +157,20 @@ export const buildArtifact = async (input = {}, deps = {}) => {
 	const maxChars = Number(input.maxChars) > 0 ? Number(input.maxChars) : DEFAULT_MAX_CHARS;
 
 	if (!content.trim()) {
-		return { error: "El contenido del archivo esta vacio", code: "ARTIFACT_EMPTY" };
+		return { error: "The file content is empty", code: "ARTIFACT_EMPTY" };
 	}
 	if (content.length > maxChars) {
-		content = content.slice(0, maxChars) + "\n\n...[contenido truncado]";
+		content = content.slice(0, maxChars) + "\n\n...[content truncated]";
 	}
 
 	const title = String(input.title || "").trim();
-	const fallback = "respuesta-" + new Date().toISOString().slice(0, 10);
+	const fallback = "response-" + new Date().toISOString().slice(0, 10);
 	const base = safeFileName(input.filename, fallback);
 
 	if (format === "pdf") {
 		if (typeof renderPdf !== "function") {
 			return {
-				error: "Este servidor no puede generar PDF (falta un renderer de PDF)",
+				error: "This server cannot generate PDFs (no PDF renderer is available)",
 				code: "ARTIFACT_RENDERER_UNAVAILABLE",
 			};
 		}
@@ -162,14 +178,14 @@ export const buildArtifact = async (input = {}, deps = {}) => {
 			const pdf = await renderPdf(artifactHtml(content, title), { title, filename: base + ".pdf" });
 			return { buffer: toBuffer(pdf), filename: base + ".pdf", mime: "application/pdf" };
 		} catch (error) {
-			return { error: "No pude generar el PDF: " + String(error?.message || error).slice(0, 160), code: "ARTIFACT_RENDER_FAILED" };
+			return { error: "Could not generate the PDF: " + String(error?.message || error).slice(0, 160), code: "ARTIFACT_RENDER_FAILED" };
 		}
 	}
 
 	if (format === "image") {
 		if (typeof renderImage !== "function") {
 			return {
-				error: "Este servidor no puede generar imagenes (falta un renderer de imagen)",
+				error: "This server cannot generate images (no image renderer is available)",
 				code: "ARTIFACT_RENDERER_UNAVAILABLE",
 			};
 		}
@@ -182,7 +198,7 @@ export const buildArtifact = async (input = {}, deps = {}) => {
 				mime: type === "jpeg" ? "image/jpeg" : "image/png",
 			};
 		} catch (error) {
-			return { error: "No pude generar la imagen: " + String(error?.message || error).slice(0, 160), code: "ARTIFACT_RENDER_FAILED" };
+			return { error: "Could not generate the image: " + String(error?.message || error).slice(0, 160), code: "ARTIFACT_RENDER_FAILED" };
 		}
 	}
 

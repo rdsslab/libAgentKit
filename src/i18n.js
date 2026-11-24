@@ -183,6 +183,12 @@ const MESSAGES = {
 	},
 };
 
+/**
+ * Returns a translator function with English fallback.
+ *
+ * @param {string} [language=en]
+ * @returns {(key: string) => string}
+ */
 export const getTranslator = (language = "en") => {
 	const lang = MESSAGES[language] ? language : "en";
 	const dict = MESSAGES[lang];
@@ -190,4 +196,5 @@ export const getTranslator = (language = "en") => {
 	return (key) => (dict && key in dict ? dict[key] : (fallback[key] ?? key));
 };
 
+/** @returns {string[]} Language codes present in the TUI message catalog. */
 export const availableLanguages = () => Object.keys(MESSAGES);

@@ -66,7 +66,7 @@ function resumirContextoHerramientas(diagnosticos = {}, maxChars = 2400) {
     const nombre = execution.toolName || execution.toolAlias || "tool";
     const resultado = execution.textResult
       || (execution.rawResult ? JSON.stringify(execution.rawResult) : "");
-    if (resultado) lineas.push(`HERRAMIENTA ${nombre}: ${String(resultado).slice(0, 900)}`);
+    if (resultado) lineas.push(`TOOL ${nombre}: ${String(resultado).slice(0, 900)}`);
   }
   for (const resultado of diagnosticos.webResults || []) {
     const titulo = resultado?.title || "";
@@ -85,7 +85,7 @@ function construirMensajesRetry(mensajes = [], promptCorreccion, contextoHerrami
     .filter((m) => m.role === 'system' || m.role === 'user')
     .map((m) => ({ role: m.role, content: m.content }));
   const contenido = contextoHerramientas
-    ? `${promptCorreccion}\n\nCONTEXTO DE HERRAMIENTAS YA EJECUTADAS (no vuelvas a llamarlas):\n${contextoHerramientas}`
+    ? `${promptCorreccion}\n\nALREADY-EXECUTED TOOL CONTEXT (do not call them again):\n${contextoHerramientas}`
     : promptCorreccion;
   return [...base, { role: 'user', content: contenido }];
 }
@@ -94,12 +94,12 @@ function primerosProblemasFuncionales(comportamiento = {}) {
   const detalles = (Array.isArray(comportamiento.casos) ? comportamiento.casos : [])
     .filter((caso) => caso?.passed === false)
     .slice(0, 3)
-    .map((caso) => `caso funcional "${caso.name}" falló${caso.detail ? `: ${caso.detail}` : ""}`);
+    .map((caso) => `functional case "${caso.name}" failed${caso.detail ? `: ${caso.detail}` : ""}`);
   const problemas = Array.isArray(comportamiento.problemas)
     ? comportamiento.problemas.slice(0, 3)
     : [];
   if (comportamiento.ok === false && detalles.length === 0 && problemas.length === 0) {
-    detalles.push("la validación funcional falló");
+    detalles.push("functional validation failed");
   }
   return [...detalles, ...problemas];
 }
@@ -321,7 +321,7 @@ export async function enhancedAskAgent(options = {}) {
       const problemas = [...evaluacion.validacion.problemas];
 
       if (refusal.refused || refusal.reason) {
-        problemas.push(refusal.reason || 'respuesta rechazada por el modelo');
+        problemas.push(refusal.reason || 'response rejected by the model');
       }
 
       if (!refusal.refused && !refusal.reason && !necesitaCorreccion(evaluacion.validacion, umbralPuntuacion)) {
@@ -332,10 +332,10 @@ export async function enhancedAskAgent(options = {}) {
       }
 
       const motivo = refusal.refused
-        ? `El modelo se negó a generar el contenido (${refusal.reason})`
+        ? `The model refused to generate the content (${refusal.reason})`
         : refusal.reason
-          ? `Se detectó contaminación en la salida (${refusal.reason})`
-          : `La validación detectó ${problemas.length} problema(s)`;
+          ? `Contamination was detected in the output (${refusal.reason})`
+          : `Validation detected ${problemas.length} problem(s)`;
       const promptCorreccion = [
         motivo,
         '',

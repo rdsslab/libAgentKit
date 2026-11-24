@@ -1,22 +1,109 @@
 import { askAgent } from "../../../src/agent.js";
+import { checkGrounding } from "../../../src/policies.js";
 
-const MODEL = { model: "qwen3:0.6b-16k", baseUrl: "http://127.0.0.1:11434" };
+const BASE_URL = process.env.AGENT_OLLAMA_URL ?? "http://127.0.0.1:11434";
+const MODEL_NAME = process.env.AGENT_MODEL ?? "qwen3:0.6b-16k";
+const MODEL = { model: MODEL_NAME, baseUrl: BASE_URL, contextLength: 8192 };
+const truthy = (value) => ["1", "true", "yes"].includes(String(value ?? "").toLowerCase());
+// Offline mode uses a deterministic adapter and fake search results, so the
+// preSearch + grounding path can be verified without Ollama or internet.
+const DRY_RUN = process.argv.includes("--dry") || truthy(process.env.AGENT_DRY_RUN);
 
 const SEARCH_QUERIES = [
-	"capital de Ecuador",
-	"precio del dólar hoy Ecuador",
-	"presidente de Ecuador 2024",
+	{ query: "capital of Ecuador", answer: "Quito is the capital of Ecuador." },
+	{ query: " altitude of Quito ", answer: "Quito sits at about 2850 metres." },
+	{ query: "Itchimbia Park Quito", answer: "Itchimbia Park overlooks Quito." },
 ];
 
-async function runWebSearch(query) {
+const FAKE_WEB = {
+	ok: true,
+	source: "e2e-fake-web",
+	results: [
+		{
+			title: "Quito - Wikipedia",
+			url: "https://en.wikipedia.org/wiki/Quito",
+			snippet: "Quito is the capital of Ecuador and sits at about 2850 metres in the Andes.",
+		},
+		{
+			title: "Itchimbia Park - Quito City Council",
+			url: "https://www.quito.gob.ec/parque-itchimbia",
+			snippet: "Itchimbia Park offers a panoramic view of the historic centre of Quito.",
+		},
+	],
+};
+
+const lastPrompt = { text: "" };
+const registerFakeAdapter = async () => {
+	const { registerAIProviderAdapter } = await import("../../../src/ia.js");
+	const name = `e2e-web-dry-${Date.now()}`;
+	registerAIProviderAdapter(name, () => ({
+		run: async ({ prompts = [], onTextDelta }) => {
+			const lastUser = [...prompts].reverse().find((message) => message.role === "user");
+			const text = String(lastUser?.content ?? "");
+			lastPrompt.text = text;
+			const answer = /WEB SEARCH RESULTS/i.test(text)
+				? "According to the sources, Quito is the capital of Ecuador at about 2850 metres (Source: Quito - Wikipedia)."
+				: "I have no web sources in this turn.";
+			onTextDelta?.(answer, { provider: name, model: "dry-model" });
+			return { text: answer, provider: name, model: "dry-model", toolExecutions: [] };
+		},
+	}));
+	return { provider: name, model: "dry-model", contextLength: 8192 };
+};
+
+const runPreSearch = async (query, provider) => {
+	const start = Date.now();
+	const result = await askAgent({
+		provider,
+		messages: [{ role: "user", content: `Search the web for: ${query}. Summarise the sources.` }],
+		system: "Answer in English and cite the source when you use web results.",
+		mode: "build",
+		preSearch: "always",
+		tools: { web_search: false },
+		capabilities: {
+			terminal: false,
+			web: true,
+			mcp: false,
+			documents: false,
+			artifacts: false,
+			filesystem: false,
+		},
+		webSearch: { maxResults: 3, maxInjectedContextChars: 2200 },
+		...(DRY_RUN ? { webSearchFn: async (request) => ({ ...FAKE_WEB, query: request.query }) } : {}),
+		includeDiagnostics: true,
+	});
+
+	const recapInjected = /WEB SEARCH RESULTS/i.test(lastPrompt.text);
+	const grounding = checkGrounding({ text: result.text, webResults: result.webResults });
+	return {
+		query,
+		success: true,
+		durationMs: Date.now() - start,
+		usedWeb: result.usedWeb,
+		webQuery: result.webQuery,
+		webResults: result.webResults,
+		webErrors: result.webErrors,
+		text: result.text,
+		injectedChars: result.injectedContextChars,
+		injectedContext: result.injectedContext,
+		recapInjected,
+		grounding: {
+			ok: grounding.ok,
+			coverage: grounding.coverage,
+			confidence: grounding.confidence,
+			unsupported: grounding.unsupported,
+		},
+	};
+};
+
+const runWebTool = async (query, provider) => {
 	const start = Date.now();
 	let result = null;
 	let error = null;
-
 	try {
 		result = await askAgent({
-			provider: MODEL,
-			messages: [{ role: "user", content: `Busca información sobre: ${query}. Resume los resultados más importantes.` }],
+			provider,
+			messages: [{ role: "user", content: `Search the web for: ${query}. Summarise the most relevant results.` }],
 			mode: "build",
 			tools: { web_search: true },
 			capabilities: {
@@ -33,76 +120,86 @@ async function runWebSearch(query) {
 		error = err.message;
 	}
 
-	const end = Date.now();
-	const durationMs = end - start;
-
 	return {
 		query,
 		success: !error,
 		error,
-		durationMs,
-		response: result?.text || "",
+		durationMs: Date.now() - start,
 		usedWeb: result?.usedWeb || false,
 		webQuery: result?.webQuery || "",
 		webResults: result?.webResults || [],
 		webErrors: result?.webErrors || [],
+		text: result?.text || "",
 		toolExecutions: result?.toolExecutions || [],
-		usage: result?.usage || null,
+		injectedChars: result?.injectedContextChars || 0,
+		injectedContext: result?.injectedContext || null,
 	};
-}
+};
 
 async function main() {
 	console.log("================================================");
-	console.log("E2E-07: Búsqueda Web - Core AgentKit");
+	console.log("E2E-07: Web search - AgentKit core");
 	console.log("================================================");
-	console.log(`Modelo: ${MODEL.name} @ ${MODEL.baseUrl}`);
+	console.log(`Mode: ${DRY_RUN ? "offline (fake adapter + fake search)" : "live"}`);
+	console.log(`Model: ${DRY_RUN ? "dry-model" : MODEL_NAME} @ ${BASE_URL}`);
 	console.log("");
 
-	const results = [];
+	const provider = DRY_RUN ? await registerFakeAdapter() : MODEL;
+	const checks = [];
+	const preSearchResults = [];
 
-	for (const query of SEARCH_QUERIES) {
-		console.log(`Buscando: "${query}"...`);
-		const result = await runWebSearch(query);
-		results.push(result);
-
-		console.log(`   ${result.success ? "✓" : "✗"} ${result.durationMs.toFixed(0)}ms`);
-		console.log(`   Búsqueda web usada: ${result.usedWeb ? "✓ SÍ" : "✗ NO"}`);
-		console.log(`   Query ejecutada: "${result.webQuery}"`);
-		console.log(`   Resultados obtenidos: ${result.webResults.length}`);
-		result.webResults.forEach((r, i) => {
-			console.log(`     ${i + 1}. ${r.title || "Sin título"} - ${r.url || "Sin URL"}`);
-		});
-		if (result.webErrors.length > 0) {
-			console.log(`   Errores: ${result.webErrors.join(", ")}`);
-		}
-		if (result.error) {
-			console.log(`   Error general: ${result.error}`);
-		} else {
-			const preview = result.response.substring(0, 150).replace(/\n/g, " ");
-			console.log(`   Respuesta: "${preview}..."`);
-		}
-		console.log("");
+	console.log("--- Deterministic preSearch + grounding ---");
+	for (const { query } of SEARCH_QUERIES) {
+		const entry = await runPreSearch(query, provider);
+		preSearchResults.push(entry);
+		console.log(`  query="${entry.webQuery}" results=${entry.webResults.length} `
+			+ `recapInjected=${entry.recapInjected} grounding=${JSON.stringify(entry.grounding)}`);
+	}
+	checks.push(["preSearch injected a web recap before the model", preSearchResults.every((entry) => entry.recapInjected)]);
+	checks.push(["preSearch recorded web usage", preSearchResults.every((entry) => entry.usedWeb)]);
+	checks.push(["queries are trimmed and focused", preSearchResults.every((entry) => entry.webQuery === entry.webQuery.trim())]);
+	if (DRY_RUN) {
+		checks.push(["grounding covered the fake sources", preSearchResults.every((entry) => entry.grounding.ok === true)]);
+		checks.push(["fake results reported an injection", preSearchResults.every((entry) => entry.injectedChars > 0)]);
 	}
 
-	// Tabla resumen
-	console.log("================================================");
-	console.log("RESUMEN COMPARATIVO");
-	console.log("================================================");
 	console.log("");
-	console.log("| Consulta | Tiempo (ms) | Éxito | Web usada | Resultados |");
-	console.log("|----------|-------------|-------|-----------|------------|");
-
-	for (const r of results) {
-		const success = r.success ? "Sí" : "No";
-		const duration = r.durationMs.toFixed(0);
-		const web = r.usedWeb ? "✓" : "✗";
-		console.log(`| ${r.query.padEnd(10)} | ${duration.padEnd(11)} | ${success.padEnd(5)} | ${web.padEnd(9)} | ${r.webResults.length} |`);
+	console.log("--- Model-driven web_search tool ---");
+	const toolResults = [];
+	for (const { query } of SEARCH_QUERIES) {
+		if (DRY_RUN) break; // a fake adapter cannot emit tool calls
+		const entry = await runWebTool(query, provider);
+		toolResults.push(entry);
+		console.log(`  query="${query}" success=${entry.success} web=${entry.usedWeb} `
+			+ `results=${entry.webResults.length} tools=${entry.toolExecutions.length}`);
 	}
 
 	console.log("");
 	console.log("================================================");
-	console.log("FIN DE PRUEBAS E2E-07");
+	console.log("SUMMARY");
+	console.log("================================================");
+	console.log("");
+	console.log("| Path | Query | Time (ms) | Web used | Results |");
+	console.log("| --- | --- | --- | --- | --- |");
+	for (const entry of preSearchResults) {
+		console.log(`| preSearch | ${entry.query} | ${entry.durationMs.toFixed(0)} | ${entry.usedWeb ? "yes" : "no"} | ${entry.webResults.length} |`);
+	}
+	for (const entry of toolResults) {
+		console.log(`| tool | ${entry.query} | ${entry.durationMs.toFixed(0)} | ${entry.usedWeb ? "yes" : "no"} | ${entry.webResults.length} |`);
+	}
+
+	console.log("");
+	for (const [name, ok] of checks) {
+		console.log(`${ok ? "OK  " : "FAIL"} ${name}`);
+		if (!ok) process.exitCode = 1;
+	}
+	console.log(`Checks: ${checks.filter(([, ok]) => ok).length}/${checks.length}`);
+	console.log("================================================");
+	console.log("END OF E2E-07");
 	console.log("================================================");
 }
 
-main().catch(console.error);
+main().catch((error) => {
+	console.error(error);
+	process.exitCode = 1;
+});

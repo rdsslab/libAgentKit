@@ -11,6 +11,12 @@ const run = (cmd, args, opts = {}) => {
 	}
 };
 
+/**
+ * Copies text using the first available OS clipboard command.
+ *
+ * @param {string} text
+ * @returns {{ok: boolean, method?: string, error?: string}}
+ */
 export const copyTextToClipboard = (text) => {
 	const value = String(text ?? "");
 	const platform = process.platform;
@@ -32,6 +38,9 @@ export const copyTextToClipboard = (text) => {
 	return { ok: false, error: "No clipboard command available" };
 };
 
+/**
+ * @returns {{ok: boolean, text?: string, method?: string, error?: string}}
+ */
 export const readTextFromClipboard = () => {
 	const platform = process.platform;
 	const attempts = [];
@@ -49,6 +58,11 @@ export const readTextFromClipboard = () => {
 	return { ok: false, error: "No clipboard read command available" };
 };
 
+/**
+ * Reads a PNG from the clipboard, using a temporary file where the platform requires it.
+ *
+ * @returns {{ok: boolean, data?: Buffer, mimeType?: string, method?: string, error?: string}}
+ */
 export const readImageFromClipboard = () => {
 	const platform = process.platform;
 	const tmp = path.join(os.tmpdir(), `agentkit-clipboard-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);

@@ -1,24 +1,32 @@
-# E2E-07: Búsqueda Web
+# E2E-07: Web search
 
-Prueba que el core pueda realizar búsquedas web a través de la herramienta `web_search` y usar los resultados en la respuesta.
+Verifies that the core agent can search the web, inject a deterministic recap
+before the model call, and ground the answer in the returned sources.
 
-## Requisitos
-- Node.js >= 18
-- Ollama ejecutándose en `http://127.0.0.1:11434`
-- Modelo: `qwen3:0.6b-16k` o similar
-- Conexión a internet (para búsqueda real)
+## Requirements
 
-## Cómo ejecutar
+- Node.js 22 or newer
+- Ollama running at `http://127.0.0.1:11434` for live mode
+- Model `qwen3:0.6b-16k` or similar
+- Internet access for real search results
+
+## How to run
+
 ```bash
-cd /home/edwinspire/Desarrollo/libAgentKit/tests/e2e/07-web-search
+# Live mode (Ollama + real search)
 node run.mjs
+
+# Offline mode (fake adapter + fake search results, no network)
+node run.mjs --dry
+AGENT_DRY_RUN=1 node run.mjs
 ```
 
-## Qué mide
-- Si el core invoca la herramienta de búsqueda web
-- Si los resultados de búsqueda se inyectan en la respuesta
-- Número de rondas de búsqueda ejecutadas
-- Precisión de la información obtenida
+## What it checks
 
-## Resultado esperado
-El script muestra los resultados de búsqueda y verifica que la respuesta contenga información relevante.
+- deterministic `preSearch` injects a `WEB SEARCH RESULTS` recap before the model
+- the recap and its token cost are reported in `injectedContext`
+- queries are trimmed before being sent to the search provider
+- `checkGrounding()` returns `ok`, `coverage`, `confidence` and `unsupported`
+- in live mode, the model-driven `web_search` tool is also exercised
+
+The offline mode is deterministic and exits with code 1 if any check fails.

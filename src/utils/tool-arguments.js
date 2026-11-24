@@ -24,7 +24,13 @@ const safeJsonParse = (value, fallbackValue = {}) => {
 const WRAPPER_KEYS = new Set(["value", "type", "description", "title", "default", "examples"]);
 const MAX_UNWRAP_DEPTH = 4;
 
-/** Desenvuelve `{value, type, description, ...}` repetidos, con límite de profundidad. */
+/**
+ * Unwraps repeated `{value, type, description, ...}` schema wrappers.
+ *
+ * @param {*} value
+ * @param {number} [depth=0]
+ * @returns {*} Clean value, at most four levels deep.
+ */
 export function unwrapToolArgumentValue(value, depth = 0) {
 	if (Array.isArray(value)) {
 		if (depth >= MAX_UNWRAP_DEPTH) return value;
@@ -38,7 +44,12 @@ export function unwrapToolArgumentValue(value, depth = 0) {
 	return looksLikeSchemaWrapper ? unwrapToolArgumentValue(value.value, depth + 1) : value;
 }
 
-/** Parsea argumentos (JSON string u objeto) y limpia cada entrada de primer nivel. */
+/**
+ * Parses tool arguments (JSON string or object) and cleans each top-level entry.
+ *
+ * @param {*} value
+ * @returns {object} Plain object of clean arguments.
+ */
 export function normalizeToolArguments(value) {
 	let parsed = value;
 	if (!isPlainObject(parsed) && !Array.isArray(parsed)) {

@@ -121,7 +121,7 @@ export function extractCodeBlocks(text) {
  */
 export function detectRefusal(text, taskType = "code") {
 	if (typeof text !== "string" || text.trim() === "") {
-		return { refused: true, reason: "respuesta vacía" };
+		return { refused: true, reason: "empty response" };
 	}
 
 	const trimmed = text.trim();
@@ -148,21 +148,21 @@ export function detectRefusal(text, taskType = "code") {
 	// positivos con comentarios legítimos como `// No puedo creer que...`.
 	for (const pattern of refusalPatterns) {
 		if (pattern.test(firstLine)) {
-			return { refused: true, reason: "modelo se negó a generar contenido" };
+			return { refused: true, reason: "the model refused to generate content" };
 		}
 	}
 
 	// Detectar HTML embebido en archivo que debería ser JS
 	if (taskType === "js" || taskType === "javascript") {
 		if (/<!DOCTYPE\s+html>/i.test(trimmed) || /<html[^>]*>/i.test(trimmed)) {
-			return { refused: false, reason: "contaminación: HTML detectado en archivo JS" };
+			return { refused: false, reason: "contamination: HTML detected in a JS file" };
 		}
 	}
 
 	// Detectar CSS embebido en archivo que debería ser HTML puro
 	if (taskType === "html") {
 		if (/<style[^>]*>/i.test(trimmed)) {
-			return { refused: false, reason: "contaminación: CSS embebido en HTML" };
+			return { refused: false, reason: "contamination: embedded CSS in HTML" };
 		}
 	}
 
@@ -180,7 +180,7 @@ export function validateMinimumContent(text, minChars = 50) {
 	if (typeof text !== "string" || text.trim().length < minChars) {
 		return {
 			valid: false,
-			reason: "respuesta demasiado corta: " + (text?.trim().length || 0) + " chars (mínimo " + minChars + ")",
+			reason: "response too short: " + (text?.trim().length || 0) + " chars (minimum " + minChars + ")",
 		};
 	}
 	return { valid: true };

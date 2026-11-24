@@ -21,12 +21,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+/** Trust levels a host can assign to an MCP server. @type {ReadonlyArray<string>} */
 export const MCP_TRUST_LEVELS = ["trusted", "untrusted", "disabled"];
 
+/** Trust level used when a server does not declare one. @type {string} */
 export const DEFAULT_TRUST_LEVEL = "trusted";
 
+/** Recognised project-local MCP config filenames. @type {ReadonlyArray<string>} */
 export const PROJECT_CONFIG_FILES = ["agentkit.config.json", path.join(".agentkit", "config.json")];
 
+/** Default MCP config path, relative to the user's home directory. @type {string} */
 export const USER_CONFIG_FILE = path.join(".config", "agentkit", "config.json");
 
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
@@ -187,7 +191,10 @@ export const loadMcpServers = ({
 	return loadMcpConfig(resolved).mcpServers;
 };
 
-/** Human-readable label for a trust level. */
+/**
+ * @param {string} trust
+ * @returns {string} Human-readable explanation of the trust level.
+ */
 export const describeTrust = (trust) => {
 	switch (trust) {
 		case "untrusted":

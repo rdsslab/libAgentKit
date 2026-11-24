@@ -15,35 +15,35 @@ import { getSystemPrompt as getSystemPromptBilingüe, listTaskTypes as listTaskT
 
 const FEW_SHOT_EXAMPLES = {
   code: {
-    javascript: `Entrada: "Escribe una función que sume dos números"
-Salida esperada:
-function sumar(a, b) {
+    javascript: `Input: "Write a function that adds two numbers"
+Expected output:
+function sum(a, b) {
     return a + b;
 }`,
-    python: `Entrada: "Escribe una función que sume dos números"
-Salida esperada:
-def sumar(a, b):
+    python: `Input: "Write a function that adds two numbers"
+Expected output:
+def sum(a, b):
     return a + b`,
   },
   html: {
-    html: `Entrada: "Crea un HTML simple con un título y un párrafo"
-Salida esperada:
+    html: `Input: "Create a simple HTML page with a title and a paragraph"
+Expected output:
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mi Página</title>
+    <title>My Page</title>
 </head>
 <body>
-    <h1>Título</h1>
-    <p>Contenido del párrafo.</p>
+    <h1>Title</h1>
+    <p>Paragraph content.</p>
 </body>
 </html>`,
   },
   css: {
-    css: `Entrada: "Crea CSS para centrar un div con fondo azul"
-Salida esperada:
-.div-centrado {
+    css: `Input: "Create CSS to centre a div with a blue background"
+Expected output:
+.centred-div {
     background-color: blue;
     display: flex;
     justify-content: center;
@@ -52,10 +52,10 @@ Salida esperada:
 }`,
   },
   js: {
-    javascript: `Entrada: "Crea un botón que muestre una alerta al hacer clic"
-Salida esperada:
-document.getElementById('miBoton').addEventListener('click', () => {
-    alert('¡Hola!');
+    javascript: `Input: "Create a button that shows an alert when clicked"
+Expected output:
+document.getElementById('myButton').addEventListener('click', () => {
+    alert('Hello!');
 });`,
   },
 };
@@ -107,7 +107,7 @@ export function enriquecerMensajes(messages, taskType, lenguaje = null, idiomaSy
     partes.push(systemPrompt);
   }
   if (fewShot && !enriquecidos.some((m) => m?.role === 'system' && String(m.content || '').includes(fewShot))) {
-    partes.push(`EJEMPLO DE SALIDA ESPERADA:\n${fewShot}`);
+    partes.push(`EXAMPLE OF EXPECTED OUTPUT:\n${fewShot}`);
   }
   const addition = partes.filter(Boolean).join('\n\n');
   if (!addition) return enriquecidos;

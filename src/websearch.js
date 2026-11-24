@@ -46,7 +46,13 @@ const resolveDuckDuckGoUrl = (href) => {
 	}
 };
 
-/** Parses `html.duckduckgo.com/html/` result markup. */
+/**
+ * Parses `html.duckduckgo.com/html/` result markup.
+ *
+ * @param {string} html
+ * @param {number} [maxResults=5]
+ * @returns {Array<{title: string, url: string, snippet: string}>}
+ */
 export const extractDuckDuckGoResults = (html, maxResults = 5) => {
 	const source = String(html || "");
 	const results = [];
@@ -80,7 +86,13 @@ export const extractDuckDuckGoResults = (html, maxResults = 5) => {
 	return results;
 };
 
-/** Parses `lite.duckduckgo.com/lite/` result markup (table layout). */
+/**
+ * Parses `lite.duckduckgo.com/lite/` result markup (table layout).
+ *
+ * @param {string} html
+ * @param {number} [maxResults=5]
+ * @returns {Array<{title: string, url: string, snippet: string}>}
+ */
 export const extractDuckDuckGoLiteResults = (html, maxResults = 5) => {
 	const source = String(html || "");
 	const results = [];
@@ -107,7 +119,13 @@ export const extractDuckDuckGoLiteResults = (html, maxResults = 5) => {
 	return results.filter((result) => result.title && result.url);
 };
 
-/** Parses Bing's `b_algo` result blocks. */
+/**
+ * Parses Bing's `b_algo` result blocks.
+ *
+ * @param {string} html
+ * @param {number} [maxResults=5]
+ * @returns {Array<{title: string, url: string, snippet: string}>}
+ */
 export const extractBingResults = (html, maxResults = 5) => {
 	const source = String(html || "");
 	const blocks = source.split(/<li[^>]+class="[^"]*b_algo[^"]*"/i).slice(1);
@@ -195,7 +213,12 @@ const normalizeSearchQuery = (query) => {
 	return q || String(query || "").trim();
 };
 
+/** Error with a stable `code` and a safe `userMessage` for search failures. */
 export class WebSearchError extends Error {
+	/**
+	 * @param {string} message Internal diagnostic message.
+	 * @param {{code?: string, userMessage?: string}} [options]
+	 */
 	constructor(message, { code = "WEB_SEARCH_FAILED", userMessage } = {}) {
 		super(message);
 		this.name = "WebSearchError";
@@ -272,7 +295,7 @@ const httpJsonSearch = async ({ query, maxResults, provider, signal, fetchImpl }
 	if (!url) {
 		throw new WebSearchError(`Search provider "${provider.name}" requires a url.`, {
 			code: "WEB_SEARCH_NOT_CONFIGURED",
-			userMessage: "La busqueda web no esta configurada: falta la URL del servicio.",
+			userMessage: "Web search is not configured: the service URL is missing."
 		});
 	}
 
@@ -323,6 +346,7 @@ const engines = {
 	"http-json": httpJsonSearch,
 };
 
+/** @returns {string[]} Registered engine names: `duckduckgo`, `bing`, `http-json`. */
 export const listWebSearchEngines = () => Object.keys(engines);
 
 /**
@@ -340,7 +364,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 	if (!query) {
 		throw new WebSearchError("A search query is required.", {
 			code: "WEB_SEARCH_QUERY_REQUIRED",
-			userMessage: "Necesito una consulta para buscar en la web.",
+			userMessage: "A search query is required."
 		});
 	}
 
@@ -369,7 +393,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 		if (!explicit) {
 			throw new WebSearchError(`Search provider "${requested}" is disabled.`, {
 				code: "WEB_SEARCH_PROVIDER_DISABLED",
-				userMessage: `El proveedor de busqueda "${requested}" esta deshabilitado.`,
+				userMessage: `The search provider "${requested}" is disabled.`
 			});
 		}
 		chain.push(explicit);
@@ -397,7 +421,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 	if (!chain.length) {
 		throw new WebSearchError("Web search is not configured.", {
 			code: "WEB_SEARCH_NOT_CONFIGURED",
-			userMessage: "La busqueda web no esta configurada en este servidor.",
+			userMessage: "Web search is not configured on this server."
 		});
 	}
 
@@ -441,12 +465,18 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 		query,
 		source: null,
 		results: [],
-		note: "La busqueda web no devolvio resultados utilizables.",
+		note: "Web search did not return any usable results.",
 		errors,
 		providersTried: chain.map((p) => p.name || p.type || "unknown"),
 	};
 };
 
+/**
+ * Creates a reusable search function with fixed defaults.
+ *
+ * @param {object} [defaults] Defaults merged before each call.
+ * @returns {(queryOrOptions: string|object, options?: object) => Promise<object>}
+ */
 export const createWebSearch = (defaults = {}) => (queryOrOptions, options = {}) => {
 	const config = isPlainObject(queryOrOptions)
 		? { ...defaults, ...queryOrOptions, ...options }

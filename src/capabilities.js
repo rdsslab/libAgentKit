@@ -13,6 +13,7 @@
 
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
 
+/** Categories a host can enable or disable explicitly. @type {ReadonlyArray<string>} */
 export const CAPABILITY_CATEGORIES = Object.freeze([
 	"terminal",
 	"filesystem",
@@ -59,6 +60,14 @@ const normalizeCapabilityValue = (value, fallback = true) => {
 	return fallback;
 };
 
+/**
+ * Fills missing categories with safe defaults and preserves per-tool overrides.
+ *
+ * @param {object} [capabilities] Host capability config.
+ * @param {{interactive?: boolean}} [options] Interactive hosts default to all
+ *   capabilities enabled; embedded hosts disable terminal and filesystem.
+ * @returns {object} Normalized categories, `tools` overrides and `mode`.
+ */
 export const normalizeCapabilities = (capabilities, { interactive = false } = {}) => {
 	const defaults = interactive ? DEFAULT_INTERACTIVE_CAPABILITIES : DEFAULT_EMBEDDED_CAPABILITIES;
 	const input = isPlainObject(capabilities) ? capabilities : {};
@@ -80,6 +89,11 @@ export const normalizeCapabilities = (capabilities, { interactive = false } = {}
 	return normalized;
 };
 
+/**
+ * @param {object} capabilities Normalized capabilities.
+ * @param {string} category Category name from `CAPABILITY_CATEGORIES`.
+ * @returns {boolean} Whether the category is enabled.
+ */
 export const capabilityEnabled = (capabilities, category) => {
 	const value = capabilities?.[category];
 	if (value === false) return false;
@@ -88,6 +102,14 @@ export const capabilityEnabled = (capabilities, category) => {
 	return Boolean(value);
 };
 
+/**
+ * Resolves a tool's effective permission: per-tool override wins, then the
+ * category gate, then the fail-closed default.
+ *
+ * @param {string} toolName Tool name (`run_command`, `web_search`, ...).
+ * @param {object} capabilities Normalized capabilities.
+ * @returns {{allowed: boolean, capability: string, tool: string}}
+ */
 export const resolveToolCapability = (toolName, capabilities) => {
 	const name = String(toolName || "").trim();
 	const toolOverride = capabilities?.tools?.[name];
@@ -106,22 +128,45 @@ export const resolveToolCapability = (toolName, capabilities) => {
 	return { allowed: true, capability: category || name, tool: name };
 };
 
+/**
+ * Builds the structured result returned to the model when a capability denies a tool.
+ *
+ * @param {object} [options]
+ * @param {string} [options.capability]
+ * @param {string} [options.tool]
+ * @param {string} [options.message] Optional replacement for both messages.
+ * @returns {{ok: false, error: string, code: string, capability: string,
+ *   tool: string|null, message: string, userMessage: string}}
+ */
 export const capabilityDeniedResult = ({ capability, tool, message } = {}) => {
 	const cap = capability || "unknown";
-	const label = tool ? `herramienta "${tool}"` : `capacidad "${cap}"`;
+	const label = tool ? `tool "${tool}"` : `capability "${cap}"`;
 	return {
 		ok: false,
 		error: "capability_disabled",
 		code: "CAPABILITY_DISABLED",
 		capability: cap,
 		tool: tool || null,
-		message: message || `No tienes permiso para usar ${label}: esta capacidad está deshabilitada en la configuración actual.`,
-		userMessage: message || `No puedo usar ${label} porque esta capacidad está deshabilitada.`,
+		message: message || `You do not have permission to use ${label}: this capability is disabled in the current configuration.`,
+		userMessage: message || `I cannot use ${label} because this capability is disabled.`,
 	};
 };
 
+/**
+ * @param {{interactive?: boolean}} [options]
+ * @returns {object} Defaults for an embedded (restricted) or interactive host.
+ */
 export const defaultCapabilitiesFor = ({ interactive = false } = {}) => normalizeCapabilities({}, { interactive });
 
+/**
+ * Wraps a single tool handler so denied calls return a structured error instead
+ * of executing.
+ *
+ * @param {string} name Tool name.
+ * @param {Function} handler Original `async (args, context) => result`.
+ * @param {object} capabilities Normalized capabilities.
+ * @returns {Function} Guarded handler, or the original value if it is not a function.
+ */
 export const applyCapabilityToToolHandler = (name, handler, capabilities) => {
 	if (typeof handler !== "function") {
 		return handler;
@@ -136,6 +181,13 @@ export const applyCapabilityToToolHandler = (name, handler, capabilities) => {
 	};
 };
 
+/**
+ * Applies capability gates to a whole tool-handler map.
+ *
+ * @param {object} [handlers] Map of name → function or `{handler, ...}` definition.
+ * @param {object} capabilities Normalized capabilities.
+ * @returns {object} Same shape, with denied handlers replaced by structured errors.
+ */
 export const applyCapabilitiesToToolHandlers = (handlers = {}, capabilities) => {
 	const wrapped = {};
 	for (const [name, definition] of Object.entries(handlers || {})) {

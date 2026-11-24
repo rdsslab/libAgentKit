@@ -5,8 +5,8 @@
  *
  *   const result = await askAgent({
  *     provider: { provider: "ollama", model: "llama3.2", baseUrl: "http://host:11434" },
- *     system: "Eres un asistente breve.",
- *     messages: [{ role: "user", content: "Busca el clima en Quito" }],
+ *     system: "You are a concise assistant.",
+ *     messages: [{ role: "user", content: "Search for the weather in Quito" }],
  *     tools: { web_search: true },
  *   });
  *
@@ -15,13 +15,19 @@
  * - deterministic pre-search for small models that refuse to call tools,
  * - local tools (web search, optional document resolver) through `toolHandlers`,
  * - in-memory document text extraction (PDF/DOCX/text) before the model call,
- * - one `{ text, usedWeb, webQuery, webResults, ... }` envelope for every provider.
+ * - automatic media attachments (images, audio, video, documents) through
+ *   `media-context.js`, with STT resolved from effective config and graceful
+ *   degradation when no transcription server is available,
+ * - one `{ text, usedWeb, webQuery, webResults, media, ... }` envelope for every
+ *   provider.
  *
- * Media helpers (transcription, TTS, frames) are exposed separately in
- * `media.js`: they are not part of every chat turn and must stay opt-in.
+ * Native audio/video is opt-in: if the provider declares it in `media` or
+ * `capabilities.media` and its adapter supports it, the bytes are forwarded as
+ * native parts; otherwise audio/video degrade to transcript text + JPEG frames.
  */
 
 import { extractDocumentText } from "./documents.js";
+import { prepareMediaContext } from "./media-context.js";
 import {
 	cleanWebQuery,
 	formatWebRecap,
@@ -46,6 +52,11 @@ import { normalizeToolArguments } from "./utils/tool-arguments.js";
 
 const DEFAULT_MAX_TOOL_ROUNDS = 4;
 const DEFAULT_MAX_INJECTED_CONTEXT_CHARS = 12000;
+// A model-driven `web_search` result is injected as a tool message. URLs and
+// markdown tokenize poorly, so budget 2 chars/token and leave half the free
+// context for the answer and for any other tool rounds.
+const WEB_TOOL_CHARS_PER_TOKEN = 2;
+const WEB_TOOL_INJECTION_RATIO = 0.5;
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
 
 /** Observers are best-effort: a broken UI callback must never break a turn. */
@@ -98,8 +109,14 @@ const normalizeResponseProcessing = (value, taskType) => {
 	};
 };
 
-/** Aproximación deliberadamente burda; suficiente para decidir compaction. */
-const estimateMessagesTokens = (messages = []) => {
+/**
+ * Rough token estimate used only for compaction decisions, never for billing.
+ * Counts four characters per token over the serialized messages.
+ *
+ * @param {Array<object>} [messages] Chat messages in askAgent format.
+ * @returns {number} Estimated tokens, or 0 when the input cannot be serialized.
+ */
+export const estimateMessagesTokens = (messages = []) => {
 	try {
 		return Math.max(1, Math.ceil(JSON.stringify(messages).length / 4));
 	} catch {
@@ -107,7 +124,14 @@ const estimateMessagesTokens = (messages = []) => {
 	}
 };
 
-const resolveContextLimit = (config) => {
+/**
+ * Reads the context window from the common provider aliases.
+ *
+ * @param {object} config Provider configuration (`contextLength`, `context_length`,
+ *   `num_ctx` or `maxContextTokens`).
+ * @returns {number|null} Positive token limit, or null when unknown.
+ */
+export const resolveContextLimit = (config) => {
 	const value = Number(
 		config?.contextLength
 		?? config?.context_length
@@ -117,16 +141,54 @@ const resolveContextLimit = (config) => {
 	return Number.isFinite(value) && value > 0 ? value : null;
 };
 
+/**
+ * Best-effort: enrich an Ollama provider with the real `contextLength` of its
+ * model. Exported so `AgentSession` can compute the same 90% threshold without
+ * duplicating the discovery logic. Failures (no server, unknown model) leave
+ * the provider untouched; callers then degrade to "no known limit".
+ *
+ * @param {object|string} provider Provider config to enrich.
+ * @param {{signal?: AbortSignal}} [options]
+ * @returns {Promise<object|string>} The provider, with `contextLength` added when Ollama reports it.
+ */
+export const withResolvedContextLimit = async (provider, { signal } = {}) => {
+	try {
+		const p = isPlainObject(provider) ? provider : (typeof provider === "string" ? { provider } : null);
+		const providerName = String(p?.provider || p?.modelProvider || p?.name || "").toLowerCase();
+		const hasContextLimit = p && (p.contextLength || p.context_length || p.num_ctx || p.maxContextTokens);
+		if (p && providerName.includes("ollama") && !hasContextLimit && p.model) {
+			const baseUrl = p.baseUrl || p.baseURL || "http://127.0.0.1:11434";
+			const models = await listOllamaModels({ baseUrl, signal }).catch(() => []);
+			const match = models.find((m) => m.name === p.model || m.model === p.model);
+			if (match?.contextLength) {
+				return { ...p, contextLength: match.contextLength };
+			}
+		}
+	} catch {}
+	return provider;
+};
+
 const userInputUnavailableResult = ({ tool = "request_user_input", message } = {}) => ({
 	ok: false,
 	error: "user_input_unavailable",
 	code: "USER_INPUT_UNAVAILABLE",
 	tool,
-	message: message || "No hay un manejador de entrada de usuario disponible para responder esta solicitud.",
-	userMessage: message || "No hay un manejador de entrada de usuario disponible para responder esta solicitud.",
+	message: message || "No user-input handler is available to answer this request.",
+	userMessage: message || "No user-input handler is available to answer this request.",
 });
 
+/**
+ * Error thrown by `askAgent()` with a stable machine code and a safe message
+ * that can be shown to an end user.
+ *
+ * @param {string} message Internal diagnostic message.
+ * @param {{code?: string, userMessage?: string}} [options]
+ */
 export class AgentError extends Error {
+	/**
+	 * @param {string} message Internal diagnostic message.
+	 * @param {{code?: string, userMessage?: string}} [options]
+	 */
 	constructor(message, { code = "AGENT_ERROR", userMessage } = {}) {
 		super(message);
 		this.name = "AgentError";
@@ -277,6 +339,10 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  * @param {Array<{role: string, content: any}>} [options.history] Prior conversation, oldest first.
  * @param {Array<any>} [options.images] Buffers, base64 strings, data URLs or `{mimeType,data}`.
  * @param {Array<any>} [options.documents] In-memory documents; their text is injected into the prompt.
+ * @param {Array<object>} [options.attachments] `{kind, data, mimeType, name}` items. Kinds: image, audio, video, document, file.
+ * @param {object} [options.media] Media options: `{maxFrames, frameWidth, timeoutMs, language, onError, stt}`. Native audio/video is declared on `provider.media` / `provider.capabilities.media`.
+ * @param {object} [options.config] Effective config override; STT is read from `stt` or `media.stt`.
+ * @param {object} [options.configOptions] Options forwarded to `loadEffectiveConfig()` when `config` is absent.
  * @param {object} [options.tools] `{ web_search: true, read_document: true, [custom]: {...} }`.
  * @param {object} [options.toolHandlers] Extra local tool handlers (same shape as ia.js).
  * @param {Function} [options.documentResolver] Optional `async ({name,id}) => document` for `read_document`.
@@ -284,11 +350,12 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  * @param {Function} [options.approveToolCall] Approval hook for the tools of untrusted MCP servers.
  * @param {boolean|"auto"|"always"} [options.preSearch] Deterministic web search before the model.
  * @param {object} [options.webSearch] Options forwarded to `webSearch()` (providers, maxResults...).
+ * @param {(options: object) => Promise<object>} [options.webSearchFn] Search injection for tests/CI; receives the merged search config.
  * @param {number} [options.maxToolRounds]
  * @param {boolean} [options.includeDiagnostics]
- * @param {boolean|object} [options.autoCompact] Compacta el historial antes de llamar al proveedor.
- * @param {number} [options.compactionThresholdPercent] Umbral por defecto (25).
- * @param {number} [options.compactionKeepLastMessages] Mensajes recientes a conservar.
+ * @param {boolean|object} [options.autoCompact] Compact the history before calling the provider.
+ * @param {number} [options.compactionThresholdPercent] Default threshold (25).
+ * @param {number} [options.compactionKeepLastMessages] Recent messages to keep.
  * @param {boolean|object} [options.responseProcessing] Post-procesamiento opcional de la respuesta.
  * @param {AbortSignal} [options.signal]
  * @param {(delta: string, meta: object) => void} [options.onTextDelta] Optional streaming callback. When absent the provider uses its non-streaming path.
@@ -326,10 +393,13 @@ const trimDocumentForTool = (document, maxChars = 20000) => ({
  *       num_ctx: 32768,
  *       maxTokens: 2048,
  *     },
- *     messages: [{ role: "user", content: "Escribe una función en JavaScript" }],
+ *     messages: [{ role: "user", content: "Write a JavaScript function" }],
  *   });
  *
- * @returns {Promise<{text: string, usedWeb: boolean, webQuery: string, webResults: Array, webSource: string|null, documents: Array, toolExecutions: Array, diagnostics: object}>}
+ * @returns {Promise<object>} Envelope with `text`, `usedWeb`, `webQuery`,
+ *   `webResults`, `webSource`, `webErrors`, `documents`, `media`,
+ *   `toolExecutions`, `hasTools`, `mode`, `usage`, `injectedContextChars`,
+ *   `injectedContext` and, when requested, `diagnostics`.
  */
 export const askAgent = async ({
 	provider,
@@ -339,6 +409,10 @@ export const askAgent = async ({
 	history,
 	images,
 	documents = [],
+	attachments = [],
+	media = {},
+	config,
+	configOptions,
 	tools = {},
 	toolHandlers = {},
 	documentResolver,
@@ -362,6 +436,7 @@ export const askAgent = async ({
 	mode = "build",
 	onUserInputRequest,
 	onTextDelta,
+	onThinking,
 	onToolStart,
 	onToolFinish,
 	usage = true,
@@ -369,11 +444,29 @@ export const askAgent = async ({
 	if (!provider) {
 		throw new AgentError("askAgent requires a provider configuration.", {
 			code: "AGENT_PROVIDER_REQUIRED",
-			userMessage: "Falta la configuracion del proveedor de IA.",
+			userMessage: "The AI provider configuration is missing.",
 		});
 	}
 
+	// Attachments are prepared before any prompt is assembled. When no STT is
+	// configured this returns warnings instead of throwing, and the model still
+	// receives frames/images and an explicit note about the missing transcript.
+	const mediaContext = await prepareMediaContext({
+		attachments,
+		images,
+		documents,
+		provider,
+		stt: media?.stt,
+		config,
+		configOptions,
+		media,
+		signal,
+	});
+	const effectiveImages = mediaContext.images;
+	const effectiveDocuments = mediaContext.documents;
+
 	const conversation = normalizeMessageList([
+		...(mediaContext.history || []),
 		...(Array.isArray(history) ? history : []),
 		...(prompt != null ? [{ role: "user", content: prompt }] : []),
 		...normalizeMessageList(messages),
@@ -382,7 +475,7 @@ export const askAgent = async ({
 	if (!conversation.length) {
 		throw new AgentError("askAgent requires at least one message.", {
 			code: "AGENT_MESSAGES_REQUIRED",
-			userMessage: "Falta el mensaje del usuario.",
+			userMessage: "The user message is missing.",
 		});
 	}
 
@@ -417,6 +510,21 @@ export const askAgent = async ({
 	}
 	promptMessages.push(...conversationMessages);
 
+	// Caracteres que `askAgent()` añade DESPUÉS de que la sesión construyera el
+	// prompt. El proveedor los cuenta; la estimación local no los ve. Se
+	// publican en el envelope para poder calibrar el estimador con datos reales.
+	const injectedBreakdown = { media: 0, documents: 0, web: 0, tools: 0 };
+
+	if (mediaContext.promptText) {
+		injectedBreakdown.media = mediaContext.promptText.length;
+		if (promptMessages.some((message) => message.role === "user")) {
+			promptMessages.splice(0, promptMessages.length,
+				...appendTextToLastUserMessage(promptMessages, mediaContext.promptText));
+		} else {
+			promptMessages.push({ role: "user", content: mediaContext.promptText });
+		}
+	}
+
 	const configuredTools = normalizeToolConfig(tools);
 	const handlers = { ...toolHandlers };
 
@@ -441,7 +549,7 @@ export const askAgent = async ({
 			return {
 				...userInputUnavailableResult({
 					tool: "run_command",
-					message: `Modo Plan: se requiere autorización del usuario para ejecutar "${commandLine || command}", pero no hay un manejador de entrada de usuario disponible.`,
+					message: `Plan mode: user authorization is required to run "${commandLine || command}", but no user-input handler is available.`,
 				}),
 				capability: "terminal",
 			};
@@ -451,12 +559,12 @@ export const askAgent = async ({
 			const response = await requestUserInput({
 				id: `plan_run_command_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
 				type: "select",
-				question: `El agente quiere ejecutar un comando en modo Plan: ${commandLine || command}`,
-				description: "En modo Plan, run_command requiere autorización explícita. Las demás restricciones destructivas se mantienen.",
+				question: `The agent wants to run a command in Plan mode: ${commandLine || command}`,
+				description: "In Plan mode, run_command requires explicit authorization. All other destructive restrictions still apply.",
 				options: [
-					{ label: "Permitir solo este comando", value: "allow_once" },
-					{ label: "Permitir run_command para toda la sesión (mantener Plan)", value: "allow_session" },
-					{ label: "Denegar", value: "deny" },
+					{ label: "Allow this command only", value: "allow_once" },
+					{ label: "Allow run_command for the whole session (stay in Plan mode)", value: "allow_session" },
+					{ label: "Deny", value: "deny" },
 				],
 				required: true,
 				context: { mode: "plan", tool: "run_command", command, args, cwd, binary },
@@ -473,13 +581,13 @@ export const askAgent = async ({
 			return capabilityDeniedResult({
 				capability: "terminal",
 				tool: "run_command",
-				message: `Ejecución de comando denegada por el usuario: ${commandLine || command}`,
+				message: `Command execution denied by the user: ${commandLine || command}`,
 			});
 		} catch (error) {
 			return capabilityDeniedResult({
 				capability: "terminal",
 				tool: "run_command",
-				message: `No se pudo solicitar autorización para ejecutar el comando: ${error?.message || error}`,
+				message: `Could not request authorization to run the command: ${error?.message || error}`,
 			});
 		}
 	};
@@ -488,8 +596,8 @@ export const askAgent = async ({
 	// a model-driven "read this file" tool would have nothing to open.
 	const documentResults = [];
 	const documentsAllowed = resolveToolCapability("read_document", caps).allowed && caps.documents !== false;
-	if (Array.isArray(documents) && documents.length && documentsAllowed) {
-		for (const document of documents) {
+	if (effectiveDocuments.length && documentsAllowed) {
+		for (const document of effectiveDocuments) {
 			const extracted = await extractDocumentText(document);
 			documentResults.push(extracted);
 		}
@@ -500,6 +608,7 @@ export const askAgent = async ({
 			"document context",
 		);
 		if (recap) {
+			injectedBreakdown.documents = recap.length;
 			const merged = appendTextToLastUserMessage(promptMessages, recap);
 			promptMessages.length = 0;
 			promptMessages.push(...merged);
@@ -530,7 +639,10 @@ export const askAgent = async ({
 	});
 
 	if (shouldPreSearch && lastUserText) {
-		webQuery = cleanWebQuery(lastUserText);
+		// An explicit query wins; otherwise focus the verbose instruction using
+		// proper nouns from the memory recap supplied by AgentSession.
+		const explicitQuery = typeof webConfig.query === "string" ? webConfig.query.trim() : "";
+		webQuery = explicitQuery || cleanWebQuery(lastUserText, { context: webConfig.context });
 		const found = await runWebSearch({ ...webConfig, query: webQuery, signal });
 		webResults = found.results || [];
 		webSource = found.source;
@@ -545,10 +657,29 @@ export const askAgent = async ({
 			)
 			: "";
 		if (recap) {
+			injectedBreakdown.web = recap.length;
 			const merged = appendTextToLastUserMessage(promptMessages, recap);
 			promptMessages.length = 0;
 			promptMessages.push(...merged);
 		}
+	}
+
+	// Bound the text the model sees after a model-driven web_search call. The
+	// raw object is still returned (the envelope reads `ok/results/source` from
+	// it); adding `content` makes ia.js format that short recap instead of the
+	// whole unpaginated JSON payload.
+	const configuredWebChars = Number(webConfig.maxInjectedContextChars ?? webConfig.maxResultChars);
+	let webToolBudgetChars = Number.isFinite(configuredWebChars) && configuredWebChars > 0
+		? configuredWebChars
+		: DEFAULT_MAX_INJECTED_CONTEXT_CHARS;
+	const webContextLimit = resolveContextLimit(providerObject);
+	if (webContextLimit) {
+		const promptTokens = estimateMessagesTokens(promptMessages);
+		const freeTokens = Math.max(0, webContextLimit - promptTokens);
+		const freeChars = Math.floor(freeTokens * WEB_TOOL_CHARS_PER_TOKEN * WEB_TOOL_INJECTION_RATIO);
+		webToolBudgetChars = freeChars > 0
+			? Math.min(webToolBudgetChars, freeChars)
+			: Math.min(webToolBudgetChars, 600);
 	}
 
 	if (wantsWebTool && resolveToolCapability("web_search", caps).allowed) {
@@ -566,9 +697,15 @@ export const askAgent = async ({
 			handler: async (args) => {
 				const query = String(normalizeToolArguments(args).query || "").trim() || lastUserText;
 				const found = await runWebSearch({ ...webConfig, query, signal });
+				const trimmed = trimWebResults(found, { maxResults: Number(webConfig.maxResults ?? 4) });
 				return {
-					...trimWebResults(found, { maxResults: Number(webConfig.maxResults ?? 4) }),
+					...trimmed,
 					query,
+					content: truncateInjectedText(
+						formatWebRecap(trimmed),
+						webToolBudgetChars,
+						"web tool result",
+					),
 				};
 			},
 		};
@@ -671,7 +808,7 @@ export const askAgent = async ({
 			if (typeof original === "function") return original(args);
 			const fn = original?.handler ?? original?.run ?? original?.execute;
 			if (typeof fn === "function") return fn(args);
-			return capabilityDeniedResult({ capability: "terminal", tool: "run_command", message: "Herramienta run_command inválida." });
+			return capabilityDeniedResult({ capability: "terminal", tool: "run_command", message: "Invalid run_command tool." });
 		};
 		const wrapped = async (args) => {
 			const verdict = resolveToolCapability("run_command", caps);
@@ -768,20 +905,7 @@ export const askAgent = async ({
 	const hasTools = Object.keys(securedHandlers).length > 0;
 
 	// Best-effort: enrich Ollama provider with model context length for metrics.
-	let effectiveProvider = provider;
-	try {
-		const p = isPlainObject(provider) ? provider : (typeof provider === "string" ? { provider } : null);
-		const providerName = String(p?.provider || p?.modelProvider || p?.name || "").toLowerCase();
-		const hasContextLimit = p && (p.contextLength || p.context_length || p.num_ctx || p.maxContextTokens);
-		if (p && providerName.includes("ollama") && !hasContextLimit && p.model) {
-			const baseUrl = p.baseUrl || p.baseURL || "http://127.0.0.1:11434";
-			const models = await listOllamaModels({ baseUrl, signal }).catch(() => []);
-			const match = models.find((m) => m.name === p.model || m.model === p.model);
-			if (match?.contextLength) {
-				effectiveProvider = { ...p, contextLength: match.contextLength };
-			}
-		}
-	} catch {}
+	const effectiveProvider = await withResolvedContextLimit(provider, { signal });
 
 	// Compactación opcional del historial. Se decide ANTES de la llamada para
 	// que el proveedor reciba realmente menos mensajes (no solo un diagnóstico).
@@ -841,8 +965,11 @@ export const askAgent = async ({
 		toolHandlers: observedHandlers,
 		approveToolCall,
 		onTextDelta,
+		onThinking,
 		prompts: promptMessages,
-		images,
+		images: effectiveImages,
+		audio: mediaContext.audio,
+		video: mediaContext.video,
 		maxToolRounds,
 		includeDiagnostics,
 		signal,
@@ -852,6 +979,11 @@ export const askAgent = async ({
 	let text = typeof diagnostics.text === "string" ? diagnostics.text : "";
 	const toolExecutionsRaw = Array.isArray(diagnostics.toolExecutions) ? diagnostics.toolExecutions : [];
 	const usageInfo = isPlainObject(diagnostics.usage) ? diagnostics.usage : null;
+	injectedBreakdown.tools = toolExecutionsRaw.reduce(
+		(sum, execution) => sum + String(execution?.textResult ?? "").length,
+		0,
+	);
+	const injectedContextChars = Object.values(injectedBreakdown).reduce((sum, value) => sum + value, 0);
 
 	// Post-procesamiento OPCIONAL: extraer markdown solo cuando se pide
 	// explícitamente (típicamente tareas de código/web). En chat se conserva
@@ -969,6 +1101,7 @@ export const askAgent = async ({
 				pages: document.pages,
 				truncated: document.truncated,
 			})),
+			media: mediaContext.media,
 			toolExecutions: toolExecutionsRaw.map((execution) => ({
 				tool: execution.toolName,
 				server: execution.serverName,
@@ -978,6 +1111,8 @@ export const askAgent = async ({
 			hasTools,
 			mode: effectiveMode,
 			usage: usageInfo,
+			injectedContextChars,
+			injectedContext: injectedBreakdown,
 			...extra,
 		};
 	}
@@ -990,9 +1125,12 @@ export const askAgent = async ({
 		webSource: finalWebSource,
 		webErrors: finalWebErrors,
 		documents: documentResults,
+		media: mediaContext.media,
 		hasTools,
 		mode: effectiveMode,
 		usage: usageInfo,
+		injectedContextChars,
+		injectedContext: injectedBreakdown,
 		diagnostics,
 		...extra,
 	};
@@ -1018,7 +1156,13 @@ function _inferTaskTypeFromPrompt(prompts = []) {
 	return 'chat';
 }
 
-/** Same as `askAgent` but returns only the assistant text. */
+/**
+ * Convenience wrapper around `askAgent()`.
+ *
+ * @param {object} [options] Same options as `askAgent()`.
+ * @returns {Promise<string>} Only the assistant answer; diagnostics, web results
+ *   and tool executions are discarded. Use `askAgent()` when an agent needs them.
+ */
 export const askAgentText = async (options = {}) => {
 	const result = await askAgent(options);
 	return result.text;

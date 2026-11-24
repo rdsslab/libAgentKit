@@ -15,22 +15,30 @@ const LENGUAJES_CODIGO = new Set([
 
 const FENCE_LINE = /^\s*```/;
 const WRAPPER_TAG = /^<(style|script)\b[^>]*>([\s\S]*)<\/\1\s*>$/i;
-/** Número de líneas que abren o cierran un cerco Markdown. */
+/**
+ * @param {string} [texto]
+ * @returns {number} Number of Markdown fence lines.
+ */
 export function countFenceLines(texto = "") {
   return String(texto || "")
     .split(/\r?\n/)
     .filter((linea) => FENCE_LINE.test(linea)).length;
 }
 
-/** Paridad de cercos: impar significa que la respuesta quedó cortada. */
+/**
+ * @param {string} [texto]
+ * @returns {0|1} 1 when the number of fence lines is odd.
+ */
 export function fenceBalance(texto = "") {
   return countFenceLines(texto) % 2;
 }
 
 /**
  * Quita un envolvente `<style>...</style>` o `<script>...</script>` cuando
- * ocupa toda la respuesta. Es un error de formato frecuente y no depende del
- * lenguaje: el modelo devuelve el archivo dentro de su etiqueta HTML.
+ * occupies the whole response. The model returns the file inside its HTML tag.
+ *
+ * @param {string} [texto]
+ * @returns {string}
  */
 export function unwrapTag(texto = "") {
   const valor = String(texto || "").trim();
@@ -41,7 +49,10 @@ export function unwrapTag(texto = "") {
 /**
  * Descarta prosa previa al primer cerco cuando la respuesta claramente debía
  * empezar con código. Conserva comentarios de código y no toca respuestas sin
- * cercos (por ejemplo, chat).
+ * fences (for example, chat).
+ *
+ * @param {string} [texto]
+ * @returns {string}
  */
 export function stripPreamble(texto = "") {
   const valor = String(texto || "");
@@ -66,7 +77,10 @@ export function stripPreamble(texto = "") {
 /**
  * Corta un bucle de repetición al final de la respuesta. Los modelos pequeños
  * que alcanzan su límite de tokens suelen repetir las mismas 1-4 líneas. Deja
- * una sola copia y devuelve también la longitud recortada.
+ * one copy and reports whether anything was removed.
+ *
+ * @param {string} [texto]
+ * @returns {{text: string, repetido: boolean}}
  */
 export function trimRepeatedTail(texto = "") {
   const valor = String(texto || "");
@@ -98,19 +112,26 @@ export function trimRepeatedTail(texto = "") {
  * Los modelos que alcanzan su techo repiten un fragmento DENTRO de una
  * palabra (`ToggleToggleToggleToggle`). Solo se detecta: reescribir el
  * identificador puede colisionar con otro nombre legítimo del mismo archivo,
- * así que la corrección se deja al reintento con un techo mayor.
+ * so the fix is left to a retry with a higher token limit.
+ *
+ * @param {string} [texto]
+ * @returns {{repetido: boolean}}
  */
 export function detectarIdentificadorRepetido(texto = "") {
   const repetido = /([A-Za-z]{3,}?)\1{3,}/.test(String(texto || ""));
   return { repetido };
 }
 
-/** Una declaración de función sin cuerpo en la última línea está cortada. */
+/** @param {string} [linea] @returns {boolean} */
 function esDeclaracionIncompleta(linea = "") {
   return /^\s*(?:export\s+)?(?:async\s+)?function\s+[\w$]+\s*\([^)]*\)\s*:?\s*$/.test(linea)
     || /^\s*(?:const|let|var)\s+[\w$]+\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*$/.test(linea);
 }
 
+/**
+ * @param {string} [texto]
+ * @returns {{text: string, incompleta: boolean}}
+ */
 export function dropIncompleteTail(texto = "") {
   const valor = String(texto || "");
   const lineas = valor.split(/\r?\n/);
@@ -131,6 +152,10 @@ export function dropIncompleteTail(texto = "") {
  */
 const BLOQUE_FUNCION = /^((?:export\s+)?(?:async\s+)?function\s+[\w$]+\s*\([^)]*\)\s*\{[\s\S]*?^\})/gm;
 
+/**
+ * @param {string} [texto]
+ * @returns {{text: string, eliminados: number}}
+ */
 export function dropDuplicateBlocks(texto = "") {
   const vistos = new Set();
   let eliminados = 0;
@@ -146,7 +171,10 @@ export function dropDuplicateBlocks(texto = "") {
   return { text: resultado, eliminados };
 }
 
-/** Balance burdo de llaves para detectar código a medias. */
+/**
+ * @param {string} [texto]
+ * @returns {boolean} True when more braces open than close.
+ */
 export function balanceLlaves(texto = "") {
   const abiertas = (texto.match(/\{/g) || []).length;
   const cerradas = (texto.match(/\}/g) || []).length;
@@ -155,7 +183,11 @@ export function balanceLlaves(texto = "") {
 
 /**
  * Señales genéricas de que la salida fue cortada por el límite de tokens.
- * Ninguna es concluyente por sí sola; se entregan al llamador para que decida.
+ * None is conclusive alone; they are returned to the caller for a retry decision.
+ *
+ * @param {string} [texto]
+ * @param {object} [options] `repetido`, `tokenRepetido`, `incompleta`.
+ * @returns {{truncado: boolean, senales: string[]}}
  */
 export function detectarTruncamiento(texto = "", options = {}) {
   const { repetido = false, tokenRepetido = false, incompleta = false } = options;

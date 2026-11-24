@@ -9,10 +9,11 @@
  * solo provee la configuración óptima para cada tipo de tarea.
  */
 
+/** Per-task sampling defaults and system prompts. @type {Record<string, object>} */
 export const MODEL_PRESETS = {
-  /** Chat general, respuestas conversacionales */
+  /** General chat, conversational answers */
   chat: {
-    description: "Chat general, respuestas conversacionales",
+    description: "General chat, conversational answers",
     temperature: 0.7,
     top_p: 0.9,
     top_k: 40,
@@ -20,28 +21,28 @@ export const MODEL_PRESETS = {
     seed: null,
     maxTokens: 1024,
     num_ctx: 8192,
-    systemPrompt: "Eres un asistente útil, conciso y amigable. Responde en español de forma clara y directa.",
+    systemPrompt: "You are a helpful, concise and friendly assistant. Answer clearly and directly.",
   },
 
-  /** Generación de código (cualquier lenguaje) */
+  /** Code generation (any language) */
   code: {
-    description: "Generación de código, funciones, scripts",
-    temperature: 0.2,          // más determinista
+    description: "Code generation, functions, scripts",
+    temperature: 0.2,          // more deterministic
     top_p: 0.9,
     top_k: 40,
     repeat_penalty: 1.1,
-    seed: 42,                  // semilla fija para reproducibilidad
+    seed: 42,                  // fixed seed for reproducibility
     maxTokens: 4096,
     num_ctx: 16384,
-    systemPrompt: `Eres un programador experto. Genera SOLO código funcional, bien comentado y listo para usar.
-No incluyas explicaciones previas ni postéricas salvo comentarios dentro del código.
-Para una sola función devuelve el código sin cercos; cuando se pidan archivos o bloques etiquetados, usa un bloque Markdown por archivo con su etiqueta (html, css, js).
-El código debe ser válido, seguir buenas prácticas y no requerir dependencias externas no mencionadas.`,
+    systemPrompt: `You are an expert programmer. Generate ONLY functional, well-commented, ready-to-use code.
+Do not include explanations before or after it, except for comments inside the code.
+For a single function, return the code without fences; when files or labelled blocks are requested, use one Markdown block per file with its tag (html, css, js).
+The code must be valid, follow best practices and require no external dependencies that were not mentioned.`,
   },
 
-  /** Generación de HTML/CSS/JS (páginas web, landing pages) */
+  /** HTML/CSS/JS generation (web pages, landing pages) */
   web: {
-    description: "HTML, CSS, JavaScript para páginas web",
+    description: "HTML, CSS, JavaScript for web pages",
     temperature: 0.3,
     top_p: 0.9,
     top_k: 40,
@@ -49,20 +50,20 @@ El código debe ser válido, seguir buenas prácticas y no requerir dependencias
     seed: 42,
     maxTokens: 6144,
     num_ctx: 16384,
-    systemPrompt: `Eres un desarrollador web experto. Genera archivos HTML5, CSS y JavaScript válidos, semánticos y listos para producción.
+    systemPrompt: `You are an expert web developer. Generate valid, semantic, production-ready HTML5, CSS and JavaScript files.
 
-REGLAS ESTRICTAS:
-1. HTML: semántico, incluye DOCTYPE, enlaces a CSS y JS, accesible.
-2. CSS: responsive (mobile-first), usa variables CSS, box-sizing: border-box, media queries.
-3. JavaScript: vanilla (sin frameworks), maneja eventos, validación de formularios, DOM ready.
-4. NO devuelvas texto explicativo fuera del código solicitado.
-5. Cada archivo debe ser independiente y funcional.
-6. Si se piden archivos separados, emite un bloque cercado por archivo con su etiqueta (html, css, js) y sin texto entre bloques.`,
+STRICT RULES:
+1. HTML: semantic, include DOCTYPE, links to CSS and JS, accessible.
+2. CSS: responsive (mobile-first), use CSS variables, box-sizing: border-box, media queries.
+3. JavaScript: vanilla (no frameworks), handle events, form validation, DOM ready.
+4. Do NOT return explanatory text outside the requested code.
+5. Each file must be self-contained and functional.
+6. If separate files are requested, emit one fenced block per file with its tag (html, css, js) and no text between blocks.`,
   },
 
-  /** Contexto largo / resumen de muchos mensajes */
+  /** Long context / summarising many messages */
   longContext: {
-    description: "Conversaciones largas, resumen, análisis de contexto extenso",
+    description: "Long conversations, summarisation, extensive context analysis",
     temperature: 0.5,
     top_p: 0.9,
     top_k: 40,
@@ -70,12 +71,12 @@ REGLAS ESTRICTAS:
     seed: null,
     maxTokens: 2048,
     num_ctx: 32768,
-    systemPrompt: "Eres un asistente que mantiene coherencia en conversaciones largas. Resume información clave y recuerda detalles anteriores cuando sea relevante.",
+    systemPrompt: "You are an assistant that stays coherent in long conversations. Summarise key information and recall earlier details when relevant.",
   },
 
-  /** Razonamiento complejo / análisis */
+  /** Complex reasoning / analysis */
   reasoning: {
-    description: "Razonamiento complejo, análisis, resolución de problemas",
+    description: "Complex reasoning, analysis, problem solving",
     temperature: 0.4,
     top_p: 0.9,
     top_k: 50,
@@ -83,7 +84,7 @@ REGLAS ESTRICTAS:
     seed: null,
     maxTokens: 4096,
     num_ctx: 16384,
-    systemPrompt: "Analiza paso a paso, razona lógicamente y proporciona respuestas bien fundamentadas en español.",
+    systemPrompt: "Analyse step by step, reason logically and provide well-founded answers.",
   },
 };
 
@@ -120,7 +121,9 @@ export function getModelConfig(model, taskType = "chat", overrides = {}, baseUrl
 }
 
 /**
- * Lista los tipos de tarea disponibles con sus descripciones.
+ * Lists available task types with their descriptions.
+ *
+ * @returns {Array<{key: string, description: string}>}
  */
 export function listTaskTypes() {
   return Object.entries(MODEL_PRESETS).map(([key, value]) => ({

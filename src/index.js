@@ -25,6 +25,7 @@ export {
 	formatHistoryRecap,
 	looksLikeWebQuery,
 	cleanWebQuery,
+	checkGrounding,
 	shouldRunPreSearch,
 	pickWebQuery,
 	formatWebRecap,
@@ -81,6 +82,7 @@ export {
 	registerTtsProviderType,
 	listTtsProviderTypes,
 	extractVideoFrames,
+	extractAudio,
 	mediaDuration,
 	mp4Faststart,
 	mp4Duration,
@@ -93,7 +95,35 @@ export {
 	askAgent,
 	askAgentText,
 	AgentError,
+	estimateMessagesTokens,
+	resolveContextLimit,
+	withResolvedContextLimit,
 } from "./agent.js";
+
+export {
+	AgentSession,
+	createAgentSession,
+} from "./session.js";
+
+export {
+	createOllamaTokenCounter,
+} from "./token-counter.js";
+
+export {
+	MemoryStore,
+	resolveEmbeddings,
+} from "./memory.js";
+
+export {
+	prepareVideoContext,
+	analyzeVideo,
+} from "./video.js";
+
+export {
+	prepareMediaContext,
+	providerSupportedMedia,
+	resolveSttFromConfig,
+} from "./media-context.js";
 
 export {
 	ARTIFACT_FORMATS,

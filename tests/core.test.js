@@ -26,6 +26,7 @@ import {
 	looksLikeRecall,
 	looksLikeWebQuery,
 	cleanWebQuery,
+	checkGrounding,
 	formatHistoryRecap,
 } from "../src/policies.js";
 
@@ -148,6 +149,69 @@ test("policies: cleanWebQuery cleans query text", () => {
 	const cleaned = cleanWebQuery("busca el clima en quito por favor");
 	assert.equal(typeof cleaned, "string");
 	assert.ok(cleaned.length > 0);
+});
+
+test("policies: cleanWebQuery extrae entidades del contexto de memoria", () => {
+	const verbose = "Busca en internet datos verificables sobre el lugar que viste en la imagen: altitud de la ciudad y el parque que aparece en primer plano.";
+	const context = "Analiza la imagen de Quito, Ecuador. La imagen es una vista aérea de Quito.";
+	assert.equal(cleanWebQuery("busca el clima en quito por favor"), "el clima en quito");
+	assert.equal(cleanWebQuery(verbose, { context }), "Quito Ecuador altitud parque");
+});
+
+test("policies: la regla estructural descarta andamiaje sin borrar intenciones", () => {
+	const verbose = "Busca datos verificables sobre el lugar que viste en la imagen: altitud y parque.";
+	const noisyContext = [
+		"MENSAJES ANTIGUOS RECUPERADOS DEL HISTORIAL DEL USUARIO:",
+		'- usuario: Analiza la imagen adjunta "vista-aérea-de-quito-el-centro-de-la-ciudad.webp".',
+		"  bot: Based on the provided aerial view. The image shows a dense city. However, I cannot identify it.",
+	].join("\n");
+	assert.equal(cleanWebQuery(verbose, { context: noisyContext }), "Quito altitud parque");
+	// "capital" no está en una lista de stopwords: al abrir frase es intención.
+	assert.equal(cleanWebQuery("¿Cuál es la capital de Ecuador?"), "Ecuador capital");
+});
+
+test("policies: checkGrounding detecta cifras y entidades sin respaldo web", () => {
+	const webResults = [{
+		title: "Quito — Wikipedia",
+		url: "https://es.wikipedia.org/wiki/Quito",
+		snippet: "Quito se asienta a unos 2.850 metros de altitud. Parque Itchimbía.",
+	}];
+	const supported = checkGrounding({
+		text: "Quito está a 2.850 m de altitud; el parque es Itchimbía.",
+		webResults,
+	});
+	assert.equal(supported.ok, true);
+
+	const wrong = checkGrounding({
+		text: "Quito tiene 3,165 m y el parque es Quito Central Park.",
+		webResults,
+	});
+	assert.equal(wrong.ok, false);
+	assert.ok(wrong.unsupported.includes("3165"));
+	assert.ok(wrong.unsupported.some((item) => /Quito Central Park/i.test(item)));
+	assert.ok(wrong.sourceChars > 0);
+
+	// Las cabeceras markdown no son afirmaciones que haya que respaldar.
+	const markdown = checkGrounding({
+		text: "1. **City Altitude**: 2.850 m.\n## Foreground Details\nSe ve el Parque Itchimbía.",
+		webResults,
+	});
+	assert.equal(markdown.ok, true);
+	assert.deepEqual(markdown.unsupported, []);
+
+	const noSources = checkGrounding({ text: "cualquier cosa" });
+	assert.equal(noSources.ok, null);
+	assert.equal(noSources.reason, "no web sources");
+	assert.equal(noSources.coverage, null);
+	assert.equal(noSources.confidence, null);
+
+	// Coverage and confidence make a partial match visible instead of hiding it
+	// behind a single boolean.
+	assert.equal(supported.coverage, 1);
+	assert.ok(["low", "medium", "high"].includes(supported.confidence));
+	assert.equal(wrong.coverage, 0);
+	assert.equal(wrong.confidence, "low");
+	assert.ok(wrong.checked.numbers >= 1);
 });
 
 test("policies: formatHistoryRecap formats history", () => {

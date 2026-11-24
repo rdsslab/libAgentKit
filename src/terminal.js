@@ -27,27 +27,33 @@ import path from "node:path";
 
 import { runProcess } from "./media.js";
 
+/** Name of the tool exposed to models. @type {string} */
 export const TERMINAL_TOOL_NAME = "run_command";
 
+/** Restricted PATH used for child processes. @type {string} */
 export const DEFAULT_SEARCH_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
 
+/** Default per-command timeout. @type {number} */
 export const DEFAULT_TIMEOUT_MS = 30000;
 
+/** Default cap on captured stdout/stderr. @type {number} */
 export const DEFAULT_MAX_OUTPUT_BYTES = 256 * 1024;
 
+/** Default number of commands allowed per turn. @type {number} */
 export const DEFAULT_MAX_CALLS_PER_TURN = 10;
 
+/** JSON Schema of the `run_command` tool arguments. @type {object} */
 export const TERMINAL_TOOL_PARAMETERS = {
 	type: "object",
 	properties: {
 		command: {
 			type: "string",
-			description: "Binario a ejecutar, sin argumentos (por ejemplo: uname, ip, curl, df). Preferiblemente sin espacios; si envías una línea completa puede normalizarse a {command,args} sin usar shell.",
+			description: "Binary to run, without arguments (for example: uname, ip, curl, df). Prefer no spaces; a full command line may be normalised to {command,args} without using a shell.",
 		},
 		args: {
 			type: "array",
 			items: { type: "string" },
-			description: "Argumentos del binario, cada uno como un elemento. Ejemplos: uname -> [\"-a\"] o [\"-r\"], ip -> [\"-4\",\"addr\",\"show\"] o [\"route\",\"get\",\"1.1.1.1\"], hostname -> [\"-I\"], df -> [\"-h\"], curl -> [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].",
+			description: "Arguments for the binary, one per array element. Examples: uname -> [\"-a\"] or [\"-r\"], ip -> [\"-4\",\"addr\",\"show\"] or [\"route\",\"get\",\"1.1.1.1\"], hostname -> [\"-I\"], df -> [\"-h\"], curl -> [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].",
 		},
 	},
 	required: ["command"],
@@ -57,6 +63,9 @@ export const TERMINAL_TOOL_PARAMETERS = {
  * Best-effort split of a simple command line into [binary, ...args].
  * No shell execution: only tokenization (whitespace + basic single/double quotes).
  * Used to recover from common model tool-call mistakes.
+ *
+ * @param {string} input
+ * @returns {string[]} Tokens; empty when the input is blank.
  */
 export const splitCommandLine = (input) => {
 	const text = String(input ?? "").trim();
@@ -109,6 +118,14 @@ export const splitCommandLine = (input) => {
 	return tokens;
 };
 
+/**
+ * Accepts either `{command, args}` or a full command line in `command`.
+ *
+ * @param {object} [options]
+ * @param {string} [options.command]
+ * @param {string[]} [options.args]
+ * @returns {{command: string, args: string[], normalizedFrom: string|null}}
+ */
 export const normalizeRunCommandArgs = ({ command, args } = {}) => {
 	const rawCommand = String(command ?? "").trim();
 	const rawArgs = Array.isArray(args) ? args.map((v) => String(v)) : null;
@@ -188,17 +205,17 @@ export const resolveBinary = (command, { allowedBinaries = [], searchPath = DEFA
 	const allow = new Set(allowedBinaries.map((entry) => String(entry)));
 
 	if (!name) {
-		return { error: "Falta el binario a ejecutar.", code: "COMMAND_NOT_ALLOWED" };
+		return { error: "No binary was provided to run.", code: "COMMAND_NOT_ALLOWED" };
 	}
 	if (allow.size === 0) {
 		return {
-			error: "Este servidor no permite ejecutar comandos: la lista de binarios permitidos esta vacia.",
+			error: "This server does not allow running commands: the allowed-binaries list is empty.",
 			code: "COMMAND_NOT_ALLOWED",
 		};
 	}
 	if (/\s/.test(name)) {
 		return {
-			error: "Pasa el binario en `command` y los argumentos en `args` (no una linea de comandos completa).",
+			error: "Pass the binary in `command` and the arguments in `args` (not a full command line).",
 			code: "COMMAND_NOT_ALLOWED",
 		};
 	}
@@ -221,10 +238,10 @@ export const resolveBinary = (command, { allowedBinaries = [], searchPath = DEFA
 	if (name.includes("/")) {
 		const resolved = path.resolve(name);
 		if (!allow.has(name) && !allow.has(resolved)) {
-			return { error: `El binario ${name} no esta permitido.`, code: "COMMAND_NOT_ALLOWED" };
+			return { error: `The binary ${name} is not allowed.`, code: "COMMAND_NOT_ALLOWED" };
 		}
 		if (!isExecutable(resolved)) {
-			return { error: `El binario ${name} no existe o no es ejecutable.`, code: "COMMAND_NOT_EXECUTABLE" };
+			return { error: `The binary ${name} does not exist or is not executable.`, code: "COMMAND_NOT_EXECUTABLE" };
 		}
 		return { path: resolved };
 	}
@@ -238,12 +255,12 @@ export const resolveBinary = (command, { allowedBinaries = [], searchPath = DEFA
 			return { path: candidate };
 		}
 		return {
-			error: `El binario ${name} no esta permitido (se resolvio a ${candidate}).`,
+			error: `The binary ${name} is not allowed (resolved to ${candidate}).`,
 			code: "COMMAND_NOT_ALLOWED",
 		};
 	}
 
-	return { error: `No se encontro el binario ${name}.`, code: "COMMAND_NOT_EXECUTABLE" };
+	return { error: `The binary ${name} was not found.`, code: "COMMAND_NOT_EXECUTABLE" };
 };
 
 /**
@@ -283,6 +300,10 @@ export const buildChildEnv = ({
 
 /**
  * True when `target` is inside `root` (symlinks resolved when possible).
+ *
+ * @param {string} target
+ * @param {string|null} root Empty root means "unrestricted".
+ * @returns {boolean}
  */
 export const isInsideRoot = (target, root) => {
 	if (!root) {
@@ -317,7 +338,8 @@ export const isInsideRoot = (target, root) => {
  * @param {(request: object) => boolean|Promise<boolean>} [options.approve] approval hook
  * @param {(request: object) => boolean|Promise<boolean>} [options.validateArgs] argument validation hook
  * @param {(entry: object) => void} [options.onAudit] audit hook
- * @returns {{name: string, description: string, parameters: object, handler: Function}}
+ * @returns {{name: string, description: string, parameters: object, handler: Function,
+ *   resetCalls: () => void}}
  */
 export const createTerminalTool = (options = {}) => {
 	const {
@@ -340,11 +362,11 @@ export const createTerminalTool = (options = {}) => {
 	let calls = 0;
 
 	const description = allowed.length > 0
-		? `Ejecuta un comando en la terminal (sin shell). Binarios permitidos: ${allowed.join(", ")}. `
-			+ "Pasa el binario en `command` y los argumentos en `args` como array de strings (no una línea completa). "
-			+ "Ejemplos: {\"command\":\"uname\",\"args\":[\"-a\"]}, {\"command\":\"hostname\",\"args\":[\"-I\"]}, {\"command\":\"ip\",\"args\":[\"route\",\"get\",\"1.1.1.1\"]}, {\"command\":\"df\",\"args\":[\"-h\"]}, {\"command\":\"curl\",\"args\":[\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"]}. "
-			+ "No se permiten pipes, redirecciones, &&, ; ni expansiones de shell."
-		: "Ejecuta un comando en la terminal (este servidor no tiene binarios permitidos).";
+		? `Run a command in the terminal (no shell). Allowed binaries: ${allowed.join(", ")}. `
+			+ "Pass the binary in `command` and the arguments in `args` as an array of strings (not a full command line). "
+			+ "Examples: {\"command\":\"uname\",\"args\":[\"-a\"]}, {\"command\":\"hostname\",\"args\":[\"-I\"]}, {\"command\":\"ip\",\"args\":[\"route\",\"get\",\"1.1.1.1\"]}, {\"command\":\"df\",\"args\":[\"-h\"]}, {\"command\":\"curl\",\"args\":[\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"]}. "
+			+ "Pipes, redirects, &&, ; and shell expansions are not allowed."
+		: "Run a command in the terminal (this server has no allowed binaries).";
 
 	const audit = (entry) => {
 		if (typeof onAudit !== "function") {
@@ -415,7 +437,7 @@ export const createTerminalTool = (options = {}) => {
 				});
 				return {
 					ok: false,
-					error: "El directorio de trabajo no esta dentro de las rutas permitidas.",
+					error: "The working directory is not within the allowed paths.",
 					code: "CWD_NOT_ALLOWED",
 				};
 			}
@@ -432,7 +454,7 @@ export const createTerminalTool = (options = {}) => {
 						normalizedFrom: normalized.normalizedFrom,
 						at: new Date().toISOString(),
 					});
-					return { ok: false, error: "Los argumentos de ese comando no estan permitidos.", code: "ARGS_NOT_ALLOWED" };
+					return { ok: false, error: "The arguments of that command are not allowed.", code: "ARGS_NOT_ALLOWED" };
 				}
 			}
 
@@ -456,7 +478,7 @@ export const createTerminalTool = (options = {}) => {
 					});
 					return {
 						ok: false,
-						error: "El comando no fue aprobado.",
+						error: "The command was not approved.",
 						code: "COMMAND_NOT_APPROVED",
 					};
 				}
@@ -530,13 +552,13 @@ export const createTerminalTool = (options = {}) => {
 				const stderrText = String(stderr || "");
 				const cmdName = path.basename(resolved.path);
 				if (cmdName === "uname" && /extra operand|invalid option|uso:|usage:/i.test(stderrText)) {
-					response.hint = "Usa flags válidos para uname, por ejemplo args [\"-a\"] (todo), [\"-r\"] (release kernel) o [\"-srm\"]. No pases palabras como 'release' como argumento posicional.";
+					response.hint = "Use valid uname flags, for example args [\"-a\"] (all), [\"-r\"] (kernel release) or [\"-srm\"]. Do not pass words like 'release' as a positional argument.";
 				} else if (cmdName === "ip" && /either "dev" is duplicate|command ".+" is unknown|unknown/i.test(stderrText)) {
-					response.hint = "Revisa argumentos de ip. Ejemplos: [\"-4\",\"addr\",\"show\"], [\"route\",\"get\",\"1.1.1.1\"].";
+					response.hint = "Check the ip arguments. Examples: [\"-4\",\"addr\",\"show\"], [\"route\",\"get\",\"1.1.1.1\"].";
 				} else if (cmdName === "curl" && /option .*: is unknown|unrecognized option/i.test(stderrText)) {
-					response.hint = "Revisa flags de curl. Ejemplo: [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].";
+					response.hint = "Check the curl flags. Example: [\"-sS\",\"-m\",\"8\",\"-i\",\"http://host:port\"].";
 				} else if (response.timedOut) {
-					response.hint = "El comando excedió el tiempo límite. Reduce el trabajo, usa timeout menor en curl (-m) o verifica conectividad.";
+					response.hint = "The command timed out. Reduce the work, use a shorter curl timeout (-m), or check connectivity.";
 				}
 			}
 

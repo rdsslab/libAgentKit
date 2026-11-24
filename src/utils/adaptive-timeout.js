@@ -5,7 +5,17 @@
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 /**
- * Sugiere un timeout a partir de una observación real y del trabajo esperado.
+ * Suggests a timeout from a real observation and the expected work.
+ *
+ * @param {object} [options]
+ * @param {number} [options.observedMs] Recent observed duration.
+ * @param {number} [options.maxTokens] Expected generation length.
+ * @param {number} [options.tokensPerSecond] Measured generation rate.
+ * @param {number} [options.minMs=15000]
+ * @param {number} [options.maxMs=240000]
+ * @param {number} [options.factor=1.8]
+ * @param {number} [options.headroomMs=5000]
+ * @returns {number} Clamped timeout in milliseconds.
  */
 export function suggestTimeoutMs({
 	observedMs,
@@ -26,13 +36,22 @@ export function suggestTimeoutMs({
 	return Math.round(clamp(candidate, minMs, maxMs));
 }
 
-/** Política con estado que recuerda duraciones recientes por modelo. */
+/** Stateful policy that remembers recent durations per model. */
 export class TimeoutPolicy {
+	/** @param {object} [options] Defaults forwarded to `suggestTimeoutMs()`. */
 	constructor(options = {}) {
 		this.options = options;
 		this.samples = new Map();
 	}
 
+	/**
+	 * Records one sample, keeping at most the last five per model.
+	 *
+	 * @param {string} model
+	 * @param {number} durationMs
+	 * @param {number} [tokensPerSecond]
+	 * @returns {void}
+	 */
 	record(model, durationMs, tokensPerSecond) {
 		const list = this.samples.get(model) || [];
 		list.push({ durationMs: Number(durationMs) || 0, tokensPerSecond: Number(tokensPerSecond) || 0 });
@@ -40,6 +59,12 @@ export class TimeoutPolicy {
 		this.samples.set(model, list);
 	}
 
+	/**
+	 * @param {string} model
+	 * @param {object} [options]
+	 * @param {number} [options.maxTokens]
+	 * @returns {number} Suggested timeout in milliseconds.
+	 */
 	get(model, { maxTokens } = {}) {
 		const list = this.samples.get(model) || [];
 		const observedMs = list.length

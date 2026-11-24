@@ -1032,6 +1032,53 @@ export const extractVideoFrames = async (input, options = {}) => {
 };
 
 /**
+ * Extracts the audio track of a video as 16 kHz mono WAV, in memory.
+ *
+ * The MP4 faststart fix is applied before piping to ffmpeg: clips with the
+ * `moov` atom at the end otherwise produce a tiny/empty stream and STT fails
+ * with "Failed to load image or audio file".
+ *
+ * @param {Buffer|Uint8Array|ArrayBuffer|string|{data?: any, mimeType?: string}} input
+ * @param {{sampleRate?: number, channels?: number, codec?: string, timeoutMs?: number, maxStdoutBytes?: number, ffmpegPath?: string}} [options]
+ * @returns {Promise<Buffer>} WAV bytes
+ */
+export const extractAudio = async (input, options = {}) => {
+	const descriptor = normalizeBinaryDescriptor(input);
+	const prepared = mp4Faststart(descriptor.data);
+	const sampleRate = Math.max(8000, Number(options.sampleRate ?? 16000));
+	const channels = Math.max(1, Number(options.channels ?? 1));
+	const codec = String(options.codec || "pcm_s16le");
+
+	const result = await runProcess(options.ffmpegPath || "ffmpeg", [
+		"-hide_banner",
+		"-loglevel", "error",
+		"-i", "pipe:0",
+		"-vn",
+		"-ac", String(channels),
+		"-ar", String(sampleRate),
+		"-c:a", codec,
+		"-f", "wav",
+		"pipe:1",
+	], {
+		stdin: prepared,
+		timeoutMs: options.timeoutMs ?? DEFAULT_FFMPEG_TIMEOUT,
+		maxStdoutBytes: options.maxStdoutBytes ?? 32 * 1024 * 1024,
+	});
+
+	if (!result.ok || !result.stdout?.length) {
+		throw new MediaProviderError(
+			`ffmpeg audio extraction failed (code=${result.code}${result.timedOut ? ", timeout" : ""}): ${String(result.stderr || "").replace(/\s+/g, " ").slice(0, 200)}`,
+			{
+				code: "FFMPEG_AUDIO_FAILED",
+				userMessage: "No pude extraer el audio del video: ffmpeg fallo o el clip no tiene pista de audio.",
+			},
+		);
+	}
+
+	return result.stdout;
+};
+
+/**
  * Best-effort duration for audio/video, without ffprobe: MP4 `mvhd` only.
  * Returns 0 when the container is not MP4.
  */
@@ -1060,6 +1107,11 @@ export const describeMediaSupport = ({ stt, tts, ffmpeg = true } = {}) => {
 	return {
 		images: true,
 		videoFrames: Boolean(ffmpeg),
+		video: {
+			frames: Boolean(ffmpeg),
+			native: false,
+			strategies: ["frames+stt", "frames", "stt"],
+		},
 		transcription: {
 			available: sttProviders.length > 0,
 			providers: sttProviders,

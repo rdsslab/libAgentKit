@@ -92,7 +92,10 @@ export async function validateSyntax(code, language) {
 }
 
 /**
- * Valida todos los bloques devueltos por extractCodeBlocks().
+ * Validates all blocks returned by `extractCodeBlocks()`.
+ *
+ * @param {Array<object>} [blocks] Blocks with `code` and `language`/`lang`.
+ * @returns {Promise<Array<object>>} Same blocks with a `validation` field.
  */
 export async function validateCodeBlocks(blocks = []) {
 	const results = [];

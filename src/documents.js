@@ -44,6 +44,7 @@ const resolveStandardFontDataUrl = () => {
 
 const STANDARD_FONT_DATA_URL = resolveStandardFontDataUrl();
 
+/** Document formats accepted by `extractDocumentText()`. @type {ReadonlyArray<string>} */
 export const SUPPORTED_DOCUMENT_TYPES = Object.freeze([
 	"pdf",
 	"docx",
@@ -65,7 +66,12 @@ const TEXT_EXTENSIONS = new Set(["txt", "md", "markdown", "csv", "tsv", "json", 
 const DEFAULT_MAX_CHARS = 200000;
 const DEFAULT_MAX_PAGES = 60;
 
+/** Error with a stable `code` and a safe `userMessage` for extraction failures. */
 export class DocumentExtractionError extends Error {
+	/**
+	 * @param {string} message Internal diagnostic message.
+	 * @param {{code?: string, userMessage?: string}} [options]
+	 */
 	constructor(message, { code = "DOCUMENT_UNSUPPORTED", userMessage } = {}) {
 		super(message);
 		this.name = "DocumentExtractionError";
@@ -123,6 +129,12 @@ const decodeXmlEntities = (value) => String(value || "")
 	.replace(/&nbsp;/g, " ")
 	.replace(/&amp;/g, "&");
 
+/**
+ * Converts HTML to plain text without running scripts or loading resources.
+ *
+ * @param {string} html
+ * @returns {string} Normalised text with block-level line breaks.
+ */
 export const htmlToText = (html) => {
 	const withoutNoise = String(html || "")
 		.replace(/<script\b[\s\S]*?<\/script>/gi, " ")
@@ -232,6 +244,12 @@ const readZipEntry = (buffer, wantedName) => {
 	});
 };
 
+/**
+ * Extracts text from a DOCX ZIP buffer in memory.
+ *
+ * @param {Buffer} buffer DOCX file bytes.
+ * @returns {string} Text from `word/document.xml`.
+ */
 export const docxToText = (buffer) => {
 	const documentXml = readZipEntry(buffer, "word/document.xml");
 	const xml = documentXml.toString("utf8");
@@ -272,7 +290,7 @@ const pdfToText = async (buffer, { maxPages = DEFAULT_MAX_PAGES } = {}) => {
 			"This runtime cannot read PDFs: Promise.withResolvers is missing (Node 22 or newer is required).",
 			{
 				code: "PDF_RUNTIME_UNSUPPORTED",
-				userMessage: "Este servidor no puede leer PDF: necesita Node 22 o superior.",
+				userMessage: "This server cannot read PDFs: Node 22 or newer is required."
 			},
 		);
 	}
@@ -366,7 +384,7 @@ export const extractDocumentText = async (input, options = {}) => {
 	if (!descriptor.data.length) {
 		throw new DocumentExtractionError("The document is empty.", {
 			code: "DOCUMENT_EMPTY",
-			userMessage: "El archivo llego vacio (0 bytes).",
+			userMessage: "The file is empty (0 bytes)."
 		});
 	}
 
@@ -393,7 +411,7 @@ export const extractDocumentText = async (input, options = {}) => {
 					"The PDF has no extractable text (probably a scanned image).",
 					{
 						code: "PDF_NO_TEXT",
-						userMessage: "El PDF no tiene texto extraible (parece escaneado). Envia las paginas como imagenes para que las lea con vision.",
+						userMessage: "The PDF has no extractable text (it looks scanned). Send the pages as images so vision can read them."
 					},
 				);
 			}
@@ -403,7 +421,7 @@ export const extractDocumentText = async (input, options = {}) => {
 			}
 			throw new DocumentExtractionError(`Could not read the PDF: ${error?.message || error}`, {
 				code: "PDF_INVALID",
-				userMessage: "No pude leer ese PDF: parece danado o protegido.",
+				userMessage: "Could not read that PDF: it looks damaged or protected."
 			});
 		}
 	} else if (kind === "docx") {
@@ -415,7 +433,7 @@ export const extractDocumentText = async (input, options = {}) => {
 			}
 			throw new DocumentExtractionError(`Could not read the DOCX: ${error?.message || error}`, {
 				code: "DOCX_INVALID",
-				userMessage: "No pude leer ese DOCX: parece danado. Si puedes, guardalo de nuevo como PDF.",
+				userMessage: "Could not read that DOCX: it looks damaged. If possible, save it again as a PDF."
 			});
 		}
 	} else if (kind === "html") {
@@ -440,14 +458,25 @@ export const extractDocumentText = async (input, options = {}) => {
 	};
 };
 
+/** Reusable extractor with default options shared across reads. */
 export class DocumentReader {
+	/** @param {object} [defaults] Defaults merged into every `read()` call. */
 	constructor(defaults = {}) {
 		this.defaults = { ...defaults };
 	}
 
+	/**
+	 * @param {*} input Same shapes as `extractDocumentText()`.
+	 * @param {object} [options] Per-read overrides.
+	 * @returns {Promise<object>} Extraction result.
+	 */
 	async read(input, options = {}) {
 		return extractDocumentText(input, { ...this.defaults, ...options });
 	}
 }
 
+/**
+ * @param {object} [defaults] Defaults for the reader.
+ * @returns {DocumentReader}
+ */
 export const createDocumentReader = (defaults = {}) => new DocumentReader(defaults);

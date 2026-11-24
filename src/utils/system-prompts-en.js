@@ -25,6 +25,7 @@ const CLAUSULA_IDIOMA_RESPUESTA = {
 
 const TIPOS_CON_IDIOMA_RESPUESTA = new Set(["chat", "reasoning"]);
 
+/** English system prompts grouped by task type. @type {Record<string, string>} */
 export const SYSTEM_PROMPTS_EN = {
   /** Chat general, respuestas conversacionales */
   chat: `You are a helpful, concise and friendly assistant. Maintain coherence in multi-turn conversations.`,
@@ -57,6 +58,7 @@ STRICT RULES:
   reasoning: `Analyze step by step, reason logically, and provide well-founded responses.`,
 };
 
+/** Spanish system prompts grouped by task type. @type {Record<string, string>} */
 export const SYSTEM_PROMPTS_ES = {
   /** Chat general, respuestas conversacionales */
   chat: "Eres un asistente útil, conciso y amigable. Mantén la coherencia en conversaciones multi-turno.",
@@ -110,7 +112,10 @@ const resolveTaskType = (taskType) => TASK_TYPE_ALIASES[String(taskType || "").t
 
 /**
  * Detecta heurísticamente el idioma del prompt del usuario.
- * Devuelve `null` cuando no hay evidencia suficiente para no forzar un cambio.
+ * Returns `null` when there is not enough evidence to force a language.
+ *
+ * @param {string} value User prompt.
+ * @returns {"en"|"es"|null}
  */
 export function detectPromptLanguage(value) {
   const texto = String(value || "");
@@ -124,6 +129,14 @@ export function detectPromptLanguage(value) {
   return null;
 }
 
+/**
+ * Returns the system prompt for a task, adding a response-language clause for chat/reasoning.
+ *
+ * @param {string} taskType
+ * @param {string} [idioma=en] Prompt language (`en` or `es`).
+ * @param {string} [idiomaRespuesta=idioma] Desired response language.
+ * @returns {string}
+ */
 export function getSystemPrompt(taskType, idioma = "en", idiomaRespuesta = idioma) {
   const key = resolveTaskType(taskType);
   const base = idioma === "es"
@@ -160,16 +173,18 @@ export function getSystemPromptES(taskType) {
 /**
  * Lista los tipos de tarea disponibles.
  *
- * @returns {Array<{key: string, descripcion: string}>}
+ * @returns {Array<{key: string, description: string, descripcion: string}>}
  */
 export function listTaskTypes() {
-  return [
-    { key: "chat", descripcion: "Chat general, respuestas conversacionales" },
-    { key: "code", descripcion: "Generación de código, funciones, scripts" },
-    { key: "web", descripcion: "HTML, CSS, JavaScript para páginas web" },
-    { key: "longContext", descripcion: "Conversaciones largas, resumen, análisis de contexto extenso" },
-    { key: "reasoning", descripcion: "Razonamiento complejo, análisis, resolución de problemas" },
+  const tasks = [
+    { key: "chat", description: "General chat, conversational answers" },
+    { key: "code", description: "Code generation, functions, scripts" },
+    { key: "web", description: "HTML, CSS, JavaScript for web pages" },
+    { key: "longContext", description: "Long conversations, summarisation, extensive context analysis" },
+    { key: "reasoning", description: "Complex reasoning, analysis, problem solving" },
   ];
+  // `descripcion` is kept as a deprecated alias for existing callers.
+  return tasks.map((task) => ({ ...task, descripcion: task.description }));
 }
 
 export default {

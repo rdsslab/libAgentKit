@@ -19,6 +19,12 @@ const sanitizeProviderForKey = (provider) => {
 	return publicConfig;
 };
 
+/**
+ * Builds a stable identity for a request, excluding credentials and callbacks.
+ *
+ * @param {object} [options] `askAgent()`-style options.
+ * @returns {string} Deterministic cache key.
+ */
 export function createCacheKey(options = {}) {
 	// Los hooks de validación son funciones: no pueden formar parte de la clave
 	// serializada. Se identifica con `validarComportamientoId` (o el nombre).
@@ -46,7 +52,13 @@ export function createCacheKey(options = {}) {
 	return stableStringify(relevant);
 }
 
+/** In-memory LRU cache with TTL for deterministic responses. */
 export class ResponseCache {
+	/**
+	 * @param {object} [options]
+	 * @param {number} [options.maxEntries=64]
+	 * @param {number} [options.ttlMs=600000]
+	 */
 	constructor({ maxEntries = 64, ttlMs = 10 * 60 * 1000 } = {}) {
 		this.maxEntries = Math.max(1, Number(maxEntries) || 64);
 		this.ttlMs = Number(ttlMs) > 0 ? Number(ttlMs) : 10 * 60 * 1000;
@@ -55,6 +67,7 @@ export class ResponseCache {
 		this.misses = 0;
 	}
 
+	/** @param {string} key @returns {*} Cached value, or undefined on miss/expiry. */
 	get(key) {
 		const entry = this.entries.get(key);
 		if (!entry) {
@@ -72,6 +85,11 @@ export class ResponseCache {
 		return entry.value;
 	}
 
+	/**
+	 * @param {string} key
+	 * @param {*} value
+	 * @returns {*} The stored value.
+	 */
 	set(key, value) {
 		this.entries.delete(key);
 		this.entries.set(key, {
@@ -85,10 +103,12 @@ export class ResponseCache {
 		return value;
 	}
 
+	/** @returns {void} */
 	clear() {
 		this.entries.clear();
 	}
 
+	/** @returns {{size: number, hits: number, misses: number, maxEntries: number, ttlMs: number}} */
 	stats() {
 		return {
 			size: this.entries.size,

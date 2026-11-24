@@ -130,7 +130,7 @@ test("presets: getModelConfig expone system en el provider", () => {
 	assert.equal(config.provider, "ollama");
 	assert.equal(config.model, "qwen2.5-coder:3b");
 	assert.equal(config.maxTokens, 128);
-	assert.match(config.system, /programador experto/i);
+	assert.match(config.system, /expert programmer/i);
 });
 
 test("response-cleaner: extractCodeBlock no filtra estado entre llamadas", () => {
@@ -366,7 +366,7 @@ test("task-enhancer: conserva un system existente y añade reglas y few-shot sin
 	assert.equal(systems.length, 1);
 	assert.match(systems[0].content, /REGLAS PROPIAS DEL LLAMADOR/);
 	assert.match(systems[0].content, /STRICT RULES/);
-	assert.match(systems[0].content, /EJEMPLO DE SALIDA ESPERADA/);
+	assert.match(systems[0].content, /EXAMPLE OF EXPECTED OUTPUT/);
 	assert.deepEqual(mensajes[0], { role: "system", content: "REGLAS PROPIAS DEL LLAMADOR" });
 });
 
@@ -511,8 +511,8 @@ test("enhancedAskAgent: el retry conserva un resumen de las herramientas ejecuta
 		.filter((mensaje) => mensaje.role === "user")
 		.map((mensaje) => mensaje.content)
 		.join("\n");
-	assert.match(contenido, /CONTEXTO DE HERRAMIENTAS YA EJECUTADAS/);
-	assert.match(contenido, /HERRAMIENTA web_search/);
+	assert.match(contenido, /ALREADY-EXECUTED TOOL CONTEXT/);
+	assert.match(contenido, /TOOL web_search/);
 	assert.match(contenido, /WEB: Fuente/);
 });
 
@@ -646,7 +646,7 @@ test("multi-file: divide la landing en tres llamadas y reúne los bloques", asyn
 	assert.equal(resultado.ok, true);
 	assert.deepEqual(Object.keys(resultado.archivos), ["html", "css", "js"]);
 	assert.equal(prompts.length, 3);
-	assert.match(prompts[0][prompts[0].length - 1].content, /ÚNICAMENTE el contenido del archivo index\.html/);
+	assert.match(prompts[0][prompts[0].length - 1].content, /ONLY the contents of index\.html/);
 	assert.match(resultado.texto, /```html/);
 	assert.match(resultado.texto, /```css/);
 	assert.match(resultado.texto, /```javascript/);
