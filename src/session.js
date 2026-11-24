@@ -16,6 +16,8 @@
  *   context_warning  { reason, usedPercent, estimatedTokens, contextLimit, incomingShare, compactionSkipped, ... }
  *   context_verified { source: "countTokens", exactTokens, usedPercentBefore, usedPercent }
  *   grounding        { ok, unsupported, supported, sourceChars, checked }
+ *   web_search       { query, used, source, results, chars, errors, preview }
+ *   no_answer        { type, query, message, preview }
  *   compaction_start { reason, usedPercent, estimatedTokens, contextLimit, messagesBefore, preview }
  *   compaction_end   { reason, summaryChars, removedMessages, messagesAfter, usedPercentAfter, indexEpisodes, preview }
  *   recall           { matches, mode, usedEmbeddings, embeddingReason, chars, scores, preview }
@@ -35,9 +37,26 @@ import {
 	withResolvedContextLimit,
 } from "./agent.js";
 import { MemoryStore } from "./memory.js";
-import { checkGrounding, looksLikeRecall, looksLikeWebQuery, normalizeForMatch, short } from "./policies.js";
+import { resolveToolCapability } from "./capabilities.js";
+import {
+	checkGrounding,
+	formatWebRecap,
+	looksLikeNoAnswer,
+	looksLikeRecall,
+	looksLikeWebQuery,
+	normalizeForMatch,
+	pickWebQuery,
+	short,
+} from "./policies.js";
+import { webSearch as defaultWebSearch } from "./websearch.js";
 
 const isPlainObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
+
+const capInjectedText = (text, maxChars) => {
+	const source = String(text || "");
+	const limit = finite(maxChars, 2200);
+	return source.length > limit ? `${source.slice(0, Math.max(0, limit - 3))}...` : source;
+};
 
 const finite = (value, fallback) => {
 	const number = Number(value);
@@ -84,6 +103,7 @@ export class AgentSession {
 	 * @param {object} [options.context] `limit`, `thresholdPercent`, `maxSummaryChars`,
 	 *   `injectionBudgetRatio`, `compactionCooldownTurns` and verification band.
 	 * @param {(messages: Array, options: object) => Promise<string>} [options.summarize]
+	 * @param {(options: object) => Promise<object>} [options.webSearchFn] Search implementation. Defaults to `webSearch()`.
 	 * @param {Function} [options.countTokens] `async ({text, provider, signal}) => number`.
 	 * @param {"full"|"compact"} [options.eventLevel] `compact` buffers deltas into
 	 *   one `answer_text` event; `full` is the default.
@@ -97,6 +117,7 @@ export class AgentSession {
 		summarize,
 		config,
 		configOptions,
+		webSearchFn,
 		askAgentFn = defaultAskAgent,
 		streaming = true,
 		countTokens,
@@ -108,6 +129,7 @@ export class AgentSession {
 		this.onEvent = typeof onEvent === "function" ? onEvent : null;
 		this.defaults = defaults;
 		this.askAgentFn = askAgentFn;
+		this.webSearchFn = typeof webSearchFn === "function" ? webSearchFn : null;
 		this.streaming = streaming !== false;
 		this.summarize = typeof summarize === "function" ? summarize : null;
 		this.config = config ?? null;
@@ -770,7 +792,8 @@ export class AgentSession {
 			const wantsWeb = askOptions.preSearch === true
 				|| askOptions.preSearch === "always"
 				|| looksLikeWebQuery(String(text ?? ""))
-				|| webPrefs.preSearch === true;
+				|| webPrefs.preSearch === true
+				|| Boolean(String(webPrefs.query || "").trim());
 			const attachments = Array.isArray(askOptions.attachments) ? askOptions.attachments : [];
 			for (const attachment of attachments) {
 				const name = String(attachment?.name ?? "");
@@ -784,20 +807,88 @@ export class AgentSession {
 				if (contextParts.length) webOptions = { ...webPrefs, context: contextParts.join("\n") };
 			}
 
+			// Deterministic pre-search belongs to the session, not to askAgent().
+			// A harness that injects its own askAgentFn (native Ollama, custom
+			// providers, tests) still gets the same web context and grounding.
+			const effectiveWebOptions = isPlainObject(webOptions) ? webOptions : webPrefs;
+			const effectiveCaps = askOptions.capabilities ?? this.defaults.capabilities ?? null;
+			const webAllowed = effectiveCaps
+				? resolveToolCapability("web_search", effectiveCaps).allowed !== false
+				: true;
+			const runWebSearch = typeof askOptions.webSearchFn === "function"
+				? askOptions.webSearchFn
+				: (this.webSearchFn || defaultWebSearch);
+			const sessionWeb = {
+				attempted: false,
+				used: false,
+				query: "",
+				results: [],
+				source: null,
+				recap: "",
+				errors: [],
+			};
+			if (wantsWeb && webAllowed) {
+				const quotedText = String(askOptions.quotedText ?? effectiveWebOptions.quotedText ?? "");
+				const query = String(effectiveWebOptions.query || "").trim()
+					|| pickWebQuery({
+						ownText: String(text ?? ""),
+						quotedText,
+						context: String(effectiveWebOptions.context || ""),
+					});
+				if (query) {
+					sessionWeb.attempted = true;
+					sessionWeb.query = query;
+					try {
+						const found = await runWebSearch({
+							...effectiveWebOptions,
+							query,
+							signal: askOptions.signal,
+						});
+						sessionWeb.results = Array.isArray(found?.results) ? found.results : [];
+						sessionWeb.source = found?.source ?? null;
+						sessionWeb.errors = Array.isArray(found?.errors) ? found.errors : [];
+						sessionWeb.used = Boolean(found?.ok && sessionWeb.results.length);
+						if (sessionWeb.used) {
+							const budget = finite(effectiveWebOptions.maxInjectedContextChars, 2200);
+							sessionWeb.recap = capInjectedText(
+								formatWebRecap(found, { budget }),
+								budget,
+							);
+						}
+					} catch (error) {
+						sessionWeb.errors = [error?.message || String(error)];
+					}
+					this.emit("web_search", {
+						query,
+						used: sessionWeb.used,
+						source: sessionWeb.source,
+						results: sessionWeb.results.length,
+						chars: sessionWeb.recap.length,
+						errors: sessionWeb.errors,
+						preview: short(sessionWeb.recap, 240),
+						message: sessionWeb.used
+							? `Web search injected ${sessionWeb.results.length} result(s).`
+							: "Web search did not return usable results.",
+					});
+				}
+			}
+
 			const recallTokens = Math.round(recallSystem.length / 4);
-			if (recallTokens) {
-				const estimatedTokens = usage.estimatedTokens + recallTokens;
+			const webTokens = Math.round(sessionWeb.recap.length / this.typeCharsPerToken("web"));
+			const injectedTokens = recallTokens + webTokens;
+			if (injectedTokens) {
+				const estimatedTokens = usage.estimatedTokens + injectedTokens;
 				usage = {
 					...usage,
 					estimatedTokens,
 					usedPercent: usage.contextLimit
 						? Number(((estimatedTokens / usage.contextLimit) * 100).toFixed(2))
 						: 0,
-					injectedTokens: usage.injectedTokens + recallTokens,
+					injectedTokens: usage.injectedTokens + injectedTokens,
 				};
 			}
 
-			const systemParts = [this.system, systemOverride, recallSystem].filter(Boolean);
+			const systemParts = [this.system, systemOverride, recallSystem, sessionWeb.recap].filter(Boolean);
 			const requestMeta = {
 				provider: resolved.provider?.provider ?? resolved.provider?.modelProvider ?? null,
 				model: resolved.provider?.model ?? null,
@@ -823,7 +914,10 @@ export class AgentSession {
 				autoCompact: false,
 				...this.defaults,
 				...askOptions,
-				...(webOptions !== undefined ? { webSearch: webOptions } : {}),
+				webSearch: effectiveWebOptions,
+				// The session already searched. askAgent() must not do it twice;
+				// tool-calling web_search is still available through its config.
+				preSearch: sessionWeb.attempted ? false : (askOptions.preSearch ?? this.defaults.preSearch),
 				onTextDelta: this.streaming
 					? (delta, meta) => this.emit("answer_delta", { text: delta, ...(meta || {}) })
 					: undefined,
@@ -839,26 +933,73 @@ export class AgentSession {
 			});
 
 			const answer = typeof result === "string" ? result : String(result?.text ?? "");
+			let finalResult = result;
+			let suggestion = null;
+
+			// A small model often answers "no tengo acceso" even when a deterministic
+			// query exists. Offer a confirmed retry instead of a dead end.
+			if (looksLikeNoAnswer(answer) && !sessionWeb.used) {
+				const quotedText = String(askOptions.quotedText ?? effectiveWebOptions.quotedText ?? "");
+				const retryQuery = sessionWeb.query
+					|| String(effectiveWebOptions.query || "").trim()
+					|| pickWebQuery({
+						ownText: String(text ?? ""),
+						quotedText,
+						context: String(effectiveWebOptions.context || ""),
+					});
+				if (retryQuery) {
+					suggestion = {
+						type: "web_search",
+						query: retryQuery,
+						message: "No encontré una respuesta con lo que tengo. ¿Quieres que busque en internet?",
+					};
+					this.emit("no_answer", {
+						query: suggestion.query,
+						suggestionMessage: suggestion.message,
+						preview: short(answer, 240),
+						message: `Offer web retry for "${short(retryQuery, 120)}".`,
+					});
+					finalResult = {
+						...(isPlainObject(result) ? result : { text: answer }),
+						text: answer,
+						suggestion,
+					};
+				}
+			}
+
+			if (sessionWeb.attempted) {
+				if (!isPlainObject(finalResult)) finalResult = { text: answer };
+				finalResult.webSearch = {
+					attempted: true,
+					used: sessionWeb.used,
+					query: sessionWeb.query,
+					source: sessionWeb.source,
+					results: Array.isArray(sessionWeb.results) ? sessionWeb.results.length : 0,
+					errors: sessionWeb.errors,
+					recapChars: sessionWeb.recap.length,
+				};
+			}
+
 			// ANTES de añadir el turno al historial: si se calcula después, el
 			// mensaje entrante se cuenta dos veces y el delta sale negativo.
 			const localPromptTokens = this.estimatePromptTokens(text, systemParts.join("\n\n"));
-			const providerUsage = isPlainObject(result) ? result.usage ?? null : null;
+			const providerUsage = isPlainObject(finalResult) ? finalResult.usage ?? null : null;
 			const realPromptTokens = finite(providerUsage?.prompt_tokens, null);
 			const estimatedByProvider = providerUsage?.context?.estimated === true;
 			// Delta CON SIGNO: una sobreestimación también es información útil.
 			const observedInjection = realPromptTokens != null && !estimatedByProvider
 				? realPromptTokens - localPromptTokens
 				: null;
-			const injectedChars = finite(result?.injectedContextChars, 0);
-			const imageCount = (Array.isArray(result?.media?.processed)
-				? result.media.processed.filter((item) => item?.strategy === "native-image").length
+			const injectedChars = finite(finalResult?.injectedContextChars, 0);
+			const imageCount = (Array.isArray(finalResult?.media?.processed)
+				? finalResult.media.processed.filter((item) => item?.strategy === "native-image").length
 				: 0) + (Array.isArray(askOptions.images) ? askOptions.images.length : 0);
 			this.recordCalibration({
 				delta: observedInjection,
 				injectedChars,
 				images: imageCount,
 				estimatedByProvider,
-				injectedContext: result?.injectedContext,
+				injectedContext: finalResult?.injectedContext,
 			});
 			this.lastProviderUsedPercent = finite(providerUsage?.context?.used_percent, null);
 			// Some providers compute `used_percent` over (prompt + reserved
@@ -877,7 +1018,7 @@ export class AgentSession {
 					promptTokens: realPromptTokens,
 					contextLimit: resolved.limit,
 					injectedContextChars: injectedChars,
-					injectedContext: isPlainObject(result?.injectedContext) ? result.injectedContext : null,
+					injectedContext: isPlainObject(finalResult?.injectedContext) ? finalResult.injectedContext : null,
 					message: `Provider prompt used ${this.lastProviderUsedPercent}% of the ${resolved.limit}-token context.`,
 				});
 			}
@@ -893,8 +1034,11 @@ export class AgentSession {
 
 			// Verificación determinista: el modelo pequeño afirmó 3165 m y
 			// "Quito Central Park" aunque las fuentes decían 2850 m e Itchimbía.
-			this.grounding = checkGrounding({ text: answer, webResults: result?.webResults });
-			if (result?.usedWeb) {
+			const groundingResults = sessionWeb.used
+				? sessionWeb.results
+				: (Array.isArray(finalResult?.webResults) ? finalResult.webResults : []);
+			this.grounding = checkGrounding({ text: answer, webResults: groundingResults });
+			if (sessionWeb.used || finalResult?.usedWeb) {
 				this.emit("grounding", {
 					ok: this.grounding.ok,
 					unsupported: this.grounding.unsupported,
@@ -945,8 +1089,18 @@ export class AgentSession {
 					ok: this.grounding.ok,
 					unsupported: this.grounding.unsupported,
 				},
-				toolCount: Array.isArray(result?.toolExecutions) ? result.toolExecutions.length : 0,
-				mediaStrategy: result?.media?.strategy ?? null,
+				toolCount: Array.isArray(finalResult?.toolExecutions) ? finalResult.toolExecutions.length : 0,
+				mediaStrategy: finalResult?.media?.strategy ?? null,
+				webSearch: sessionWeb.attempted
+					? {
+						query: sessionWeb.query,
+						used: sessionWeb.used,
+						source: sessionWeb.source,
+						results: sessionWeb.results.length,
+						errors: sessionWeb.errors,
+					}
+					: null,
+				suggestion: suggestion ? { type: suggestion.type, query: suggestion.query } : null,
 				estimatedTokens: afterUsage.estimatedTokens,
 				usedPercent: afterUsage.usedPercent,
 				contextLimit: afterUsage.contextLimit,
@@ -954,7 +1108,7 @@ export class AgentSession {
 				preview: short(answer, 240),
 			});
 
-			return result;
+			return finalResult;
 		} catch (error) {
 			this.emit("error", {
 				code: error?.code ?? "SESSION_ERROR",

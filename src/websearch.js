@@ -28,6 +28,40 @@ const stripTags = (value) => decodeEntities(String(value || "").replace(/<[^>]+>
 	.replace(/\s+/g, " ")
 	.trim();
 
+const B64_URL_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+const b64urlDecode = (input) => {
+	const value = String(input || "").replace(/-/g, "+").replace(/_/g, "/").replace(/=+$/, "");
+	let output = "";
+	let buffer = 0;
+	let bits = 0;
+	for (const char of value) {
+		const index = B64_URL_ALPHABET.indexOf(char);
+		if (index === -1) continue;
+		buffer = (buffer << 6) | index;
+		bits += 6;
+		if (bits >= 8) {
+			bits -= 8;
+			output += String.fromCharCode((buffer >> bits) & 0xff);
+		}
+	}
+	return output;
+};
+
+// Bing wraps every result in /ck/a?u=<base64url>. Without unwrapping it, the
+// model receives bing.com URLs instead of the real source (GitHub, LinkedIn...).
+const fixSearchUrl = (raw) => {
+	let url = decodeEntities(String(raw || "")).replace(/^\/\//, "https://");
+	const bing = url.match(/[?&]u=([^&]+)/);
+	if (/bing\.com\/ck\/a/.test(url) && bing) {
+		let payload = bing[1];
+		if (payload.startsWith("a1")) payload = payload.slice(2);
+		const decoded = b64urlDecode(payload);
+		if (/^https?:\/\//i.test(decoded)) url = decoded;
+	}
+	return resolveDuckDuckGoUrl(url);
+};
+
 const resolveDuckDuckGoUrl = (href) => {
 	const raw = String(href || "").trim();
 	if (!raw) {
@@ -141,11 +175,12 @@ export const extractBingResults = (html, maxResults = 5) => {
 			continue;
 		}
 
-		const url = decodeEntities(linkMatch[1]);
+		const url = fixSearchUrl(linkMatch[1]);
 		const title = stripTags(linkMatch[2]);
-		const snippetMatch = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+		const snippetMatch = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i)
+			|| block.match(/class="b_caption"[^>]*>([\s\S]*?)<\/div>/i);
 
-		if (!url || !title) {
+		if (!url || !title || !/^https?:\/\//i.test(url)) {
 			continue;
 		}
 
@@ -156,6 +191,52 @@ export const extractBingResults = (html, maxResults = 5) => {
 		});
 	}
 
+	return results;
+};
+
+/**
+ * Parses Google News RSS, the fallback that still returns results when both
+ * HTML search engines show a challenge page.
+ */
+export const extractGoogleNewsResults = (xml, maxResults = 5) => {
+	const source = String(xml || "");
+	const results = [];
+	for (const item of source.match(/<item>[\s\S]*?<\/item>/gi) || []) {
+		if (results.length >= maxResults) break;
+		const title = item.match(/<title>([\s\S]*?)<\/title>/i);
+		const link = item.match(/<link>([\s\S]*?)<\/link>/i);
+		if (!title || !link) continue;
+		const url = decodeEntities(link[1]).trim();
+		if (!/^https?:\/\//i.test(url)) continue;
+		const description = item.match(/<description>([\s\S]*?)<\/description>/i);
+		const published = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+		let snippet = description ? stripTags(description[1]) : "";
+		if (published) snippet = `${snippet ? `${snippet} ` : ""}(${stripTags(published[1])})`;
+		results.push({ title: stripTags(title[1]), url, snippet });
+	}
+	return results;
+};
+
+const instantAnswerResults = (payload, query, maxResults = 5) => {
+	const data = isPlainObject(payload) ? payload : {};
+	const results = [];
+	if (data.AbstractText) {
+		results.push({
+			title: `${data.Heading || query} (DuckDuckGo)`,
+			url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+			snippet: String(data.AbstractText).slice(0, 700),
+		});
+	}
+	const topics = Array.isArray(data.RelatedTopics) ? data.RelatedTopics : [];
+	for (const topic of topics) {
+		if (results.length >= maxResults) break;
+		if (!topic || topic.Topics || !topic.Text) continue;
+		results.push({
+			title: String(topic.Text).split(" - ")[0].slice(0, 120),
+			url: String(topic.FirstURL || ""),
+			snippet: String(topic.Text).slice(0, 400),
+		});
+	}
 	return results;
 };
 
@@ -229,44 +310,48 @@ export class WebSearchError extends Error {
 
 const duckDuckGoSearch = async ({ query, maxResults, provider, signal, fetchImpl }) => {
 	const base = String(provider.baseUrl || "https://html.duckduckgo.com/html/").trim();
-	const body = new URLSearchParams({ q: query, kl: provider.region || "wt-wt" });
+	const url = `${base}?q=${encodeURIComponent(query)}&kl=${encodeURIComponent(provider.region || "es-es")}`;
+	const attempts = Math.max(1, Math.min(3, Number(provider.attempts ?? 2)));
+	let lastError = null;
 
-	const response = await fetchImpl(base, {
-		method: "POST",
-		headers: {
-			...requestHeaders(provider),
-			"Content-Type": "application/x-www-form-urlencoded",
-		},
-		body: body.toString(),
-		signal,
-		redirect: "follow",
-	});
+	for (let attempt = 1; attempt <= attempts; attempt += 1) {
+		try {
+			const response = await fetchImpl(url, {
+				method: "GET",
+				headers: requestHeaders(provider),
+				signal,
+				redirect: "follow",
+			});
 
-	if (!response.ok) {
-		throw new WebSearchError(`DuckDuckGo HTTP ${response.status}.`, { code: "WEB_SEARCH_HTTP" });
+			if (!response.ok) {
+				throw new WebSearchError(`DuckDuckGo HTTP ${response.status}.`, { code: "WEB_SEARCH_HTTP" });
+			}
+
+			const html = await response.text();
+			if (looksLikeSearchAnomalyPage(html)) {
+				throw new WebSearchError("DuckDuckGo returned an anti-bot/challenge page.", { code: "WEB_SEARCH_BLOCKED" });
+			}
+			const results = extractDuckDuckGoResults(html, maxResults);
+			if (results.length) {
+				return { engine: "duckduckgo", results };
+			}
+
+			// Some deployments get the lite layout instead.
+			const lite = extractDuckDuckGoLiteResults(html, maxResults);
+			if (lite.length) {
+				return { engine: "duckduckgo-lite", results: lite };
+			}
+			lastError = new WebSearchError("DuckDuckGo returned no parsable results.", { code: "WEB_SEARCH_NO_RESULTS" });
+		} catch (error) {
+			lastError = error;
+		}
 	}
 
-	const html = await response.text();
-	if (looksLikeSearchAnomalyPage(html)) {
-		throw new WebSearchError("DuckDuckGo returned an anti-bot/challenge page.", { code: "WEB_SEARCH_BLOCKED" });
-	}
-	const results = extractDuckDuckGoResults(html, maxResults);
-
-	if (results.length) {
-		return { engine: "duckduckgo", results };
-	}
-
-	// Some deployments get the lite layout instead.
-	const lite = extractDuckDuckGoLiteResults(html, maxResults);
-	if (lite.length) {
-		return { engine: "duckduckgo-lite", results: lite };
-	}
-
-	throw new WebSearchError("DuckDuckGo returned no parsable results.", { code: "WEB_SEARCH_NO_RESULTS" });
+	throw lastError || new WebSearchError("DuckDuckGo returned no parsable results.", { code: "WEB_SEARCH_NO_RESULTS" });
 };
 
 const bingSearch = async ({ query, maxResults, provider, signal, fetchImpl }) => {
-	const url = `${String(provider.baseUrl || "https://www.bing.com").replace(/\/+$/, "")}/search?q=${encodeURIComponent(query)}&setlang=${encodeURIComponent(provider.language || "es")}`;
+	const url = `${String(provider.baseUrl || "https://www.bing.com").replace(/\/+$/, "")}/search?q=${encodeURIComponent(query)}&setlang=${encodeURIComponent(provider.language || "es")}&cc=${encodeURIComponent(provider.country || "es")}`;
 	const response = await fetchImpl(url, {
 		method: "GET",
 		headers: requestHeaders(provider),
@@ -288,6 +373,47 @@ const bingSearch = async ({ query, maxResults, provider, signal, fetchImpl }) =>
 	}
 
 	return { engine: "bing", results };
+};
+
+const googleNewsSearch = async ({ query, maxResults, provider, signal, fetchImpl }) => {
+	const base = String(provider.baseUrl || "https://news.google.com/rss/search").replace(/\/+$/, "");
+	const language = provider.language || "es";
+	const country = provider.country || "ES";
+	const url = `${base}?q=${encodeURIComponent(query)}&hl=${encodeURIComponent(language)}&gl=${encodeURIComponent(country)}&ceid=${encodeURIComponent(`${country}:${language}`)}`;
+	const response = await fetchImpl(url, {
+		method: "GET",
+		headers: requestHeaders(provider),
+		signal,
+		redirect: "follow",
+	});
+	if (!response.ok) {
+		throw new WebSearchError(`Google News HTTP ${response.status}.`, { code: "WEB_SEARCH_HTTP" });
+	}
+	const results = extractGoogleNewsResults(await response.text(), maxResults);
+	if (!results.length) {
+		throw new WebSearchError("Google News returned no parsable results.", { code: "WEB_SEARCH_NO_RESULTS" });
+	}
+	return { engine: "google-news", results };
+};
+
+const duckDuckGoInstantSearch = async ({ query, maxResults, provider, signal, fetchImpl }) => {
+	const base = String(provider.baseUrl || "https://api.duckduckgo.com").replace(/\/+$/, "");
+	const url = `${base}/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+	const response = await fetchImpl(url, {
+		method: "GET",
+		headers: requestHeaders(provider),
+		signal,
+		redirect: "follow",
+	});
+	if (!response.ok) {
+		throw new WebSearchError(`DuckDuckGo Instant Answer HTTP ${response.status}.`, { code: "WEB_SEARCH_HTTP" });
+	}
+	const payload = await response.json().catch(() => null);
+	const results = instantAnswerResults(payload, query, maxResults);
+	if (!results.length) {
+		throw new WebSearchError("DuckDuckGo Instant Answer returned no usable results.", { code: "WEB_SEARCH_NO_RESULTS" });
+	}
+	return { engine: "duckduckgo-instant", results };
 };
 
 const httpJsonSearch = async ({ query, maxResults, provider, signal, fetchImpl }) => {
@@ -343,10 +469,12 @@ const httpJsonSearch = async ({ query, maxResults, provider, signal, fetchImpl }
 const engines = {
 	duckduckgo: duckDuckGoSearch,
 	bing: bingSearch,
+	"google-news": googleNewsSearch,
+	"duckduckgo-instant": duckDuckGoInstantSearch,
 	"http-json": httpJsonSearch,
 };
 
-/** @returns {string[]} Registered engine names: `duckduckgo`, `bing`, `http-json`. */
+/** @returns {string[]} Registered engine names. */
 export const listWebSearchEngines = () => Object.keys(engines);
 
 /**
@@ -398,7 +526,7 @@ export const webSearch = async (queryOrOptions, options = {}) => {
 		}
 		chain.push(explicit);
 	} else {
-		const defaultEngines = ["duckduckgo", "bing"];
+		const defaultEngines = ["duckduckgo", "bing", "google-news", "duckduckgo-instant"];
 		const configuredNames = Object.keys(providers);
 		const names = configuredNames.length
 			? [...defaultEngines.filter((name) => !Object.prototype.hasOwnProperty.call(providers, name)), ...configuredNames]

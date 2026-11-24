@@ -18,6 +18,12 @@
  *   import { askIAWithProviderMCP } from "@rdsslab/agentkit/ia";
  */
 
+/** Capability flags so harnesses can feature-detect an older installed kit. */
+export const AGENTKIT_FEATURES = Object.freeze({
+	sessionWebSearch: true,
+	noAnswerSuggestion: true,
+});
+
 export {
 	short,
 	normalizeForMatch,
@@ -28,6 +34,8 @@ export {
 	checkGrounding,
 	shouldRunPreSearch,
 	pickWebQuery,
+	isGenericWebInstruction,
+	looksLikeNoAnswer,
 	formatWebRecap,
 	trimWebResults,
 	looksLikeMissingMedia,

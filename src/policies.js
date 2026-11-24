@@ -114,6 +114,11 @@ export const formatHistoryRecap = (found, options = {}) => {
  */
 export const URL_RE = /(https?:\/\/\S+|www\.\S+|\b[a-z0-9-]+\.(?:com|net|org|io|co|ai|dev|app|es|com\.br|com\.ar|com\.mx|co\.uk)\/\S*)/i;
 
+// Named destinations are a web query even when the user does not say
+// "internet": "busca en github a edwinspire" must not be treated as chit-chat.
+const NAMED_SITE_RE = /\b(?:github|gitlab|bitbucket|linkedin|youtube|twitter|x\.com|facebook|instagram|tiktok|stackoverflow|stackexchange|wikipedia|reddit|npm)\b/i;
+const SITE_ACTION_RE = /\b(?:busca|buscame|buscar|busque|ver|ve|mira|muestrame|revisa|consulta|investiga|perfil|cuenta|repo|repositorio|canal|video|pagina|sitio|web|user|usuario|datos|publicos|followers|seguidores)\b/i;
+
 // Multilingual trigger words: es, en, pt, fr, de, it. The text is accent
 // normalized before matching, so "noticias", "noticias" and "meteo" all hit.
 const EXPLICIT_WEB_RE = /\b(busca|buscame|buscar|busque|investiga|investigue|investigar|averigua|averigüe|averiguar|consulta|consultar|googlea|search|look up|find out|cherche|chercher|rechercher|suche|suchen|cerca|cercare|pesquise|pesquisar|procure|procurar|dime|dame|muestrame|show me|tell me)\b[^.]{0,60}\b(internet|la web|web|google|online|en linea|en ligne|im web|na web)\b/;
@@ -146,6 +151,7 @@ export const looksLikeWebQuery = (text) => {
 
 	return EXPLICIT_WEB_RE.test(normalized)
 		|| STANDALONE_WEB_RE.test(normalized)
+		|| (NAMED_SITE_RE.test(normalized) && SITE_ACTION_RE.test(normalized))
 		|| (FRESH_DATA_RE.test(normalized) && FRESH_WHEN_RE.test(normalized));
 };
 
@@ -182,7 +188,7 @@ export const shouldRunPreSearch = ({
 // viste en la imagen: altitud..." debe convertirse en "Quito Ecuador altitud".
 const WEB_SCAFFOLD_RE = /\b(?:datos|informacion|información|detalles|referencias|data|details|references)\s+(?:verificables?|confiables?|actuales?|verifiable|reliable|current)?\s*(?:sobre|de|acerca\s+de|about|of)?|sobre\s+(?:el\s+)?lugar\s+que\s+viste|sobre\s+lo\s+que\s+viste|que\s+viste\s+en\s+la\s+imagen|que\s+aparece\s+en\s+(?:la\s+imagen|primer\s+plano)|en\s+primer\s+plano|en\s+la\s+imagen|about\s+(?:the\s+)?place\s+in\s+the\s+image|in\s+the\s+foreground|verificables?|verifiable|please|por\s+favor/gi;
 
-const WEB_INTENT_RE = /\b(altitud|altura|parque|clima|tiempo|precios?|distancia|poblaci[oó]n|capital|pa[ií]s|monumento|historia|horario|ubicaci[oó]n|coordenadas|altitude|height|park|climate|weather|prices?|distance|population|country|monument|history|schedule|location|coordinates)\b/gi;
+const WEB_INTENT_RE = /\b(altitud|altura|parque|clima|tiempo|precios?|distancia|poblaci[oó]n|capital|pa[ií]s|monumento|historia|horario|ubicaci[oó]n|coordenadas|repositorios?|perfil|seguidores|datos\s*p[uú]blicos|altitude|height|park|climate|weather|prices?|distance|population|country|monument|history|schedule|location|coordinates|repos?|profile|followers|public\s*data)\b/gi;
 
 // Regla estructural en lugar de un diccionario de stopwords: una palabra
 // capitalizada que ABRE una frase del recap es andamiaje del harness
@@ -243,6 +249,21 @@ const extractEntities = (value, { protect = false } = {}) => {
 	return unique.slice(0, 5);
 };
 
+// "en github a edwinspire" carries two entities that extractEntities() misses:
+// the site is lowercase and the handle is not capitalised. Keep them explicit
+// instead of hoping the search engine infers them from a sentence fragment.
+const extractSiteEntities = (text) => {
+	const found = [];
+	const pattern = /\b(?:en|de|del|from|at)\s+(github|gitlab|bitbucket|linkedin|youtube|twitter|facebook|instagram|tiktok|stackoverflow|stackexchange|wikipedia|reddit|npm)\b(?:\s*(?:a|de|user|usuario|user:|:|@)\s*([@\w][\w.-]*))?/gi;
+	for (const match of String(text || "").matchAll(pattern)) {
+		found.push(match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase());
+		if (match[2] && !/^(?:su|la|el|el|los|las| cuenta| cuenta)$/i.test(match[2])) {
+			found.push(match[2].replace(/^@/, ""));
+		}
+	}
+	return found;
+};
+
 /**
  * Turns a verbose instruction into a search-engine-friendly query.
  * `options.context` (typically a memory recap) supplies proper nouns the new
@@ -268,6 +289,7 @@ export const cleanWebQuery = (text, options = {}) => {
 
 	const context = isPlainObjectSafe(options) ? options.context : "";
 	const entities = [
+		...extractSiteEntities(cleaned),
 		...extractEntities(context),
 		...extractEntities(cleaned, { protect: true }),
 	].filter((word, index, all) => all.findIndex((item) => normalizeForMatch(item) === normalizeForMatch(word)) === index);
@@ -276,23 +298,41 @@ export const cleanWebQuery = (text, options = {}) => {
 	return short(parts.join(" ") || cleaned || raw, 160);
 };
 
+const GENERIC_WEB_INSTRUCTION_RE = /^[¿¡\s]*(?:(?:tu|oye|por favor|please)\s+)?(?:busca(?:me)?|buscar|busque|investiga(?:r)?|averigua|consulta(?:r)?|search|look\s+up|find\s+out)\b(?:\s+(?:en\s+)?(?:internet|la\s+web|web|google|online|en\s+linea|en\s+ligne|im\s+web|na\s+web))?[?!.\s]*$/i;
+
+/** True for "busca en internet" with no target: the query lives in the quoted message. */
+export const isGenericWebInstruction = (text) => GENERIC_WEB_INSTRUCTION_RE.test(normalizeForMatch(text));
+
 /**
  * Chooses what to search: the user's own words first, then the quoted question
- * when the new text is only an instruction ("reply to this message again").
+ * when the new text is only an instruction ("busca en internet" replying to a
+ * concrete request). A generic instruction never becomes the search query.
  *
  * @param {object} [options]
  * @param {string} [options.ownText] Current user message.
  * @param {string} [options.quotedText] Message the user is quoting.
+ * @param {string} [options.context] Proper nouns from memory/attachments.
  * @returns {string} Search query, or an empty string when neither text looks like a web query.
  */
-export const pickWebQuery = ({ ownText = "", quotedText = "" } = {}) => {
-	if (looksLikeWebQuery(ownText)) {
-		return cleanWebQuery(ownText);
+export const pickWebQuery = ({ ownText = "", quotedText = "", context = "" } = {}) => {
+	const own = String(ownText || "");
+	const quoted = String(quotedText || "");
+	const ownLooks = looksLikeWebQuery(own);
+	const generic = isGenericWebInstruction(own);
+	const ownQuery = ownLooks ? cleanWebQuery(own, { context }) : "";
+
+	if (ownLooks && !generic && ownQuery.length >= 8) {
+		return ownQuery;
 	}
-	if (quotedText && looksLikeWebQuery(quotedText)) {
-		return cleanWebQuery(quotedText);
+	if (quoted) {
+		const quotedQuery = looksLikeWebQuery(quoted)
+			? cleanWebQuery(quoted, { context })
+			: cleanWebQuery(quoted, { context: [ownQuery, context].filter(Boolean).join("\n") });
+		if (quotedQuery && quotedQuery.length >= 3) {
+			return quotedQuery;
+		}
 	}
-	return "";
+	return generic && !context ? "" : ownQuery;
 };
 
 /**
@@ -507,4 +547,19 @@ export const mergeQuoted = (text, quoted, options = {}) => {
 	const label = options.label || "";
 
 	return base ? `${base}\n\n${label}${quoted.text}` : `${label}${quoted.text}`;
+};
+
+const NO_ANSWER_RE = /^(?:no\b[^.]{0,90}\b(?:se|sabe|tengo|dispongo|puedo|encuentro|hay|disponible|acceso|informacion|datos|conozco|confirmar|verificar|respuesta|saber)|no\s+lo\s+se|sin\s+(?:datos|informacion|respuesta)|i\s+(?:do\s+not|don't)\s+know|i\s+(?:cannot|can't|have\s+no)\s+(?:access|information|data)|no\s+answer)\b/i;
+
+/**
+ * True when the model only refused or disclaimed knowledge. Used to offer a
+ * deterministic web-search retry instead of leaving the user without a path.
+ *
+ * @param {string} text Model answer.
+ * @returns {boolean}
+ */
+export const looksLikeNoAnswer = (text) => {
+	const normalized = normalizeForMatch(text).replace(/^[\s*_#>\-]+/, "");
+	if (!normalized) return true;
+	return NO_ANSWER_RE.test(normalized);
 };

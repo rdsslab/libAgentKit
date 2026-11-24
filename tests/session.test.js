@@ -245,6 +245,17 @@ test("AgentSession: aporta entidades de memoria a la query web y estima la inyec
 	const { session, calls, events } = makeSession({
 		context: { limit: 100000, thresholdPercent: 90 },
 		askAgentFn: () => ({ text: "ok" }),
+		webSearchFn: async ({ query, maxInjectedContextChars }) => ({
+			ok: true,
+			query,
+			source: "fixture",
+			results: [{
+				title: "Quito: altitude y parques",
+				url: "https://example.org/quito",
+				snippet: "Quito está a 2850 m de altitud. El parque Itchimbía ofrece miradores.",
+			}],
+			context: `Quito altitud 2850 m parque Itchimbía ${"x".repeat(Math.max(0, (maxInjectedContextChars || 800) - 80))}`,
+		}),
 	});
 
 	await session.ask("Vi una imagen de Quito, Ecuador.");
@@ -255,12 +266,18 @@ test("AgentSession: aporta entidades de memoria a la query web y estima la inyec
 
 	const last = calls.at(-1);
 	assert.match(last.webSearch?.context ?? "", /Quito/);
-	assert.equal(last.webSearch.query, undefined); // la query final la calcula askAgent
+	assert.equal(last.webSearch.query, undefined); // la query final la calcula la sesión
+	assert.equal(last.preSearch, false, "la sesión ya buscó: askAgent no debe repetirlo");
 
 	const thinking = events.filter((event) => event.type === "thinking" && event.phase === "request").at(-1);
 	const done = events.filter((event) => event.type === "done").at(-1);
 	assert.ok(thinking.injectedTokens >= 200);
 	assert.ok(done.injectedTokens >= 200);
+	const searched = events.filter((event) => event.type === "web_search").at(-1);
+	assert.equal(searched.used, true);
+	assert.equal(searched.source, "fixture");
+	assert.match(searched.query, /Quito/i);
+	assert.match(done.webSearch.query, /Quito/i);
 });
 
 test("AgentSession: la calibración conserva el delta negativo y aprende chars/token", async () => {
@@ -472,6 +489,7 @@ test("AgentSession: la inyección web se limita al contexto libre de cada turno"
 	const { session, calls } = makeSession({
 		context: { limit: 100, thresholdPercent: 90, injectionBudgetRatio: 0.5 },
 		askAgentFn: () => ({ text: "ok" }),
+		webSearchFn: async () => ({ ok: true, source: "fixture", results: [] }),
 	});
 
 	await session.ask("busca datos de Quito", {
