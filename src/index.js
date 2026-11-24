@@ -22,6 +22,7 @@
 export const AGENTKIT_FEATURES = Object.freeze({
 	sessionWebSearch: true,
 	noAnswerSuggestion: true,
+	agentWebDecision: true,
 });
 
 export {
@@ -36,6 +37,7 @@ export {
 	pickWebQuery,
 	isGenericWebInstruction,
 	looksLikeNoAnswer,
+	parseWebDecision,
 	formatWebRecap,
 	trimWebResults,
 	looksLikeMissingMedia,

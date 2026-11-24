@@ -563,3 +563,60 @@ export const looksLikeNoAnswer = (text) => {
 	if (!normalized) return true;
 	return NO_ANSWER_RE.test(normalized);
 };
+
+// A bare flag must stand alone or be followed by a separator. Otherwise a
+// normal Spanish sentence like "no entiendo la pregunta" would be parsed as
+// `false` plus a query.
+const WEB_DECISION_BOOL_RE = /^(?:true|false|yes|no|si|sí|1|0)\b(?=$|\s*[:;,\-|]\s*|\s*\n\s*)/i;
+
+const webDecisionFlag = (value) => {
+	if (value === true || value === 1) return true;
+	if (value === false || value === 0) return false;
+	if (typeof value !== "string") return null;
+	const normalized = normalizeForMatch(value).trim();
+	if (/^(?:true|yes|si|1)$/.test(normalized)) return true;
+	if (/^(?:false|no|0)$/.test(normalized)) return false;
+	return null;
+};
+
+/**
+ * Parses the router output that decides whether a turn needs a web lookup.
+ *
+ * The expected shape is one JSON object (`{"search":true,"query":"..."}`), but
+ * a bare boolean followed by the query is accepted too. A null result means
+ * "unparseable", so the caller can fall back to the deterministic policy.
+ *
+ * @param {string} text Model output.
+ * @param {{maxQueryChars?: number}} [options]
+ * @returns {{search: boolean, query: string}|null}
+ */
+export const parseWebDecision = (text, options = {}) => {
+	let value = String(text || "").trim();
+	if (!value) return null;
+	value = value
+		.replace(/^```(?:json)?\s*/i, "")
+		.replace(/```$/, "")
+		.trim();
+
+	const objectMatch = value.match(/\{[\s\S]*?\}/);
+	if (objectMatch) {
+		try {
+			const parsed = JSON.parse(objectMatch[0]);
+			const search = webDecisionFlag(parsed.search ?? parsed.need ?? parsed.web);
+			if (search != null) {
+				const query = short(String(parsed.query ?? parsed.q ?? "").trim(), options.maxQueryChars ?? 300);
+				return { search, query };
+			}
+		} catch {}
+	}
+
+	const bare = value.match(WEB_DECISION_BOOL_RE);
+	if (!bare) return null;
+	const search = webDecisionFlag(bare[0]);
+	if (search == null) return null;
+	const rest = value.slice(bare[0].length)
+		.replace(/^[\s:;,\-|]+/, "")
+		.replace(/^["'`]|["'`]$/g, "")
+		.trim();
+	return { search, query: short(rest, options.maxQueryChars ?? 300) };
+};

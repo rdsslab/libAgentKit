@@ -8,6 +8,7 @@ import {
 	listWebSearchEngines,
 	looksLikeNoAnswer,
 	looksLikeWebQuery,
+	parseWebDecision,
 	pickWebQuery,
 } from "../src/index.js";
 import { extractBingResults, extractGoogleNewsResults } from "../src/websearch.js";
@@ -158,4 +159,135 @@ test("websearch: los motores por defecto incluyen los fallbacks y el kit expone 
 	}
 	assert.equal(AGENTKIT_FEATURES.sessionWebSearch, true);
 	assert.equal(AGENTKIT_FEATURES.noAnswerSuggestion, true);
+	assert.equal(AGENTKIT_FEATURES.agentWebDecision, true);
+});
+
+test("policies: parseWebDecision acepta JSON y booleano seguido de query", () => {
+	assert.deepEqual(parseWebDecision('{"search":true,"query":"presidente Ecuador 2026"}'), {
+		search: true,
+		query: "presidente Ecuador 2026",
+	});
+	assert.deepEqual(parseWebDecision('```json\n{"search":false,"query":""}\n```'), {
+		search: false,
+		query: "",
+	});
+	assert.deepEqual(parseWebDecision("true - presidenta del Ecuador 2026"), {
+		search: true,
+		query: "presidenta del Ecuador 2026",
+	});
+	assert.deepEqual(parseWebDecision("no"), { search: false, query: "" });
+	assert.equal(parseWebDecision("quizá debería buscar"), null);
+	assert.equal(parseWebDecision(""), null);
+});
+
+test("AgentSession: el router del modelo decide buscar aunque la regex no lo detecte", async () => {
+	const searched = [];
+	const routerRequests = [];
+	const { session, events, calls } = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: true, source: "fixture", results: [{ title: "Presidente", url: "https://example.org/pres", snippet: "Dato actual" }] };
+		},
+		webDecisionWithModel: {
+			askFn: async (request) => {
+				routerRequests.push(request);
+				return { text: '{"search":true,"query":"presidente actual del Ecuador 2026"}' };
+			},
+		},
+	});
+	const text = "¿quién es el presidente actual del Ecuador?";
+	assert.equal(looksLikeWebQuery(text), false, "la política fija no detecta esta pregunta");
+	const result = await session.ask(text);
+
+	assert.deepEqual(searched, ["presidente actual del Ecuador 2026"]);
+	assert.equal(result.webSearch.used, true);
+	assert.equal(routerRequests.length, 1, "el router no debe disparar el callback del host");
+	assert.equal(routerRequests[0].preSearch, false);
+	assert.deepEqual(routerRequests[0].tools, {});
+	assert.equal(calls.length, 1, "solo la generación principal usa askAgentFn");
+	const decision = events.filter((event) => event.type === "web_decision").at(-1);
+	assert.equal(decision.search, true);
+	assert.equal(decision.query, "presidente actual del Ecuador 2026");
+});
+
+test("AgentSession: el router puede vetoar una query que la regex marcaría como web", async () => {
+	const searched = [];
+	const { session, events, calls } = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: true, source: "fixture", results: [{ title: "x", url: "https://example.org/x", snippet: "x" }] };
+		},
+		webDecisionWithModel: { askFn: async () => ({ text: '{"search":false,"query":""}' }) },
+	});
+	const text = "noticias de bitcoin";
+	assert.equal(looksLikeWebQuery(text), true);
+	await session.ask(text);
+
+	assert.deepEqual(searched, [], "el modelo manda false: no se busca");
+	assert.equal(calls.length, 1);
+	assert.equal(calls[0].system.includes("WEB SEARCH RESULTS"), false);
+	const decision = events.filter((event) => event.type === "web_decision").at(-1);
+	assert.equal(decision.search, false);
+});
+
+test("AgentSession: router inválido o con error cae a la política determinista", async () => {
+	const searched = [];
+	const broken = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: false, source: null, results: [] };
+		},
+		webDecisionWithModel: { askFn: async () => ({ text: "no entiendo la pregunta" }) },
+	});
+	await broken.session.ask("noticias de bitcoin");
+	assert.deepEqual(searched, ["noticias de bitcoin"], "la regex sigue como fallback");
+	assert.equal(broken.events.filter((event) => event.type === "web_decision").at(-1).search, null);
+
+	const failed = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: false, source: null, results: [] };
+		},
+		webDecisionWithModel: { askFn: async () => { throw new Error("provider down"); } },
+	});
+	await failed.session.ask("clima hoy");
+	assert.deepEqual(searched.at(-1), "clima hoy");
+	assert.equal(failed.events.filter((event) => event.type === "web_decision").at(-1).search, null);
+});
+
+test("AgentSession: preSearch y query explícitos ganan sobre el router", async () => {
+	const searched = [];
+	const routerCalls = [];
+	const { session } = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: false, source: null, results: [] };
+		},
+		webDecisionWithModel: {
+			askFn: async () => {
+				routerCalls.push(1);
+				return { text: '{"search":false,"query":""}' };
+			},
+		},
+	});
+	await session.ask("hola", { preSearch: "always", webSearch: { query: "Quito clima hoy" } });
+	assert.deepEqual(searched, ["Quito clima hoy"]);
+	assert.deepEqual(routerCalls, [], "un override explícito no consulta al router");
+});
+
+test("AgentSession: sin webDecisionWithModel no se consulta al router", async () => {
+	const routerCalls = [];
+	const { session, events } = makeSession({
+		webDecisionWithModel: {
+			askFn: async () => {
+				routerCalls.push(1);
+				return { text: '{"search":true,"query":"x"}' };
+			},
+		},
+	});
+	// El flag se activa con true/objeto; con false (por defecto) no hay router.
+	session.webDecisionWithModel = false;
+	await session.ask("noticias de bitcoin");
+	assert.deepEqual(routerCalls, []);
+	assert.equal(events.some((event) => event.type === "web_decision"), false);
 });

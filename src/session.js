@@ -17,6 +17,7 @@
  *   context_verified { source: "countTokens", exactTokens, usedPercentBefore, usedPercent }
  *   grounding        { ok, unsupported, supported, sourceChars, checked }
  *   web_search       { query, used, source, results, chars, errors, preview }
+ *   web_decision     { search, query, chars, preview, message }  (model router)
  *   no_answer        { type, query, message, preview }
  *   compaction_start { reason, usedPercent, estimatedTokens, contextLimit, messagesBefore, preview }
  *   compaction_end   { reason, summaryChars, removedMessages, messagesAfter, usedPercentAfter, indexEpisodes, preview }
@@ -45,6 +46,7 @@ import {
 	looksLikeRecall,
 	looksLikeWebQuery,
 	normalizeForMatch,
+	parseWebDecision,
 	pickWebQuery,
 	short,
 } from "./policies.js";
@@ -131,6 +133,37 @@ const looksLikeModelSummaryRefusal = (text) => {
 	return MODEL_SUMMARY_REFUSAL_RE.test(normalizeForMatch(value));
 };
 
+// Optional model-written web decisions. Like summaries, they are made by the
+// session with its own provider and never through the host's chat callback:
+// that callback owns tools, files and the user-facing answer.
+const WEB_DECISION_MAX_INPUT_CHARS = 4000;
+const WEB_DECISION_MAX_QUERY_CHARS = 300;
+
+const webDecisionPrompt = (maxQueryChars) =>
+	"You are a web-search router. Decide whether the user's message needs an " +
+	"internet lookup before it can be answered reliably. Return ONLY one compact " +
+	'JSON object, with no markdown and no explanation: {"search":true,"query":"..."} ' +
+	'or {"search":false,"query":""}. ' +
+	"Set search=true only when the answer depends on facts that may have changed " +
+	"or cannot be known from the conversation alone: current events, people " +
+	"currently in office, prices, weather, schedules, recent results, software " +
+	"versions, specific websites or profiles, or when the user says a previous " +
+	"answer is wrong and asks to verify it or find other sources. " +
+	"Set search=false for greetings, general knowledge, translation, math, " +
+	"creative writing, opinions, and questions already answered by the supplied " +
+	"conversation or quoted text. " +
+	"When search=true, write a standalone query of at most " + maxQueryChars +
+	" characters with the proper nouns, place names and time hints that a search " +
+	"engine needs. Remove instructions such as 'busca', 'dime' or 'investiga' and " +
+	"harness scaffolding such as 'MENSAJE CITADO'. Never answer the question.";
+
+const buildWebDecisionInput = ({ text, quotedText, context }, maxChars) => {
+	const parts = [`USER MESSAGE:\n${String(text || "").trim()}`];
+	if (quotedText) parts.push(`QUOTED MESSAGE:\n${String(quotedText).trim()}`);
+	if (context) parts.push(`CONTEXT HINTS:\n${String(context).trim()}`);
+	return short(parts.join("\n\n"), maxChars);
+};
+
 const INJECTION_TYPES = ["media", "documents", "web", "tools"];
 const DEFAULT_CHARS_PER_TOKEN = { media: 4, documents: 4, web: 2, tools: 2 };
 
@@ -157,6 +190,9 @@ export class AgentSession {
 	 * @param {boolean|object} [options.summarizeWithModel] Let the session write
 	 *   compactions with its own provider. An object may carry `askFn`, `prompt`,
 	 *   `provider`, `maxInputChars` and `maxOutputChars`.
+	 * @param {boolean|object} [options.webDecisionWithModel] Let the session ask
+	 *   its own provider whether the turn needs a web lookup. An object may carry
+	 *   `askFn`, `prompt`, `provider`, `maxInputChars` and `maxQueryChars`.
 	 * @param {(options: object) => Promise<object>} [options.webSearchFn] Search implementation. Defaults to `webSearch()`.
 	 * @param {Function} [options.countTokens] `async ({text, provider, signal}) => number`.
 	 * @param {"full"|"compact"} [options.eventLevel] `compact` buffers deltas into
@@ -170,6 +206,7 @@ export class AgentSession {
 		context = {},
 		summarize,
 		summarizeWithModel = false,
+		webDecisionWithModel = false,
 		config,
 		configOptions,
 		webSearchFn,
@@ -189,6 +226,8 @@ export class AgentSession {
 		this.summarize = typeof summarize === "function" ? summarize : null;
 		this.summarizeWithModel = summarizeWithModel === true || isPlainObject(summarizeWithModel);
 		this.summarizeModelOptions = isPlainObject(summarizeWithModel) ? summarizeWithModel : {};
+		this.webDecisionWithModel = webDecisionWithModel === true || isPlainObject(webDecisionWithModel);
+		this.webDecisionOptions = isPlainObject(webDecisionWithModel) ? webDecisionWithModel : {};
 		this.config = config ?? null;
 		this.configOptions = configOptions;
 
@@ -550,6 +589,67 @@ export class AgentSession {
 	}
 
 	/**
+	 * Asks the session's own provider whether this turn needs a web lookup and,
+	 * when it does, for a compact standalone query. This replaces topic lists
+	 * with a generic decision: new domains and languages need no regex changes.
+	 *
+	 * It calls `askAgent()` directly, never `askAgentFn`: the host callback is
+	 * the chat turn (tools, files, delivery) and must not run to classify a turn.
+	 * No tools and no pre-search are passed, so the router cannot recurse.
+	 *
+	 * @param {object} input
+	 * @param {string} input.text User message.
+	 * @param {string} [input.quotedText] Message the user is replying to.
+	 * @param {string} [input.context] Proper nouns from memory/attachments.
+	 * @param {object} [input.provider] Effective provider for this turn.
+	 * @param {AbortSignal} [input.signal]
+	 * @returns {Promise<{search: boolean, query: string}|null>} Null means the
+	 *   deterministic policy should decide (provider error or bad output).
+	 */
+	async decideWebSearch({ text, quotedText = "", context = "", provider, signal } = {}) {
+		if (!this.webDecisionWithModel || !String(text || "").trim()) return null;
+		const options = this.webDecisionOptions;
+		const maxInputChars = Math.max(500, finite(options.maxInputChars ?? WEB_DECISION_MAX_INPUT_CHARS, WEB_DECISION_MAX_INPUT_CHARS));
+		const maxQueryChars = Math.min(1000, Math.max(40, finite(options.maxQueryChars ?? WEB_DECISION_MAX_QUERY_CHARS, WEB_DECISION_MAX_QUERY_CHARS)));
+		const askFn = typeof options.askFn === "function" ? options.askFn : defaultAskAgent;
+		const input = buildWebDecisionInput({ text, quotedText, context }, maxInputChars);
+		if (!input) return null;
+
+		try {
+			const result = await askFn({
+				provider: isPlainObject(options.provider) ? options.provider : (provider ?? this.provider),
+				system: String(options.prompt || webDecisionPrompt(maxQueryChars)),
+				messages: [{ role: "user", content: input }],
+				preSearch: false,
+				tools: {},
+				maxToolRounds: 1,
+				signal,
+			});
+			const decision = parseWebDecision(result?.text ?? result, { maxQueryChars });
+			this.emit("web_decision", {
+				search: decision?.search ?? null,
+				query: decision?.query ?? "",
+				chars: input.length,
+				preview: input.slice(0, 240),
+				message: decision
+					? (decision.search
+						? `Model requires web search for "${short(decision.query, 120)}".`
+						: "Model decided no web search is needed.")
+					: "Model web decision was unparseable; using the deterministic policy.",
+			});
+			return decision;
+		} catch {
+			this.emit("web_decision", {
+				search: null,
+				query: "",
+				preview: input.slice(0, 240),
+				message: "Model web decision failed; using the deterministic policy.",
+			});
+			return null;
+		}
+	}
+
+	/**
 	 * Builds one flat, bounded summary message. Prior summaries are flattened,
 	 * never nested, so repeated compactions do not grow without limit.
 	 *
@@ -776,11 +876,45 @@ export class AgentSession {
 			// old fixed limit let a 2k-char recap push the provider past its
 			// context window even when the pre-call estimate looked safe.
 			const webPrefsForBudget = isPlainObject(askOptions.webSearch) ? askOptions.webSearch : {};
-			const wantsWebForBudget = askOptions.preSearch === true
+			// Explicit harness settings win over the router. Everything else is
+			// decided by the model when the feature is on; the regex remains the
+			// fallback for older kits, provider errors and unparseable output.
+			const explicitWeb = askOptions.preSearch === true
 				|| askOptions.preSearch === "always"
-				|| looksLikeWebQuery(String(text ?? ""))
-				|| webPrefsForBudget.preSearch === true;
-			if (wantsWebForBudget && resolved.limit) {
+				|| webPrefsForBudget.preSearch === true
+				|| Boolean(String(webPrefsForBudget.query || "").trim());
+			const effectiveCapsForDecision = askOptions.capabilities ?? this.defaults.capabilities ?? null;
+			const webAllowedForDecision = effectiveCapsForDecision
+				? resolveToolCapability("web_search", effectiveCapsForDecision).allowed !== false
+				: true;
+			const decisionContext = [
+				String(webPrefsForBudget.context || ""),
+				...this.entityHints.slice(-4),
+				...(Array.isArray(askOptions.attachments)
+					? askOptions.attachments.map((item) => String(item?.name || "")).filter(Boolean)
+					: []),
+			].filter(Boolean).join("\n");
+			const modelWebDecision = webAllowedForDecision && !explicitWeb
+				? await this.decideWebSearch({
+					text,
+					quotedText: String(askOptions.quotedText ?? webPrefsForBudget.quotedText ?? ""),
+					context: decisionContext,
+					provider: resolved.provider,
+					signal: askOptions.signal,
+				})
+				: null;
+			const deterministicWeb = looksLikeWebQuery(String(text ?? ""));
+			const decisionQuery = modelWebDecision?.search === true
+				? String(modelWebDecision.query || "").trim()
+				: "";
+			if (decisionQuery) {
+				askOptions.webSearch = { ...webPrefsForBudget, query: decisionQuery };
+			}
+			// One decision for the whole turn: the model router wins, the regex
+			// only fills in when the router is absent/errored/unparseable.
+			const wantsWeb = explicitWeb
+				|| (modelWebDecision == null ? deterministicWeb : modelWebDecision.search === true);
+			if (wantsWeb && resolved.limit) {
 				const messageTokens = this.estimatePromptTokens(text, baseSystem);
 				const freeTokens = Math.max(0, resolved.limit - messageTokens);
 				const budgetChars = Math.floor(
@@ -791,7 +925,10 @@ export class AgentSession {
 					? Math.min(configuredChars, budgetChars)
 					: budgetChars;
 				if (cap > 0) {
-					askOptions.webSearch = { ...webPrefsForBudget, maxInjectedContextChars: cap };
+					// Preserve the query written by the router above: rebuilding from
+					// `webPrefsForBudget` would drop it and skip the search.
+					const currentWebPrefs = isPlainObject(askOptions.webSearch) ? askOptions.webSearch : webPrefsForBudget;
+					askOptions.webSearch = { ...currentWebPrefs, maxInjectedContextChars: cap };
 				}
 			}
 			const predictedInjection = this.predictInjectionTokens(text, askOptions);
@@ -886,11 +1023,6 @@ export class AgentSession {
 			// recap de memoria aporta los sustantivos propios para la query web.
 			let webOptions = askOptions.webSearch;
 			const webPrefs = isPlainObject(webOptions) ? webOptions : {};
-			const wantsWeb = askOptions.preSearch === true
-				|| askOptions.preSearch === "always"
-				|| looksLikeWebQuery(String(text ?? ""))
-				|| webPrefs.preSearch === true
-				|| Boolean(String(webPrefs.query || "").trim());
 			const attachments = Array.isArray(askOptions.attachments) ? askOptions.attachments : [];
 			for (const attachment of attachments) {
 				const name = String(attachment?.name ?? "");
