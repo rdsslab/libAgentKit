@@ -47,6 +47,7 @@ import {
 	looksLikeWebQuery,
 	normalizeForMatch,
 	parseWebDecision,
+	prefilterWebDecision,
 	pickWebQuery,
 	short,
 } from "./policies.js";
@@ -193,6 +194,10 @@ export class AgentSession {
 	 * @param {boolean|object} [options.webDecisionWithModel] Let the session ask
 	 *   its own provider whether the turn needs a web lookup. An object may carry
 	 *   `askFn`, `prompt`, `provider`, `maxInputChars` and `maxQueryChars`.
+	 * @param {boolean|object} [options.webDecisionPrefilter] Try the cheap
+	 *   deterministic classifier first. It only decides obvious turns; anything
+	 *   ambiguous still goes to `webDecisionWithModel`. An object may carry
+	 *   `maxQueryChars`.
 	 * @param {(options: object) => Promise<object>} [options.webSearchFn] Search implementation. Defaults to `webSearch()`.
 	 * @param {Function} [options.countTokens] `async ({text, provider, signal}) => number`.
 	 * @param {"full"|"compact"} [options.eventLevel] `compact` buffers deltas into
@@ -207,6 +212,7 @@ export class AgentSession {
 		summarize,
 		summarizeWithModel = false,
 		webDecisionWithModel = false,
+		webDecisionPrefilter = false,
 		config,
 		configOptions,
 		webSearchFn,
@@ -228,6 +234,8 @@ export class AgentSession {
 		this.summarizeModelOptions = isPlainObject(summarizeWithModel) ? summarizeWithModel : {};
 		this.webDecisionWithModel = webDecisionWithModel === true || isPlainObject(webDecisionWithModel);
 		this.webDecisionOptions = isPlainObject(webDecisionWithModel) ? webDecisionWithModel : {};
+		this.webDecisionPrefilter = webDecisionPrefilter === true || isPlainObject(webDecisionPrefilter);
+		this.webDecisionPrefilterOptions = isPlainObject(webDecisionPrefilter) ? webDecisionPrefilter : {};
 		this.config = config ?? null;
 		this.configOptions = configOptions;
 
@@ -589,6 +597,32 @@ export class AgentSession {
 	}
 
 	/**
+	 * Cheap first pass. It only answers for structurally unambiguous turns, so
+	 * the model router is still consulted for everything in between. Returning
+	 * a decision here skips one provider call for that turn.
+	 *
+	 * @param {object} input Same shape as `decideWebSearch()`.
+	 * @returns {{search: boolean, query: string, source: string}|null}
+	 */
+	prefilterWebSearch({ text, quotedText = "" }) {
+		if (!this.webDecisionPrefilter) return null;
+		const maxQueryChars = Math.min(
+			1000,
+			Math.max(40, finite(this.webDecisionPrefilterOptions.maxQueryChars ?? WEB_DECISION_MAX_QUERY_CHARS, WEB_DECISION_MAX_QUERY_CHARS)),
+		);
+		const decision = prefilterWebDecision({ text, quotedText, maxQueryChars });
+		if (!decision) return null;
+		this.emit("web_decision", {
+			...decision,
+			preview: short(String(text ?? ""), 240),
+			message: decision.search
+				? `Policy requires web search for "${short(decision.query, 120)}".`
+				: "Policy decided no web search is needed.",
+		});
+		return decision;
+	}
+
+	/**
 	 * Asks the session's own provider whether this turn needs a web lookup and,
 	 * when it does, for a compact standalone query. This replaces topic lists
 	 * with a generic decision: new domains and languages need no regex changes.
@@ -627,6 +661,7 @@ export class AgentSession {
 			});
 			const decision = parseWebDecision(result?.text ?? result, { maxQueryChars });
 			this.emit("web_decision", {
+				source: "model",
 				search: decision?.search ?? null,
 				query: decision?.query ?? "",
 				chars: input.length,
@@ -640,6 +675,7 @@ export class AgentSession {
 			return decision;
 		} catch {
 			this.emit("web_decision", {
+				source: "fallback",
 				search: null,
 				query: "",
 				preview: input.slice(0, 240),
@@ -883,6 +919,15 @@ export class AgentSession {
 				|| askOptions.preSearch === "always"
 				|| webPrefsForBudget.preSearch === true
 				|| Boolean(String(webPrefsForBudget.query || "").trim());
+			if (explicitWeb && this.webDecisionWithModel) {
+				this.emit("web_decision", {
+					source: "explicit",
+					search: true,
+					query: String(webPrefsForBudget.query || "").trim(),
+					preview: short(String(text ?? ""), 240),
+					message: "An explicit pre-search/query override wins over the router.",
+				});
+			}
 			const effectiveCapsForDecision = askOptions.capabilities ?? this.defaults.capabilities ?? null;
 			const webAllowedForDecision = effectiveCapsForDecision
 				? resolveToolCapability("web_search", effectiveCapsForDecision).allowed !== false
@@ -894,26 +939,33 @@ export class AgentSession {
 					? askOptions.attachments.map((item) => String(item?.name || "")).filter(Boolean)
 					: []),
 			].filter(Boolean).join("\n");
-			const modelWebDecision = webAllowedForDecision && !explicitWeb
+			const decisionQuotedText = String(askOptions.quotedText ?? webPrefsForBudget.quotedText ?? "");
+			// Cheap policy first: only obvious turns are resolved here, so most
+			// chit-chat and every explicit web request skip the router call.
+			const policyDecision = webAllowedForDecision && !explicitWeb
+				? this.prefilterWebSearch({ text, quotedText: decisionQuotedText })
+				: null;
+			const modelWebDecision = webAllowedForDecision && !explicitWeb && !policyDecision
 				? await this.decideWebSearch({
 					text,
-					quotedText: String(askOptions.quotedText ?? webPrefsForBudget.quotedText ?? ""),
+					quotedText: decisionQuotedText,
 					context: decisionContext,
 					provider: resolved.provider,
 					signal: askOptions.signal,
 				})
 				: null;
+			const turnDecision = policyDecision ?? modelWebDecision;
 			const deterministicWeb = looksLikeWebQuery(String(text ?? ""));
-			const decisionQuery = modelWebDecision?.search === true
-				? String(modelWebDecision.query || "").trim()
+			const decisionQuery = turnDecision?.search === true
+				? String(turnDecision.query || "").trim()
 				: "";
 			if (decisionQuery) {
 				askOptions.webSearch = { ...webPrefsForBudget, query: decisionQuery };
 			}
-			// One decision for the whole turn: the model router wins, the regex
-			// only fills in when the router is absent/errored/unparseable.
+			// One decision for the whole turn: explicit overrides win, then the
+			// cheap policy, then the model router, then the regex fallback.
 			const wantsWeb = explicitWeb
-				|| (modelWebDecision == null ? deterministicWeb : modelWebDecision.search === true);
+				|| (turnDecision == null ? deterministicWeb : turnDecision.search === true);
 			if (wantsWeb && resolved.limit) {
 				const messageTokens = this.estimatePromptTokens(text, baseSystem);
 				const freeTokens = Math.max(0, resolved.limit - messageTokens);

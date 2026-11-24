@@ -620,3 +620,52 @@ export const parseWebDecision = (text, options = {}) => {
 		.trim();
 	return { search, query: short(rest, options.maxQueryChars ?? 300) };
 };
+
+// Cheap pre-classifier: it only answers when the message is structurally
+// unambiguous. Returning null means "ask the model", which keeps the router as
+// the judge for everything that is not an explicit instruction or an obvious
+// fresh-data question. A false NO would produce an answer without sources, so
+// the NO branch is deliberately limited to greetings and bare arithmetic.
+const PREFILTER_SEARCH_VERB_RE = /\b(?:busca(?:me)?|buscar|busque|investiga(?:r)?|investigue|averigua(?:r)?|consulta(?:r)?|googlea|search|look\s+up|find\s+out|cherche|rechercher|suche|pesquise|procure)\b/i;
+const PREFILTER_FRESH_RE = /\b(?:noticias?|news|nouvelles|nachrichten|clima|weather|meteo|meteorologia|pronosticos?|forecast|precios?|price|prices|cotizacion(?:es)?|exchange rate|tipo de cambio|resultados?|results?|score|marcador|standings|posiciones|elecciones?|elections?|taquilla|box office|estreno|release|lanzamiento|temperatura|temperature|bitcoin|cripto(?:moneda)?|crypto|dolar|dollar)\b/i;
+const PREFILTER_ROLE_RE = /\b(?:quien(?:es)?|who(?:\s+is|\s+are)?|cual\s+es|what\s+is)\b[^.]{0,90}\b(?:presidente|president|alcalde|mayor|primer ministro|prime minister|gobernador|governor|campeon|champion|ganador|winner)\b/i;
+const PREFILTER_OPINION_RE = /\b(?:opinas?|opinar|opinion|crees|consideras|piensas|think|opinion|would you say)\b/i;
+const PREFILTER_NO_RE = /^[¿¡\s]*(?:hola|hi|hello|hey|buenos dias|buenas tardes|buenas noches|gracias|thanks|thank you|ok|vale|genial|adios|nos vemos|como estas|que tal|whats up)\b[\s,!?.-]*(?:(?:how are you|how are you doing|que tal|como estas|whats up|a lot|muchas gracias)\b[\s,!?.-]*)?$/i;
+const PREFILTER_MATH_RE = /^[¿¡\s]*(?:(?:cuanto es|calcula|what is|compute)\s+)?\(?\s*-?\d+(?:\s*[+\-*/x×]\s*-?\d+)+\s*\)?\s*[?!=]*$/i;
+
+/**
+ * Deterministic pre-classifier for the web decision. It never calls a model.
+ *
+ * @param {object} [options]
+ * @param {string} [options.text] Current user message.
+ * @param {string} [options.quotedText] Message the user is replying to.
+ * @param {number} [options.maxQueryChars] Query cap.
+ * @returns {{search: boolean, query: string, source: string}|null} `null` means
+ *   the caller must ask the model; the other values skip that model call.
+ */
+export const prefilterWebDecision = ({ text = "", quotedText = "", maxQueryChars = 300 } = {}) => {
+	const own = String(text || "").trim();
+	const normalized = normalizeForMatch(own);
+	if (!normalized) return null;
+
+	const no = { search: false, query: "", source: "policy-no" };
+	if (PREFILTER_NO_RE.test(normalized) || PREFILTER_MATH_RE.test(normalized)) return no;
+
+	// An opinion question must not be classified only by the nouns it mentions:
+	// "¿qué opinas de las noticias de hoy?" is a request for a view, not a lookup.
+	const opinion = PREFILTER_OPINION_RE.test(normalized);
+	const quoted = String(quotedText || "").trim();
+	const explicit = PREFILTER_SEARCH_VERB_RE.test(normalized)
+		|| isGenericWebInstruction(own)
+		|| (!!quoted && PREFILTER_SEARCH_VERB_RE.test(normalizeForMatch(quoted)));
+	const fresh = !opinion && (PREFILTER_FRESH_RE.test(normalized) || PREFILTER_ROLE_RE.test(normalized));
+	const url = URL_RE.test(own);
+	if (!explicit && !fresh && !url) return null;
+
+	const query = short(
+		cleanWebQuery(url ? own : (explicit ? (isGenericWebInstruction(own) && quoted ? quoted : own) : own)),
+		maxQueryChars,
+	);
+	if (!query) return null;
+	return { search: true, query, source: "policy-yes" };
+};

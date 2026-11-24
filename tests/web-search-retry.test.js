@@ -9,6 +9,7 @@ import {
 	looksLikeNoAnswer,
 	looksLikeWebQuery,
 	parseWebDecision,
+	prefilterWebDecision,
 	pickWebQuery,
 } from "../src/index.js";
 import { extractBingResults, extractGoogleNewsResults } from "../src/websearch.js";
@@ -273,6 +274,57 @@ test("AgentSession: preSearch y query explícitos ganan sobre el router", async 
 	await session.ask("hola", { preSearch: "always", webSearch: { query: "Quito clima hoy" } });
 	assert.deepEqual(searched, ["Quito clima hoy"]);
 	assert.deepEqual(routerCalls, [], "un override explícito no consulta al router");
+});
+
+test("policies: prefilter decide casos obvios y deja la duda al modelo", () => {
+	assert.equal(prefilterWebDecision({ text: "hola" }).search, false);
+	assert.equal(prefilterWebDecision({ text: "¿cuánto es 2+2?" }).search, false);
+	assert.equal(prefilterWebDecision({ text: "hello, how are you?" }).search, false);
+	assert.equal(prefilterWebDecision({ text: "¿qué opinas de las noticias de hoy?" }), null);
+
+	const news = prefilterWebDecision({ text: "noticias de bitcoin" });
+	assert.equal(news.search, true);
+	assert.equal(news.source, "policy-yes");
+	assert.ok(news.query.toLowerCase().includes("bitcoin"));
+
+	const who = prefilterWebDecision({ text: "¿quién es el presidente del Ecuador?" });
+	assert.equal(who.search, true);
+
+	const english = prefilterWebDecision({ text: "search for the current price of bitcoin" });
+	assert.equal(english.search, true);
+
+	const url = prefilterWebDecision({ text: "mira https://example.org/article" });
+	assert.equal(url.search, true);
+});
+
+test("AgentSession: el prefilter evita la llamada al router en turnos obvios", async () => {
+	const searched = [];
+	const routerCalls = [];
+	const { session, events } = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: true, source: "fixture", results: [{ title: "x", url: "https://example.org/x", snippet: "x" }] };
+		},
+		webDecisionPrefilter: true,
+		webDecisionWithModel: {
+			askFn: async () => {
+				routerCalls.push(1);
+				return { text: '{"search":false,"query":""}' };
+			},
+		},
+	});
+	await session.ask("noticias de bitcoin");
+	assert.deepEqual(routerCalls, [], "un caso obvio no consulta al modelo");
+	assert.equal(searched.length, 1);
+	assert.equal(events.filter((event) => event.type === "web_decision").at(-1).source, "policy-yes");
+
+	await session.ask("hola");
+	assert.deepEqual(routerCalls, [], "un saludo tampoco consulta al modelo");
+	assert.equal(events.filter((event) => event.type === "web_decision").at(-1).source, "policy-no");
+
+	await session.ask("¿qué opinas del clima de Marte?");
+	assert.deepEqual(routerCalls, [1], "una duda sí consulta al modelo");
+	assert.equal(events.filter((event) => event.type === "web_decision").at(-1).source, "model");
 });
 
 test("AgentSession: sin webDecisionWithModel no se consulta al router", async () => {
