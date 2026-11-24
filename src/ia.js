@@ -460,10 +460,12 @@ const collectOpenAIStream = async (stream, onTextDelta, meta = {}, onThinking) =
 	let text = "";
 	let usage;
 	let emitted = false;
+	let finishReason = null;
 	const calls = new Map();
 
 	for await (const chunk of stream) {
 		if (chunk?.usage) usage = chunk.usage;
+		if (chunk?.choices?.[0]?.finish_reason) finishReason = chunk.choices[0].finish_reason;
 		const delta = chunk?.choices?.[0]?.delta;
 		if (typeof delta?.content === "string" && delta.content.length > 0) {
 			text += delta.content;
@@ -494,7 +496,7 @@ const collectOpenAIStream = async (stream, onTextDelta, meta = {}, onThinking) =
 					content: text,
 					tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
 				},
-				finish_reason: "stop",
+				finish_reason: finishReason ?? (toolCalls.length > 0 ? "tool_calls" : "stop"),
 			}],
 			usage,
 		},
@@ -2911,6 +2913,21 @@ const nativeUsage = (data = {}) => {
 	};
 };
 
+/**
+ * Ollama reports why generation ended in `done_reason`. Preserve the one value
+ * callers can act on (`length`: the answer was cut by num_predict and may be
+ * resumable) as its OpenAI-compatible `finish_reason` instead of always saying
+ * "stop". Tool calls keep their own sentinel when generation was not truncated.
+ *
+ * @param {object} [data] Raw Ollama response (or stream event).
+ * @param {boolean} [hasToolCalls] Whether the message carried tool calls.
+ * @returns {string} A finish_reason string.
+ */
+const nativeFinishReason = (data = {}, hasToolCalls = false) => {
+	if (String(data?.done_reason || "") === "length") return "length";
+	return hasToolCalls ? "tool_calls" : "stop";
+};
+
 const nativeCompletionFromResponse = (data = {}, model = "") => {
 	const message = data?.message || {};
 	const toolCalls = (Array.isArray(message.tool_calls) ? message.tool_calls : []).map((call, index) => ({
@@ -2932,7 +2949,7 @@ const nativeCompletionFromResponse = (data = {}, model = "") => {
 				content: typeof message.content === "string" ? message.content : "",
 				tool_calls: toolCalls.length ? toolCalls : undefined,
 			},
-			finish_reason: toolCalls.length ? "tool_calls" : "stop",
+			finish_reason: nativeFinishReason(data, toolCalls.length > 0),
 		}],
 		usage: nativeUsage(data),
 	};
@@ -2997,7 +3014,11 @@ async function* streamNativeChatCompletion({ baseUrl, headers, body, signal }) {
 				}));
 			}
 			yield {
-				choices: [{ index: 0, delta, finish_reason: event?.done ? "stop" : null }],
+				choices: [{
+					index: 0,
+					delta,
+					finish_reason: event?.done ? nativeFinishReason(event, calls.length > 0) : null,
+				}],
 				usage: event?.done ? nativeUsage(event) : undefined,
 			};
 		}
@@ -3931,6 +3952,9 @@ export const __internalIAForTests = Object.freeze({
 	convertToGeminiContents,
 	splitSystemMessages,
 	OpenAICompatibleAdapter,
+	OllamaNativeAdapter,
+	nativeFinishReason,
+	nativeCompletionFromResponse,
 	MCPToolRuntime,
 });
 

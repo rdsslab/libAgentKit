@@ -512,3 +512,79 @@ test("compactMessagesWithSummary: keepLastMessages=0 no conserva turnos", async 
 	assert.equal(result[0].role, "system");
 	assert.match(result[0].content, /pregunta uno/);
 });
+
+test("ia.js: el adaptador nativo de Ollama conserva done_reason=length como finish_reason", async () => {
+	const {
+		OllamaNativeAdapter,
+		nativeCompletionFromResponse,
+		nativeFinishReason,
+		collectOpenAIStream,
+	} = __internalIAForTests;
+
+	assert.equal(nativeFinishReason({ done_reason: "length" }), "length");
+	assert.equal(nativeFinishReason({ done_reason: "stop" }), "stop");
+	assert.equal(nativeFinishReason({ done_reason: "stop" }, true), "tool_calls");
+	assert.equal(nativeFinishReason({ done_reason: "length" }, true), "length");
+
+	const truncated = nativeCompletionFromResponse({
+		model: "fake:model",
+		done_reason: "length",
+		message: { content: "respuesta cortada" },
+	}, "otro:modelo");
+	assert.equal(truncated.choices[0].finish_reason, "length");
+	assert.equal(truncated.choices[0].message.content, "respuesta cortada");
+	assert.equal(nativeCompletionFromResponse({ done_reason: "stop" }).choices[0].finish_reason, "stop");
+
+	// El stream: la última fila NDJSON llega con done_reason=length.
+	const adapter = new OllamaNativeAdapter({
+		provider: "ollama",
+		model: "fake:model",
+		baseUrl: "http://ollama.test:11434",
+	});
+	const originalFetch = globalThis.fetch;
+	const seen = [];
+	try {
+		globalThis.fetch = async (_url, init) => {
+			const body = JSON.parse(init.body);
+			seen.push(body);
+			if (!body.stream) {
+				return new Response(JSON.stringify({
+					model: "fake:model",
+					message: { content: "parte 1" },
+					done: true,
+					done_reason: "length",
+				}), { status: 200 });
+			}
+			const ndjson = [
+				JSON.stringify({ message: { content: "parte 1" }, done: false }),
+				JSON.stringify({ message: { content: "" }, done: true, done_reason: "length" }),
+			].join("\n") + "\n";
+			return new Response(ndjson, { status: 200 });
+		};
+
+		const completion = await adapter.client.chat.completions.create({
+			model: "fake:model",
+			messages: [{ role: "user", content: "hola" }],
+		});
+		assert.equal(completion.choices[0].finish_reason, "length");
+		assert.equal(completion.choices[0].message.content, "parte 1");
+
+		const stream = adapter.client.chat.completions.create({
+			model: "fake:model",
+			messages: [{ role: "user", content: "hola" }],
+			stream: true,
+		});
+		const chunks = [];
+		for await (const chunk of stream) chunks.push(chunk);
+		assert.equal(chunks.at(-1).choices[0].finish_reason, "length");
+		assert.equal(chunks[0].choices[0].finish_reason, null);
+
+		const collected = await collectOpenAIStream(chunks, null, { provider: "ollama-native" });
+		assert.equal(collected.completion.choices[0].finish_reason, "length");
+		assert.equal(collected.completion.choices[0].message.content, "parte 1");
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+	assert.equal(seen.length, 2);
+	assert.equal(seen[0].model, "fake:model");
+});
