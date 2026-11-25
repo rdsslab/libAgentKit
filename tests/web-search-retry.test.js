@@ -4,6 +4,9 @@ import assert from "node:assert/strict";
 import {
 	AGENTKIT_FEATURES,
 	AgentSession,
+	checkGrounding,
+	checkSources,
+	cleanWebQuery,
 	isGenericWebInstruction,
 	listWebSearchEngines,
 	looksLikeNoAnswer,
@@ -325,6 +328,52 @@ test("policies: prefilter decide casos obvios y deja la duda al modelo", () => {
 	assert.equal(url.search, true);
 });
 
+test("policies: 'quién es X' busca en lugar de responder 'no tengo información'", () => {
+	assert.equal(cleanWebQuery("Quien es edwinspire"), "Quien es edwinspire");
+	const identity = prefilterWebDecision({ text: "Quien es edwinspire" });
+	assert.equal(identity?.search, true);
+	assert.equal(identity?.source, "policy-yes");
+	assert.equal(identity?.query.toLowerCase(), "quien es edwinspire");
+	assert.equal(prefilterWebDecision({ text: "Who is edwinspire?" })?.search, true);
+	assert.equal(prefilterWebDecision({ text: "Quién es mi madre" }), null);
+});
+
+test("policies: Internet y las entidades del usuario no bloquean el grounding", () => {
+	const webResults = [{
+		title: "Perfil",
+		url: "https://github.com/edwinspire",
+		snippet: "edwinspire publica proyectos en GitHub.",
+	}];
+	const given = checkGrounding({
+		text: "En Internet encontrarás el perfil de edwinspire.",
+		webResults,
+		userText: "Busca en Internet el perfil de edwinspire",
+	});
+	assert.equal(given.ok, true);
+	assert.deepEqual(given.unsupported, []);
+
+	const invented = checkGrounding({
+		text: "En Internet encontrarás el perfil de Luisinio.",
+		webResults,
+	});
+	assert.equal(invented.ok, false);
+	assert.ok(invented.unsupported.includes("Luisinio"));
+
+	const numbered = checkGrounding({
+		text: "1. 10 candidatos compiten.\n2. 20 candidatos compiten.",
+		webResults: [{ title: "Candidatos", url: "https://example.org/c", snippet: "Hay 10 candidatos y 20 suplentes." }],
+	});
+	assert.equal(numbered.ok, true);
+	assert.deepEqual(numbered.unsupported, []);
+
+	const labelIsUrl = checkSources({
+		text: "Datos verificados en [https://example.org/falso](https://example.org/falso).",
+		webResults: [{ title: "Real", url: "https://example.org/real", snippet: "Datos" }],
+	});
+	assert.equal(labelIsUrl.ok, false);
+	assert.ok(!labelIsUrl.cleanedText.includes("https://"), "no queda una URL falsa como texto plano");
+});
+
 test("policies: una corrección explícita fuerza búsqueda sin consultar al router", async () => {
 	const cases = [
 		"La información no es correcta, busca otras fuentes",
@@ -400,6 +449,36 @@ test("AgentSession: groundingPolicy block no persiste una respuesta sin respaldo
 	assert.ok(!session.memory.episodes.some((row) => String(row.next?.content || "").includes("Luisinio")));
 	assert.equal(events.find((event) => event.type === "grounding").blocked, true);
 	assert.equal(events.filter((event) => event.type === "done").at(-1).grounding.blocked, true);
+});
+
+test("AgentSession: una cita inválida se elimina sin descartar la respuesta verificada", async () => {
+	const { session, events } = makeSession({
+		webSearchFn: async () => ({
+			ok: true,
+			source: "fixture",
+			results: [{
+				title: "Candidatos",
+				url: "https://www.elcomercio.com/elecciones/candidatos",
+				snippet: "Los candidatos a alcaldes de Quito son Ana y Luis.",
+			}],
+		}),
+		webDecisionPrefilter: true,
+		groundingPolicy: {
+			mode: "block",
+			fallback: () => "No verificado con las fuentes disponibles.",
+		},
+		askAgentFn: () => ({
+			text: "Los candidatos son Ana y Luis. Más info: [la lista](https://www.metroecuador.com.ec/noticias/2026/11/11/elecciones-seccionales-conozca-a-l).",
+		}),
+	});
+	const result = await session.ask("Busca los candidatos a alcaldes de Quito");
+	assert.notEqual(result.text, "No verificado con las fuentes disponibles.");
+	assert.ok(result.text.includes("Ana y Luis"));
+	assert.ok(!result.text.includes("metroecuador"), "se quita solo el enlace inventado");
+	assert.equal(result.grounding.blocked, false);
+	assert.equal(result.grounding.sourceCleaned, true);
+	assert.equal(session.history[1].content, result.text, "se persiste la versión limpia");
+	assert.ok(events.find((event) => event.type === "source_cleanup"));
 });
 
 test("policies: los saludos anclados ampliados no consultan al router", () => {

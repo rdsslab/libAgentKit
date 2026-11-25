@@ -275,6 +275,11 @@ const extractSiteEntities = (text) => {
  */
 export const cleanWebQuery = (text, options = {}) => {
 	const raw = String(text || "").trim();
+	// "quién es X" / "who is X" is already a search query: reducing it to the
+	// extracted entity produced "Quien" and killed the lookup.
+	if (/^[¿¡\s]*(?:quien(?:es)?|who(?:\s+is)?|que\s+es|qu[eé]\s+es|what\s+is)\b/i.test(raw)) {
+		return short(raw.replace(/^[¿¡\s]+/, ""), options.maxQueryChars ?? 160);
+	}
 	// Un verbo en imperativo al principio es una instrucción, no una entidad:
 	// se quita por su POSICIÓN, sin mantener una lista de palabras prohibidas.
 	const stripped = raw.replace(
@@ -391,7 +396,10 @@ export const formatWebRecap = (found, options = {}) => {
  *   sourceChars: number, checked?: object, reason?: string}}
  */
 const groundingNumbers = (text) => {
-	const matches = String(text || "").match(/\d[\d.,\s]{0,12}\d/g) || [];
+	// "2. 10 candidatos" used to become the invented number "210": list markers
+	// are formatting, not part of the figure that follows them.
+	const claimText = String(text || "").replace(/(^|\n)\s*\d{1,3}[.)]\s+/g, "$1");
+	const matches = claimText.match(/\d[\d.,\s]{0,12}\d/g) || [];
 	const unique = new Set();
 	for (const raw of matches) {
 		const digits = raw.replace(/[.,\s]/g, "");
@@ -424,12 +432,24 @@ const groundingEntities = (text) => {
  * @param {object} [options]
  * @param {string} [options.text] Model answer to verify.
  * @param {Array<object>} [options.webResults] Injected search results.
+ * @param {string} [options.userText] Current user message; names it contains are context, not claims.
  * @returns {{ok: boolean|null, unsupported: string[], supported: string[],
  *   coverage: number|null, confidence: string|null, sourceChars: number,
  *   checked?: object, reason?: string}}
  */
-export const checkGrounding = ({ text = "", webResults = [] } = {}) => {
+// Capitalized common nouns are not claims invented by the model. "Internet"
+// appeared as an unsupported entity on every Spanish answer and blocked the
+// whole response, so the user got a raw source dump instead of the answer.
+const GENERIC_CAPITALIZED = new Set([
+	"internet", "web", "google", "youtube", "facebook", "instagram", "twitter",
+	"telegram", "whatsapp", "wikipedia", "reddit", "github", "gitlab", "linkedin",
+	"pdf", "json", "txt", "csv", "excel", "word", "usb", "led", "wifi", "cpu",
+	"gpu", "arduino", "raspberry", "linux", "windows", "mac",
+]);
+
+export const checkGrounding = ({ text = "", webResults = [], userText = "" } = {}) => {
 	const rows = Array.isArray(webResults) ? webResults : [];
+	const normalizedUser = normalizeForMatch(userText);
 	const source = rows
 		.map((row) => [row?.title, row?.snippet, row?.text, row?.content].filter(Boolean).join(" "))
 		.join(" ");
@@ -448,8 +468,11 @@ export const checkGrounding = ({ text = "", webResults = [] } = {}) => {
 		};
 	}
 
-	const numbers = groundingNumbers(text);
-	const entities = groundingEntities(text);
+	// A URL is a pointer, not a set of claims: digits and capitalized words in
+	// its path previously showed up as "unsupported" facts and blocked answers.
+	const claimText = String(text || "").replace(/(https?:\/\/|www\.)[^\s<>"')\]]+/gi, " ");
+	const numbers = groundingNumbers(claimText);
+	const entities = groundingEntities(claimText);
 	const unsupported = [];
 	const supported = [];
 	for (const number of numbers) {
@@ -457,6 +480,10 @@ export const checkGrounding = ({ text = "", webResults = [] } = {}) => {
 	}
 	for (const entity of entities) {
 		const words = normalizeForMatch(entity).split(/\s+/);
+		// A name that came from the user's own question is context, not a claim
+		// the model invented. The same applies to generic capitalized nouns.
+		if (words.length === 1 && GENERIC_CAPITALIZED.has(words[0])) continue;
+		if (normalizedUser && normalizedUser.includes(words.join(" "))) continue;
 		let found = normalizedSource.includes(words.join(" "));
 		if (!found && words.length > 1) {
 			// "Quito Central Park": basta con que aparezca "quito central" o
@@ -560,14 +587,19 @@ export const checkSources = ({ text = "", webResults = [] } = {}) => {
 			continue;
 		}
 		invalid.push(citation.url);
-		// Keep the markdown label: only the unverifiable link is dropped.
-		removals.push({ ...citation, replacement: citation.label });
+		// Keep the markdown label, except when the label is the URL itself:
+		// `[https://x](https://x)` would otherwise survive as a bare fake link.
+		const replacement = URL_RE.test(citation.label) ? "" : citation.label;
+		removals.push({ ...citation, replacement });
 	}
 	let cleanedText = answer;
 	for (const item of removals.sort((a, b) => b.start - a.start)) {
 		cleanedText = cleanedText.slice(0, item.start) + item.replacement + cleanedText.slice(item.end);
 	}
-	cleanedText = cleanedText.replace(/[ \t]{2,}/g, " ").trim();
+	cleanedText = cleanedText
+		.replace(/[ \t]{2,}/g, " ")
+		.replace(/\s+([.,;:])(\s|$)/g, "$1$2")
+		.trim();
 	if (!citations.length) {
 		return { ok: null, valid, invalid, cleanedText, checked: 0, sourceChars, reason: "no cited URLs" };
 	}
@@ -728,6 +760,9 @@ export const parseWebDecision = (text, options = {}) => {
 const PREFILTER_SEARCH_VERB_RE = /\b(?:busca(?:me)?|buscar|busque|investiga(?:r)?|investigue|averigua(?:r)?|consulta(?:r)?|googlea|search|look\s+up|find\s+out|cherche|rechercher|suche|pesquise|procure)\b/i;
 const PREFILTER_FRESH_RE = /\b(?:noticias?|news|nouvelles|nachrichten|clima|weather|meteo|meteorologia|pronosticos?|forecast|precios?|price|prices|cotizacion(?:es)?|exchange rate|tipo de cambio|resultados?|results?|score|marcador|standings|posiciones|elecciones?|elections?|taquilla|box office|estreno|release|lanzamiento|temperatura|temperature|bitcoin|cripto(?:moneda)?|crypto|dolar|dollar)\b/i;
 const PREFILTER_ROLE_RE = /\b(?:quien(?:es)?|who(?:\s+is|\s+are)?|cual\s+es|what\s+is)\b[^.]{0,90}\b(?:presidente|president|alcalde|mayor|primer ministro|prime minister|gobernador|governor|campeon|champion|ganador|winner)\b/i;
+// "Quien es edwinspire" should search instead of replying "no tengo esa
+// información". Short pronouns ("mi madre") stay out: those are not lookups.
+const PREFILTER_IDENTITY_RE = /^[¿¡\s]*(?:(?:quien|quienes)\s+(?:es|son|fue|eran)|who(?:\s+is|\s+are|\s+was))\s+\p{L}[\p{L}\p{N}._-]{2,}/iu;
 const PREFILTER_OPINION_RE = /\b(?:opinas?|opinar|opinion|crees|consideras|piensas|think|opinion|would you say)\b/i;
 // An explicit correction is a declaration that the previous fact was wrong,
 // not a topic hint: "no es correcto, busca otras fuentes" must force a lookup
@@ -812,9 +847,12 @@ export const prefilterWebDecision = ({ text = "", quotedText = "", maxQueryChars
 	const explicit = PREFILTER_SEARCH_VERB_RE.test(normalized)
 		|| isGenericWebInstruction(own)
 		|| (!!quoted && PREFILTER_SEARCH_VERB_RE.test(normalizeForMatch(quoted)));
+	// "quién es <nombre>" is a lookup even without "busca" or a role word. The
+	// old router guessed wrong and produced "No tengo esa información".
+	const identity = !opinion && PREFILTER_IDENTITY_RE.test(normalized);
 	const fresh = !opinion && (PREFILTER_FRESH_RE.test(normalized) || PREFILTER_ROLE_RE.test(normalized));
 	const url = URL_RE.test(own);
-	if (!explicit && !fresh && !url) return null;
+	if (!explicit && !fresh && !identity && !url) return null;
 
 	const query = short(
 		cleanWebQuery(url ? own : (explicit ? (isGenericWebInstruction(own) && quoted ? quoted : own) : own)),

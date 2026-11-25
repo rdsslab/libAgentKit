@@ -1404,13 +1404,30 @@ export class AgentSession {
 			const groundingResults = sessionWeb.used
 				? sessionWeb.results
 				: (Array.isArray(finalResult?.webResults) ? finalResult.webResults : []);
-			const grounding = checkGrounding({ text: answer, webResults: groundingResults });
+			const grounding = checkGrounding({ text: answer, webResults: groundingResults, userText: text });
 			const sourceCheck = checkSources({ text: answer, webResults: groundingResults });
 			const searchedTurn = sessionWeb.used
 				|| finalResult?.usedWeb === true
 				|| groundingResults.length > 0;
+			// Un enlace truncado no debe costar toda la respuesta: antes se
+			// descartaba el texto y el usuario recibía un volcado de fuentes.
+			// Solo se limpian las citas no verificables cuando el resto sigue
+			// siendo sustancial y no hay ninguna afirmación sin respaldo.
+			const originalAnswer = answer;
+			const answerText = String(answer || "");
+			const proseLength = answerText.replace(/(https?:\/\/|www\.)[^\s<>"')\]]+/gi, " ").trim().length;
+			const cleanedSourceText = String(sourceCheck.cleanedText || "").trim();
+			const enoughLeft = proseLength >= 40
+				&& cleanedSourceText.length >= Math.max(40, Math.floor(proseLength * 0.6));
+			let sourceCleaned = false;
+			if (sourceCheck.ok === false && grounding.ok !== false
+				&& enoughLeft && cleanedSourceText !== String(answer || "").trim()) {
+				answer = cleanedSourceText;
+				if (isPlainObject(finalResult)) finalResult.text = answer;
+				sourceCleaned = true;
+			}
 			const shouldBlock = this.groundingPolicyMode === "block" && searchedTurn
-				&& (grounding.ok === false || sourceCheck.ok === false);
+				&& (grounding.ok === false || (sourceCheck.ok === false && !sourceCleaned));
 			if (shouldBlock) {
 				const fallback = await this.buildGroundingFallback({
 					answer,
@@ -1425,6 +1442,7 @@ export class AgentSession {
 			this.grounding = {
 				...grounding,
 				sourceCheck,
+				sourceCleaned,
 				blocked: shouldBlock,
 			};
 			if (!isPlainObject(finalResult)) finalResult = { text: answer };
@@ -1433,6 +1451,7 @@ export class AgentSession {
 				unsupported: grounding.unsupported,
 				sourceOk: sourceCheck.ok,
 				invalidSources: sourceCheck.invalid,
+				sourceCleaned,
 				blocked: shouldBlock,
 				noAnswerReplaced,
 			};
@@ -1457,17 +1476,30 @@ export class AgentSession {
 					confidence: grounding.confidence,
 					sourceOk: sourceCheck.ok,
 					invalidSources: sourceCheck.invalid,
+					sourceCleaned,
 					blocked: shouldBlock,
 					noAnswerReplaced,
 					preview: short(answer, 240),
 					message: shouldBlock
 						? "The answer failed grounding and was replaced before being saved."
-						: sourceCheck.ok === false
-							? `Citations missing from the sources: ${sourceCheck.invalid.join(", ")}`
-							: grounding.ok
-								? "All figures and proper nouns in the answer appear in the injected sources."
-								: `Unsupported by the sources: ${grounding.unsupported.join(", ")}`,
+						: sourceCleaned
+							? `Removed ${sourceCheck.invalid.length} unverifiable citation(s); kept the grounded answer.`
+							: sourceCheck.ok === false
+								? `Citations missing from the sources: ${sourceCheck.invalid.join(", ")}`
+								: grounding.ok
+									? "All figures and proper nouns in the answer appear in the injected sources."
+									: `Unsupported by the sources: ${grounding.unsupported.join(", ")}`,
 				});
+				if (sourceCleaned) {
+					this.emit("source_cleanup", {
+						invalidSources: sourceCheck.invalid,
+						removed: sourceCheck.invalid.length,
+						charsBefore: String(originalAnswer || "").length,
+						charsAfter: answer.length,
+						preview: short(answer, 240),
+						message: "Removed unverifiable citations without discarding the answer.",
+					});
+				}
 			}
 
 			if (this.eventLevel === "compact") {
