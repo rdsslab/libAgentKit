@@ -297,6 +297,30 @@ test("policies: prefilter decide casos obvios y deja la duda al modelo", () => {
 	assert.equal(url.search, true);
 });
 
+test("policies: los saludos anclados ampliados no consultan al router", () => {
+	const anchored = [
+		"¿cómo estás?",
+		"qué tal",
+		"muchas gracias",
+		"gracias por tu ayuda",
+		"thanks a lot",
+		"good morning",
+		"how are you doing?",
+		"buenos días",
+		"hasta luego",
+	];
+	for (const text of anchored) {
+		const decision = prefilterWebDecision({ text });
+		assert.equal(decision?.search, false, `"${text}" debe resolverse con policy-no`);
+		assert.equal(decision?.source, "policy-no");
+	}
+
+	// La coincidencia es completa: un saludo dentro de una pregunta compuesta
+	// nunca se clasifica como NO automático.
+	assert.notEqual(prefilterWebDecision({ text: "gracias por tu ayuda con las noticias de bitcoin" })?.search, false);
+	assert.equal(prefilterWebDecision({ text: "hola, ¿cómo estás? ¿qué opinas del clima de Marte?" }), null);
+});
+
 test("AgentSession: el prefilter evita la llamada al router en turnos obvios", async () => {
 	const searched = [];
 	const routerCalls = [];

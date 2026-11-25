@@ -785,7 +785,8 @@ test("ia: ollama-native usa /api/chat con num_ctx real y ejecuta tools", async (
 				top_k: 17,
 				repeat_penalty: 1.2,
 				temperature: 0.2,
-				maxTokens: 100,
+				num_predict: 100,
+				think: false,
 				responseTimeout: 10000,
 			},
 			messages: [{ role: "user", content: "di hola" }],
@@ -808,6 +809,7 @@ test("ia: ollama-native usa /api/chat con num_ctx real y ejecuta tools", async (
 		assert.equal(solicitudes[0].cuerpo.options.top_k, 17);
 		assert.equal(solicitudes[0].cuerpo.options.repeat_penalty, 1.2);
 		assert.equal(solicitudes[0].cuerpo.options.num_predict, 100);
+		assert.equal(solicitudes[0].cuerpo.think, false);
 		assert.equal(solicitudes[1].cuerpo.messages.some((mensaje) => mensaje.role === "tool"), true);
 		assert.equal(solicitudes[1].cuerpo.messages.some((mensaje) => mensaje.tool_name === "eco"), true);
 	} finally {

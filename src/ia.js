@@ -2872,6 +2872,16 @@ const toNativeToolChoice = (toolChoice) => {
 	return undefined;
 };
 
+const normalizeNativeThink = (value) => {
+	if (typeof value === "boolean") return value;
+	if (typeof value === "number") return value !== 0;
+	if (typeof value !== "string") return undefined;
+	const normalized = value.trim().toLowerCase();
+	if (["true", "1", "yes", "on"].includes(normalized)) return true;
+	if (["false", "0", "no", "off"].includes(normalized)) return false;
+	return undefined;
+};
+
 const buildNativeOptions = (request = {}, providerConfig = {}) => {
 	const options = {};
 	const add = (key, value) => {
@@ -2883,7 +2893,21 @@ const buildNativeOptions = (request = {}, providerConfig = {}) => {
 	add("top_k", request.top_k);
 	add("repeat_penalty", request.repeat_penalty);
 	add("seed", request.seed);
-	add("num_predict", request.max_tokens);
+
+	// The native endpoint only reads `num_predict` from `options`. The caller may
+	// supply either the Ollama name or the OpenAI-compatible `max_tokens` name,
+	// at request level (highest priority) or in the provider config.
+	const numPredict = toFiniteNumber(
+		request.num_predict
+		?? request.max_tokens
+		?? providerConfig.num_predict
+		?? providerConfig.numPredict
+		?? providerConfig.max_tokens
+		?? providerConfig.maxTokens,
+	);
+	if (numPredict != null && (numPredict > 0 || numPredict === -1)) {
+		options.num_predict = numPredict;
+	}
 	add("num_ctx", request.options?.num_ctx ?? providerConfig.num_ctx ?? providerConfig.numCtx);
 	return Object.keys(options).length ? options : undefined;
 };
@@ -2896,6 +2920,18 @@ const buildNativeBody = (request = {}, providerConfig = {}) => {
 	};
 	const options = buildNativeOptions(request, providerConfig);
 	if (options) body.options = options;
+
+	// `think` is a top-level field in /api/chat, not an option. Forwarding it is
+	// essential for reasoning models: without `think:false` qwen3 spends its whole
+	// token budget on hidden reasoning before emitting a short router JSON.
+	const think = normalizeNativeThink(
+		request.think
+		?? request.options?.think
+		?? providerConfig.think
+		?? providerConfig.reasoning,
+	);
+	if (think !== undefined) body.think = think;
+
 	if (Array.isArray(request.tools) && request.tools.length) body.tools = toNativeTools(request.tools);
 	const choice = toNativeToolChoice(request.tool_choice);
 	if (choice) body.tool_choice = choice;
@@ -3953,6 +3989,8 @@ export const __internalIAForTests = Object.freeze({
 	splitSystemMessages,
 	OpenAICompatibleAdapter,
 	OllamaNativeAdapter,
+	buildNativeOptions,
+	buildNativeBody,
 	nativeFinishReason,
 	nativeCompletionFromResponse,
 	MCPToolRuntime,

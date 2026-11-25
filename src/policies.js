@@ -630,7 +630,10 @@ const PREFILTER_SEARCH_VERB_RE = /\b(?:busca(?:me)?|buscar|busque|investiga(?:r)
 const PREFILTER_FRESH_RE = /\b(?:noticias?|news|nouvelles|nachrichten|clima|weather|meteo|meteorologia|pronosticos?|forecast|precios?|price|prices|cotizacion(?:es)?|exchange rate|tipo de cambio|resultados?|results?|score|marcador|standings|posiciones|elecciones?|elections?|taquilla|box office|estreno|release|lanzamiento|temperatura|temperature|bitcoin|cripto(?:moneda)?|crypto|dolar|dollar)\b/i;
 const PREFILTER_ROLE_RE = /\b(?:quien(?:es)?|who(?:\s+is|\s+are)?|cual\s+es|what\s+is)\b[^.]{0,90}\b(?:presidente|president|alcalde|mayor|primer ministro|prime minister|gobernador|governor|campeon|champion|ganador|winner)\b/i;
 const PREFILTER_OPINION_RE = /\b(?:opinas?|opinar|opinion|crees|consideras|piensas|think|opinion|would you say)\b/i;
-const PREFILTER_NO_RE = /^[¿¡\s]*(?:hola|hi|hello|hey|buenos dias|buenas tardes|buenas noches|gracias|thanks|thank you|ok|vale|genial|adios|nos vemos|como estas|que tal|whats up)\b[\s,!?.-]*(?:(?:how are you|how are you doing|que tal|como estas|whats up|a lot|muchas gracias)\b[\s,!?.-]*)?$/i;
+// Coincidencia completa anclada: un saludo dentro de una pregunta compuesta no
+// debe convertirse en un NO automático. Las variantes largas van primero para
+// que la alternancia no se quede con un prefijo más corto.
+const PREFILTER_NO_RE = /^[¿¡\s]*(?:gracias por (?:tu|su|la) ayuda|gracias por ayudarme|muchisimas gracias|muchas gracias|thank you very much|thanks a lot|thank you|thanks|buenos dias|buenas tardes|buenas noches|buenas noches a todos|good morning|good afternoon|good evening|good night|hola|hi|hello|hey|ok|vale|genial|adios|nos vemos|hasta luego|hasta pronto|see you|bye|como estas|como va|que tal|que pasa|whats up|hows it going|how are you doing|how are you|bien gracias|muy bien|nice to meet you)\b[\s,!?.-]*(?:(?:how are you doing|how are you|how are you today|que tal|como estas|como va|whats up|a lot|muchas gracias|por (?:tu|su|la) ayuda)\b[\s,!?.-]*)?$/i;
 const PREFILTER_MATH_RE = /^[¿¡\s]*(?:(?:cuanto es|calcula|what is|compute)\s+)?\(?\s*-?\d+(?:\s*[+\-*/x×]\s*-?\d+)+\s*\)?\s*[?!=]*$/i;
 
 /**

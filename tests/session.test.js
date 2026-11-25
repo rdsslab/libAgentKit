@@ -658,3 +658,35 @@ test("ia.js: el adaptador nativo de Ollama conserva done_reason=length como fini
 	assert.equal(seen.length, 2);
 	assert.equal(seen[0].model, "fake:model");
 });
+
+test("ia.js: ollama-native reenvía think y num_predict/max_tokens al cuerpo /api/chat", () => {
+	const { buildNativeOptions, buildNativeBody } = __internalIAForTests;
+	const baseRequest = {
+		model: "qwen3.5:4b",
+		messages: [{ role: "user", content: "hola" }],
+		stream: false,
+	};
+
+	const fromRequest = buildNativeBody({
+		...baseRequest,
+		max_tokens: 32,
+		think: true,
+		options: { num_ctx: 4096 },
+	}, { think: false, num_predict: 64, num_ctx: 8192, keep_alive: "5m" });
+	assert.equal(fromRequest.think, true, "request.think gana sobre providerConfig.think");
+	assert.equal(fromRequest.options.num_predict, 32, "request.max_tokens gana sobre providerConfig.num_predict");
+	assert.equal(fromRequest.options.num_ctx, 4096);
+	assert.equal(fromRequest.keep_alive, "5m");
+
+	const fromConfig = buildNativeBody(baseRequest, {
+		think: "false",
+		num_predict: 64,
+		num_ctx: 8192,
+	});
+	assert.equal(fromConfig.think, false, "providerConfig.think se normaliza a booleano");
+	assert.equal(fromConfig.options.num_predict, 64);
+	assert.equal(fromConfig.options.num_ctx, 8192);
+
+	assert.equal(buildNativeOptions({}, { num_predict: -1, maxTokens: 10 }).num_predict, -1);
+	assert.equal("think" in buildNativeBody(baseRequest, {}), false, "sin configuración no se inventa think");
+});
