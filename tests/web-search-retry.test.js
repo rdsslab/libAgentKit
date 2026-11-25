@@ -113,6 +113,34 @@ test("AgentSession: un rechazo tras búsqueda fallida también ofrece reintento"
 	assert.equal(result.suggestion?.query, result.webSearch.query);
 });
 
+test("AgentSession: una negativa tras búsqueda exitosa no se persiste", async () => {
+	const { session, events } = makeSession({
+		webSearchFn: async ({ query }) => ({
+			ok: true,
+			query,
+			source: "fixture",
+			results: [{ title: "Candidatos Quito", url: "https://example.org/quito", snippet: "Diez candidatos" }],
+		}),
+		askAgentFn: () => ({ text: "No tengo esa información." }),
+		webDecisionPrefilter: true,
+	});
+
+	const result = await session.ask("Busca los candidatos a alcaldes de Quito");
+	assert.equal(result.webSearch.used, true);
+	assert.equal(result.noAnswerReplaced, true);
+	assert.doesNotMatch(result.text, /no tengo esa información/i);
+	assert.match(result.text, /example\.org\/quito/);
+
+	const event = events.filter((item) => item.type === "no_answer").at(-1);
+	assert.equal(event.replaced, true);
+	assert.equal(event.reason, "web-search-succeeded");
+	assert.match(event.preview, /no tengo esa información/i);
+	const done = events.filter((item) => item.type === "done").at(-1);
+	assert.doesNotMatch(done.text, /no tengo esa información/i);
+	assert.deepEqual(session.history.at(-1), { role: "assistant", content: result.text });
+	assert.equal(session.stats().noAnswerReplaced, true);
+});
+
 test("AgentSession: el reintento con query explícita busca sin duplicar preSearch", async () => {
 	const queries = [];
 	const { session, calls } = makeSession({
@@ -308,6 +336,19 @@ test("policies: una corrección explícita fuerza búsqueda sin consultar al rou
 		const decision = prefilterWebDecision({ text });
 		assert.equal(decision?.search, true, `"${text}" debe forzar búsqueda`);
 		assert.equal(decision?.source, "policy-yes");
+		assert.ok(decision.query.length > 8);
+	}
+	const retrials = [
+		{
+			text: '🖼️ Vuelve q intentar\n\nMENSAJE CITADO (al que respondes):\n"🎤 Busca en internet cuáles son los candidatos para alcaldes de quito"',
+		},
+		{ text: "Vuelve a intentar", quotedText: "Busca en Internet toda la información acerca de ese dispositivo" },
+	];
+	for (const input of retrials) {
+		const decision = prefilterWebDecision(input);
+		assert.equal(decision?.search, true, `"${input.text.slice(0, 30)}" debe forzar búsqueda`);
+		assert.notEqual(decision.query.toLowerCase(), "busca");
+		assert.notEqual(decision.query.toLowerCase(), "vuelve");
 		assert.ok(decision.query.length > 8);
 	}
 	assert.equal(prefilterWebDecision({ text: "¿es correcto?" }), null);

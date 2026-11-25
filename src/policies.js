@@ -732,24 +732,40 @@ const PREFILTER_OPINION_RE = /\b(?:opinas?|opinar|opinion|crees|consideras|piens
 // An explicit correction is a declaration that the previous fact was wrong,
 // not a topic hint: "no es correcto, busca otras fuentes" must force a lookup
 // even when the router would have believed the contaminated context again.
-const PREFILTER_CORRECTION_RE = /\b(?:no es correct[oa]s?|no es asi|no es cierto|no es verdad|no esta bien|esta mal|incorrect[oa]s?|busca otras fuentes|otras fuentes|borra lo que dije|busca de nuevo|busca otra vez|intenta (?:otra vez|nuevamente|de nuevo)|revisa de nuevo|verifica de nuevo|corrige(?:me)?|not correct|that.s wrong|that is wrong|is wrong|wrong answer|wrong information|incorrect|try again|check again|other sources|another source|correct this)\b/i;
+const PREFILTER_CORRECTION_RE = /\b(?:no es correct[oa]s?|no es asi|no es cierto|no es verdad|no esta bien|esta mal|incorrect[oa]s?|busca otras fuentes|otras fuentes|borra lo que dije|busca de nuevo|busca otra vez|vuelve(?:me)?\s+(?:a\s+)?(?:q(?:ue)?\s+)?intentar(?:lo)?|intenta\s+(?:otra vez|nuevamente|de nuevo)|reintenta(?:r)?|prueba(?:r)?\s+(?:otra vez|nuevamente|de nuevo)|revisa de nuevo|verifica de nuevo|corrige(?:me)?|not correct|that.s wrong|that is wrong|is wrong|wrong answer|wrong information|incorrect|try again|check again|other sources|another source|correct this)\b/i;
 const PREFILTER_CORRECTION_STRIP_RE = new RegExp(PREFILTER_CORRECTION_RE.source, "gi");
 
 // A correction names a fact, not a request to search for the word "correction".
 // Strip the scaffolding before building the query; keep the original text as a
 // last resort when the user did not actually name any fact to verify.
+const stripLeadingDecorations = (value) => String(value || "").replace(/^[^\p{L}\p{N}]+/u, "").trim();
+
 const correctionQuery = (text, maxQueryChars) => {
-	const stripped = String(text || "")
+	const raw = String(text || "");
+	// "Vuelve a intentar" names no topic of its own: when the correction is a
+	// reply, the fact to verify lives in the quoted message.
+	const quoted = raw.match(/MENSAJE CITADO[^\n]*:\s*\n?\s*"([^"]{3,})"/i);
+	const base = stripLeadingDecorations(quoted ? quoted[1] : raw);
+	const stripped = base
 		.replace(PREFILTER_CORRECTION_STRIP_RE, " ")
 		.replace(/\b(?:la\s+|el\s+|las\s+|los\s+|the\s+)?informaci[oó]n\b/gi, " ")
 		.replace(/\btranscripcion\b[^:\n]{0,60}:\s*/gi, " ")
+		.replace(/MENSAJE CITADO[^\n]*:\s*"?/gi, " ")
+		.replace(/IMAGEN CITADA[^\n]*:\s*/gi, " ")
+		.replace(/\[Referencia interna de esta imagen:[^\]]*\]/gi, " ")
 		.replace(/\b(?:busca(?:me)?|buscar|busque|intenta|nuevamente|revisa|verifica|check|find|look up)\b/gi, " ")
+		.replace(/\b(?:toda|todo|todas|todos)\s+(?:la\s+|el\s+|las\s+|los\s+)?/gi, " ")
+		.replace(/\bacerca\s+de\b/gi, " ")
 		.replace(/^\s*(?:la|el|las|los|the)\s+/i, " ")
 		.replace(/[¿¡,;:.!]+/g, " ")
 		.replace(/\s+/g, " ")
 		.trim();
-	const query = short(cleanWebQuery(stripped), maxQueryChars);
-	return query.length >= 3 ? query : short(String(text || "").trim(), maxQueryChars);
+	const query = short(stripped, maxQueryChars);
+	if (query.length >= 3) return query;
+	// A bare "intenta otra vez" without a quote names no fact: inventing a
+	// query out of the retry verb is worse than letting the router decide.
+	if (/^(?:vuelve|intenta|reintenta|prueba)\b/i.test(base)) return "";
+	return short(cleanWebQuery(base), maxQueryChars) || short(stripLeadingDecorations(raw), maxQueryChars);
 };
 // Coincidencia completa anclada: un saludo dentro de una pregunta compuesta no
 // debe convertirse en un NO automático. Las variantes largas van primero para
@@ -781,8 +797,10 @@ export const prefilterWebDecision = ({ text = "", quotedText = "", maxQueryChars
 	const correction = PREFILTER_CORRECTION_RE.test(normalized)
 		|| (!!quoted && PREFILTER_CORRECTION_RE.test(normalizeForMatch(quoted)));
 	if (correction) {
-		const base = quoted && !PREFILTER_CORRECTION_RE.test(normalized)
-			? `${quoted}\n${own}`
+		// Keep both sides: the correction may be in our own message and the
+		// subject in the quote, or the other way round.
+		const base = quoted
+			? (PREFILTER_CORRECTION_RE.test(normalized) ? `${own}\nMENSAJE CITADO:\n"${quoted}"` : `${quoted}\n${own}`)
 			: own;
 		const query = correctionQuery(base, maxQueryChars);
 		if (query) return { search: true, query, source: "policy-yes" };

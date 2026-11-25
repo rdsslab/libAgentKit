@@ -18,7 +18,7 @@
  *   grounding        { ok, unsupported, supported, sourceChars, checked }
  *   web_search       { query, used, source, results, chars, errors, preview }
  *   web_decision     { search, query, chars, preview, message }  (model router)
- *   no_answer        { type, query, message, preview }
+ *   no_answer        { type, query, message, preview, replaced?, reason? }
  *   compaction_start { reason, usedPercent, estimatedTokens, contextLimit, messagesBefore, preview }
  *   compaction_end   { reason, summaryChars, removedMessages, messagesAfter, usedPercentAfter, indexEpisodes, preview }
  *   recall           { matches, mode, usedEmbeddings, embeddingReason, chars, scores, preview }
@@ -354,7 +354,7 @@ export class AgentSession {
 	 * said instead of a bare refusal.
 	 */
 	async buildGroundingFallback({ answer, grounding, sourceCheck, recap }) {
-		const context = { answer, grounding, sourceCheck, recap, short };
+		const context = { answer, grounding, sourceCheck, recap, reason: "grounding", short };
 		const custom = this.groundingPolicyOptions.fallback;
 		if (typeof custom === "function") {
 			try {
@@ -372,6 +372,29 @@ export class AgentSession {
 		return lines.join("\n\n");
 	}
 
+	/**
+	 * A refusal emitted AFTER a successful lookup is different from a refusal
+	 * with no data: the sources are already in the prompt, so persisting the
+	 * bare "I don't know" only teaches the small model to repeat it forever.
+	 * Replace it with what the sources actually said, using the same host
+	 * fallback hook as grounding (with an explicit `reason`).
+	 */
+	async buildNoAnswerAfterSearchFallback({ answer, recap, query }) {
+		const context = { answer, recap, query, reason: "no-answer-after-search", short };
+		const custom = this.groundingPolicyOptions.fallback;
+		if (typeof custom === "function") {
+			try {
+				const text = String((await custom(context)) || "").trim();
+				if (text) return text;
+			} catch {}
+		}
+		if (typeof custom === "string" && custom.trim()) return custom.trim();
+		const facts = String(recap || "").split(/\n\n(?:Use these results|Usa estos resultados)/i)[0].trim();
+		return facts
+			? `The lookup returned these sources:\n${short(facts, 1200)}`
+			: "The lookup returned no usable text.";
+	}
+
 	/** @returns {object} Turn count, history size, memory stats, calibration and last grounding. */
 	stats() {
 		return {
@@ -386,6 +409,7 @@ export class AgentSession {
 				blocked: this.grounding.blocked === true,
 				sourceOk: this.grounding.sourceCheck?.ok ?? null,
 			} : null,
+			noAnswerReplaced: this.lastNoAnswerReplaced === true,
 		};
 	}
 
@@ -1260,8 +1284,29 @@ export class AgentSession {
 			let suggestion = null;
 
 			// A small model often answers "no tengo acceso" even when a deterministic
-			// query exists. Offer a confirmed retry instead of a dead end.
-			if (looksLikeNoAnswer(answer) && !sessionWeb.used) {
+			// query exists. If the lookup DID succeed, a bare refusal must not be
+			// persisted: it becomes the next turn's context and the bot loops on
+			// "No tengo esa información" forever. Show the sources instead.
+			let noAnswerReplaced = false;
+			if (looksLikeNoAnswer(answer) && sessionWeb.used) {
+				const refused = answer;
+				answer = await this.buildNoAnswerAfterSearchFallback({
+					answer: refused,
+					recap: sessionWeb.recap,
+					query: sessionWeb.query,
+				});
+				noAnswerReplaced = true;
+				if (!isPlainObject(finalResult)) finalResult = { text: answer };
+				finalResult.text = answer;
+				this.emit("no_answer", {
+					replaced: true,
+					reason: "web-search-succeeded",
+					query: sessionWeb.query,
+					results: Array.isArray(sessionWeb.results) ? sessionWeb.results.length : 0,
+					preview: short(refused, 240),
+					message: `Model refused after a successful web search; source recap persisted instead.`,
+				});
+			} else if (looksLikeNoAnswer(answer) && !sessionWeb.used) {
 				const quotedText = String(askOptions.quotedText ?? effectiveWebOptions.quotedText ?? "");
 				const retryQuery = sessionWeb.query
 					|| String(effectiveWebOptions.query || "").trim()
@@ -1302,6 +1347,11 @@ export class AgentSession {
 					recapChars: sessionWeb.recap.length,
 				};
 			}
+			if (noAnswerReplaced) {
+				if (!isPlainObject(finalResult)) finalResult = { text: answer };
+				finalResult.noAnswerReplaced = true;
+			}
+			this.lastNoAnswerReplaced = noAnswerReplaced;
 
 			// ANTES de añadir el turno al historial: si se calcula después, el
 			// mensaje entrante se cuenta dos veces y el delta sale negativo.
@@ -1384,6 +1434,7 @@ export class AgentSession {
 				sourceOk: sourceCheck.ok,
 				invalidSources: sourceCheck.invalid,
 				blocked: shouldBlock,
+				noAnswerReplaced,
 			};
 
 			this.history.push(
@@ -1407,6 +1458,7 @@ export class AgentSession {
 					sourceOk: sourceCheck.ok,
 					invalidSources: sourceCheck.invalid,
 					blocked: shouldBlock,
+					noAnswerReplaced,
 					preview: short(answer, 240),
 					message: shouldBlock
 						? "The answer failed grounding and was replaced before being saved."

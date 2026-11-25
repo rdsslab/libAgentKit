@@ -25,6 +25,7 @@ export const AGENTKIT_FEATURES = Object.freeze({
 	agentWebDecision: true,
 	agentWebDecisionPrefilter: true,
 	agentGroundingPolicy: true,
+	noAnswerAfterSearchFallback: true,
 });
 
 export {
