@@ -24,6 +24,7 @@ export const AGENTKIT_FEATURES = Object.freeze({
 	noAnswerSuggestion: true,
 	agentWebDecision: true,
 	agentWebDecisionPrefilter: true,
+	agentGroundingPolicy: true,
 });
 
 export {
@@ -34,6 +35,7 @@ export {
 	looksLikeWebQuery,
 	cleanWebQuery,
 	checkGrounding,
+	checkSources,
 	shouldRunPreSearch,
 	pickWebQuery,
 	isGenericWebInstruction,

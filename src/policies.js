@@ -188,7 +188,7 @@ export const shouldRunPreSearch = ({
 // viste en la imagen: altitud..." debe convertirse en "Quito Ecuador altitud".
 const WEB_SCAFFOLD_RE = /\b(?:datos|informacion|información|detalles|referencias|data|details|references)\s+(?:verificables?|confiables?|actuales?|verifiable|reliable|current)?\s*(?:sobre|de|acerca\s+de|about|of)?|sobre\s+(?:el\s+)?lugar\s+que\s+viste|sobre\s+lo\s+que\s+viste|que\s+viste\s+en\s+la\s+imagen|que\s+aparece\s+en\s+(?:la\s+imagen|primer\s+plano)|en\s+primer\s+plano|en\s+la\s+imagen|about\s+(?:the\s+)?place\s+in\s+the\s+image|in\s+the\s+foreground|verificables?|verifiable|please|por\s+favor/gi;
 
-const WEB_INTENT_RE = /\b(altitud|altura|parque|clima|tiempo|precios?|distancia|poblaci[oó]n|capital|pa[ií]s|monumento|historia|horario|ubicaci[oó]n|coordenadas|repositorios?|perfil|seguidores|datos\s*p[uú]blicos|altitude|height|park|climate|weather|prices?|distance|population|country|monument|history|schedule|location|coordinates|repos?|profile|followers|public\s*data)\b/gi;
+const WEB_INTENT_RE = /\b(altitud|altura|parque|clima|tiempo|precios?|distancia|poblaci[oó]n|capital|pa[ií]s|monumento|historia|horario|ubicaci[oó]n|coordenadas|repositorios?|perfil|seguidores|datos\s*p[uú]blicos|presidente|president|alcalde|mayor|gobernador|governor|primer ministro|prime minister|altitude|height|park|climate|weather|prices?|distance|population|country|monument|history|schedule|location|coordinates|repos?|profile|followers|public\s*data)\b/gi;
 
 // Regla estructural en lugar de un diccionario de stopwords: una palabra
 // capitalizada que ABRE una frase del recap es andamiaje del harness
@@ -486,6 +486,105 @@ export const checkGrounding = ({ text = "", webResults = [] } = {}) => {
 };
 
 /**
+ * Check that every URL cited in an answer really came from the injected web
+ * results. A made-up domain is a hallucination even when the names around it
+ * happen to be right, so this is checked separately from `checkGrounding()`.
+ * Pure and provider-agnostic: no network, no bot logic.
+ *
+ * @param {object} [options]
+ * @param {string} [options.text] Model answer to verify.
+ * @param {Array<object>} [options.webResults] Injected search results.
+ * @returns {{ok: boolean|null, valid: string[], invalid: string[],
+ *   cleanedText: string, checked: number, sourceChars: number, reason?: string}}
+ */
+const SOURCE_URL_KEYS = ["url", "link", "href", "uri", "source_url", "sourceUrl"];
+
+const sourceKey = (value) => {
+	let raw = String(value || "").trim().replace(/[),.;]+$/, "");
+	if (!raw) return "";
+	if (/^www\./i.test(raw)) raw = `https://${raw}`;
+	try {
+		const parsed = new URL(raw);
+		if (!/^https?:$/i.test(parsed.protocol)) return "";
+		return `${parsed.hostname.replace(/^www\./i, "").toLowerCase()}${parsed.pathname.replace(/\/+$/, "")}`;
+	} catch {
+		return normalizeForMatch(raw).replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+	}
+};
+
+const citedUrls = (text) => {
+	const source = String(text || "");
+	const found = [];
+	const markdown = /\[([^\]]+)\]\((https?:\/\/[^\s<>"')\]]+|www\.[^\s<>"')\]]+)\)/gi;
+	// Mask links already captured as markdown so the generic pass does not
+	// count them twice, and so their positions stay valid for the cleanup.
+	const rest = source.replace(markdown, (whole, label, url, offset) => {
+		found.push({ url, label, start: offset, end: offset + whole.length });
+		return " ".repeat(whole.length);
+	});
+	const bare = /(https?:\/\/|www\.)[^\s<>"')\]]+/gi;
+	for (const match of rest.matchAll(bare)) {
+		found.push({ url: match[0], label: "", start: match.index, end: match.index + match[0].length });
+	}
+	return found.sort((a, b) => a.start - b.start);
+};
+
+export const checkSources = ({ text = "", webResults = [] } = {}) => {
+	const answer = String(text || "");
+	const rows = Array.isArray(webResults) ? webResults : [];
+	const keys = [];
+	let sourceChars = 0;
+	for (const row of rows) {
+		for (const key of SOURCE_URL_KEYS) {
+			const value = sourceKey(row?.[key]);
+			if (value) keys.push(value);
+		}
+		const blob = [row?.title, row?.snippet, row?.text, row?.content].filter(Boolean).join(" ");
+		sourceChars += blob.length;
+		for (const match of blob.matchAll(/\b(?:https?:\/\/|www\.)[^\s<>"')\]]+/gi)) {
+			const value = sourceKey(match[0]);
+			if (value) keys.push(value);
+		}
+	}
+	const citations = citedUrls(answer);
+	const valid = [];
+	const invalid = [];
+	const removals = [];
+	for (const citation of citations) {
+		const key = sourceKey(citation.url);
+		const supported = key && keys.some((entry) => (
+			entry === key || entry.startsWith(`${key}/`) || key.startsWith(`${entry}/`)
+		));
+		if (supported) {
+			valid.push(citation.url);
+			continue;
+		}
+		invalid.push(citation.url);
+		// Keep the markdown label: only the unverifiable link is dropped.
+		removals.push({ ...citation, replacement: citation.label });
+	}
+	let cleanedText = answer;
+	for (const item of removals.sort((a, b) => b.start - a.start)) {
+		cleanedText = cleanedText.slice(0, item.start) + item.replacement + cleanedText.slice(item.end);
+	}
+	cleanedText = cleanedText.replace(/[ \t]{2,}/g, " ").trim();
+	if (!citations.length) {
+		return { ok: null, valid, invalid, cleanedText, checked: 0, sourceChars, reason: "no cited URLs" };
+	}
+	if (!keys.length) {
+		return { ok: null, valid, invalid, cleanedText, checked: citations.length, sourceChars, reason: "no web sources" };
+	}
+	return {
+		ok: invalid.length === 0,
+		valid,
+		invalid,
+		cleanedText,
+		checked: citations.length,
+		sourceChars,
+	};
+};
+
+/**
  * Compact tool payload: what an LLM needs, without dumping full pages (every
  * extra token costs prompt-processing time on CPU models).
  *
@@ -630,6 +729,28 @@ const PREFILTER_SEARCH_VERB_RE = /\b(?:busca(?:me)?|buscar|busque|investiga(?:r)
 const PREFILTER_FRESH_RE = /\b(?:noticias?|news|nouvelles|nachrichten|clima|weather|meteo|meteorologia|pronosticos?|forecast|precios?|price|prices|cotizacion(?:es)?|exchange rate|tipo de cambio|resultados?|results?|score|marcador|standings|posiciones|elecciones?|elections?|taquilla|box office|estreno|release|lanzamiento|temperatura|temperature|bitcoin|cripto(?:moneda)?|crypto|dolar|dollar)\b/i;
 const PREFILTER_ROLE_RE = /\b(?:quien(?:es)?|who(?:\s+is|\s+are)?|cual\s+es|what\s+is)\b[^.]{0,90}\b(?:presidente|president|alcalde|mayor|primer ministro|prime minister|gobernador|governor|campeon|champion|ganador|winner)\b/i;
 const PREFILTER_OPINION_RE = /\b(?:opinas?|opinar|opinion|crees|consideras|piensas|think|opinion|would you say)\b/i;
+// An explicit correction is a declaration that the previous fact was wrong,
+// not a topic hint: "no es correcto, busca otras fuentes" must force a lookup
+// even when the router would have believed the contaminated context again.
+const PREFILTER_CORRECTION_RE = /\b(?:no es correct[oa]s?|no es asi|no es cierto|no es verdad|no esta bien|esta mal|incorrect[oa]s?|busca otras fuentes|otras fuentes|borra lo que dije|busca de nuevo|busca otra vez|intenta (?:otra vez|nuevamente|de nuevo)|revisa de nuevo|verifica de nuevo|corrige(?:me)?|not correct|that.s wrong|that is wrong|is wrong|wrong answer|wrong information|incorrect|try again|check again|other sources|another source|correct this)\b/i;
+const PREFILTER_CORRECTION_STRIP_RE = new RegExp(PREFILTER_CORRECTION_RE.source, "gi");
+
+// A correction names a fact, not a request to search for the word "correction".
+// Strip the scaffolding before building the query; keep the original text as a
+// last resort when the user did not actually name any fact to verify.
+const correctionQuery = (text, maxQueryChars) => {
+	const stripped = String(text || "")
+		.replace(PREFILTER_CORRECTION_STRIP_RE, " ")
+		.replace(/\b(?:la\s+|el\s+|las\s+|los\s+|the\s+)?informaci[oó]n\b/gi, " ")
+		.replace(/\btranscripcion\b[^:\n]{0,60}:\s*/gi, " ")
+		.replace(/\b(?:busca(?:me)?|buscar|busque|intenta|nuevamente|revisa|verifica|check|find|look up)\b/gi, " ")
+		.replace(/^\s*(?:la|el|las|los|the)\s+/i, " ")
+		.replace(/[¿¡,;:.!]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+	const query = short(cleanWebQuery(stripped), maxQueryChars);
+	return query.length >= 3 ? query : short(String(text || "").trim(), maxQueryChars);
+};
 // Coincidencia completa anclada: un saludo dentro de una pregunta compuesta no
 // debe convertirse en un NO automático. Las variantes largas van primero para
 // que la alternancia no se quede con un prefijo más corto.
@@ -654,10 +775,22 @@ export const prefilterWebDecision = ({ text = "", quotedText = "", maxQueryChars
 	const no = { search: false, query: "", source: "policy-no" };
 	if (PREFILTER_NO_RE.test(normalized) || PREFILTER_MATH_RE.test(normalized)) return no;
 
+	const quoted = String(quotedText || "").trim();
+	// The user's own correction (or one in the message they reply to) skips the
+	// router: it is an explicit instruction to verify, not a debatable topic.
+	const correction = PREFILTER_CORRECTION_RE.test(normalized)
+		|| (!!quoted && PREFILTER_CORRECTION_RE.test(normalizeForMatch(quoted)));
+	if (correction) {
+		const base = quoted && !PREFILTER_CORRECTION_RE.test(normalized)
+			? `${quoted}\n${own}`
+			: own;
+		const query = correctionQuery(base, maxQueryChars);
+		if (query) return { search: true, query, source: "policy-yes" };
+	}
+
 	// An opinion question must not be classified only by the nouns it mentions:
 	// "¿qué opinas de las noticias de hoy?" is a request for a view, not a lookup.
 	const opinion = PREFILTER_OPINION_RE.test(normalized);
-	const quoted = String(quotedText || "").trim();
 	const explicit = PREFILTER_SEARCH_VERB_RE.test(normalized)
 		|| isGenericWebInstruction(own)
 		|| (!!quoted && PREFILTER_SEARCH_VERB_RE.test(normalizeForMatch(quoted)));

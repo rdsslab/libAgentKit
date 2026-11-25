@@ -41,6 +41,7 @@ import { MemoryStore } from "./memory.js";
 import { resolveToolCapability } from "./capabilities.js";
 import {
 	checkGrounding,
+	checkSources,
 	formatWebRecap,
 	looksLikeNoAnswer,
 	looksLikeRecall,
@@ -198,6 +199,10 @@ export class AgentSession {
 	 *   deterministic classifier first. It only decides obvious turns; anything
 	 *   ambiguous still goes to `webDecisionWithModel`. An object may carry
 	 *   `maxQueryChars`.
+	 * @param {"off"|"block"|object} [options.groundingPolicy] `block` verifies
+	 *   claims and cited URLs BEFORE the answer enters history/memory and
+	 *   replaces unsupported answers with an honest fallback. An object may
+	 *   carry `mode` and `fallback` (string or function). Default: `off`.
 	 * @param {(options: object) => Promise<object>} [options.webSearchFn] Search implementation. Defaults to `webSearch()`.
 	 * @param {Function} [options.countTokens] `async ({text, provider, signal}) => number`.
 	 * @param {"full"|"compact"} [options.eventLevel] `compact` buffers deltas into
@@ -213,6 +218,7 @@ export class AgentSession {
 		summarizeWithModel = false,
 		webDecisionWithModel = false,
 		webDecisionPrefilter = false,
+		groundingPolicy = "off",
 		config,
 		configOptions,
 		webSearchFn,
@@ -236,6 +242,10 @@ export class AgentSession {
 		this.webDecisionOptions = isPlainObject(webDecisionWithModel) ? webDecisionWithModel : {};
 		this.webDecisionPrefilter = webDecisionPrefilter === true || isPlainObject(webDecisionPrefilter);
 		this.webDecisionPrefilterOptions = isPlainObject(webDecisionPrefilter) ? webDecisionPrefilter : {};
+		this.groundingPolicyMode = (isPlainObject(groundingPolicy)
+			? (groundingPolicy.mode ?? groundingPolicy.policy)
+			: groundingPolicy) === "block" ? "block" : "off";
+		this.groundingPolicyOptions = isPlainObject(groundingPolicy) ? groundingPolicy : {};
 		this.config = config ?? null;
 		this.configOptions = configOptions;
 
@@ -337,6 +347,31 @@ export class AgentSession {
 		return event;
 	}
 
+	/**
+	 * Honest replacement for an answer that failed grounding. The host can pass
+	 * its own string/function via `groundingPolicy.fallback`; the default keeps
+	 * the toolkit language-neutral and still shows what the sources actually
+	 * said instead of a bare refusal.
+	 */
+	async buildGroundingFallback({ answer, grounding, sourceCheck, recap }) {
+		const context = { answer, grounding, sourceCheck, recap, short };
+		const custom = this.groundingPolicyOptions.fallback;
+		if (typeof custom === "function") {
+			try {
+				const text = String((await custom(context)) || "").trim();
+				if (text) return text;
+			} catch {}
+		}
+		if (typeof custom === "string" && custom.trim()) return custom.trim();
+		// Deliberately do NOT repeat the unsupported names or URLs here: the
+		// fallback itself is persisted, and echoing the hallucination would seed
+		// it back into the next turn. Details stay in the `grounding` event.
+		const lines = ["I can't verify all of that answer from the sources I found, so I won't present it as a fact."];
+		const facts = String(recap || "").split(/\n\n(?:Use these results|Usa estos resultados)/i)[0].trim();
+		if (facts) lines.push(`What the sources say:\n${short(facts, 1200)}`);
+		return lines.join("\n\n");
+	}
+
 	/** @returns {object} Turn count, history size, memory stats, calibration and last grounding. */
 	stats() {
 		return {
@@ -345,7 +380,12 @@ export class AgentSession {
 			memory: this.memory.stats(),
 			calibration: { ...this.calibration },
 			lastCompactionTurn: Number.isFinite(this.lastCompactionTurn) ? this.lastCompactionTurn : null,
-			grounding: this.grounding ? { ok: this.grounding.ok, unsupported: this.grounding.unsupported } : null,
+			grounding: this.grounding ? {
+				ok: this.grounding.ok,
+				unsupported: this.grounding.unsupported,
+				blocked: this.grounding.blocked === true,
+				sourceOk: this.grounding.sourceCheck?.ok ?? null,
+			} : null,
 		};
 	}
 
@@ -866,6 +906,8 @@ export class AgentSession {
 	reset(reason = "manual") {
 		this.history = [];
 		this.turn = 0;
+		this.grounding = null;
+		this.deltaBuffer = "";
 		this.memory.reset();
 		this.emit("reset", { reason, message: "History and memory reset." });
 	}
@@ -1213,7 +1255,7 @@ export class AgentSession {
 				onToolFinish: (event) => this.emit("tool", { phase: "finish", ...(event || {}) }),
 			});
 
-			const answer = typeof result === "string" ? result : String(result?.text ?? "");
+			let answer = typeof result === "string" ? result : String(result?.text ?? "");
 			let finalResult = result;
 			let suggestion = null;
 
@@ -1304,6 +1346,46 @@ export class AgentSession {
 				});
 			}
 
+			// Verificación determinista ANTES de persistir: el modelo pequeño
+			// afirmó 3165 m y "Quito Central Park" aunque las fuentes decían
+			// 2850 m e Itchimbía. Con `groundingPolicy: "block"` esa respuesta
+			// nunca entra en history/memory, de modo que no puede envenenar el
+			// resumen ni el recall del siguiente turno.
+			const groundingResults = sessionWeb.used
+				? sessionWeb.results
+				: (Array.isArray(finalResult?.webResults) ? finalResult.webResults : []);
+			const grounding = checkGrounding({ text: answer, webResults: groundingResults });
+			const sourceCheck = checkSources({ text: answer, webResults: groundingResults });
+			const searchedTurn = sessionWeb.used
+				|| finalResult?.usedWeb === true
+				|| groundingResults.length > 0;
+			const shouldBlock = this.groundingPolicyMode === "block" && searchedTurn
+				&& (grounding.ok === false || sourceCheck.ok === false);
+			if (shouldBlock) {
+				const fallback = await this.buildGroundingFallback({
+					answer,
+					grounding,
+					sourceCheck,
+					recap: sessionWeb.recap,
+				});
+				answer = fallback || "I can't verify that answer from the sources I found.";
+				if (!isPlainObject(finalResult)) finalResult = { text: answer };
+				finalResult.text = answer;
+			}
+			this.grounding = {
+				...grounding,
+				sourceCheck,
+				blocked: shouldBlock,
+			};
+			if (!isPlainObject(finalResult)) finalResult = { text: answer };
+			finalResult.grounding = {
+				ok: grounding.ok,
+				unsupported: grounding.unsupported,
+				sourceOk: sourceCheck.ok,
+				invalidSources: sourceCheck.invalid,
+				blocked: shouldBlock,
+			};
+
 			this.history.push(
 				{ role: "user", content: String(text ?? "") },
 				{ role: "assistant", content: answer },
@@ -1313,25 +1395,26 @@ export class AgentSession {
 				...requestMeta,
 			});
 
-			// Verificación determinista: el modelo pequeño afirmó 3165 m y
-			// "Quito Central Park" aunque las fuentes decían 2850 m e Itchimbía.
-			const groundingResults = sessionWeb.used
-				? sessionWeb.results
-				: (Array.isArray(finalResult?.webResults) ? finalResult.webResults : []);
-			this.grounding = checkGrounding({ text: answer, webResults: groundingResults });
-			if (sessionWeb.used || finalResult?.usedWeb) {
+			if (searchedTurn) {
 				this.emit("grounding", {
-					ok: this.grounding.ok,
-					unsupported: this.grounding.unsupported,
-					supported: this.grounding.supported,
-					sourceChars: this.grounding.sourceChars,
-					checked: this.grounding.checked,
-					coverage: this.grounding.coverage,
-					confidence: this.grounding.confidence,
+					ok: grounding.ok,
+					unsupported: grounding.unsupported,
+					supported: grounding.supported,
+					sourceChars: grounding.sourceChars,
+					checked: grounding.checked,
+					coverage: grounding.coverage,
+					confidence: grounding.confidence,
+					sourceOk: sourceCheck.ok,
+					invalidSources: sourceCheck.invalid,
+					blocked: shouldBlock,
 					preview: short(answer, 240),
-					message: this.grounding.ok
-						? "All figures and proper nouns in the answer appear in the injected sources."
-						: `Unsupported by the sources: ${this.grounding.unsupported.join(", ")}`,
+					message: shouldBlock
+						? "The answer failed grounding and was replaced before being saved."
+						: sourceCheck.ok === false
+							? `Citations missing from the sources: ${sourceCheck.invalid.join(", ")}`
+							: grounding.ok
+								? "All figures and proper nouns in the answer appear in the injected sources."
+								: `Unsupported by the sources: ${grounding.unsupported.join(", ")}`,
 				});
 			}
 
@@ -1369,6 +1452,9 @@ export class AgentSession {
 				grounding: this.grounding.ok === null ? null : {
 					ok: this.grounding.ok,
 					unsupported: this.grounding.unsupported,
+					sourceOk: this.grounding.sourceCheck?.ok ?? null,
+					invalidSources: this.grounding.sourceCheck?.invalid ?? [],
+					blocked: this.grounding.blocked === true,
 				},
 				toolCount: Array.isArray(finalResult?.toolExecutions) ? finalResult.toolExecutions.length : 0,
 				mediaStrategy: finalResult?.media?.strategy ?? null,

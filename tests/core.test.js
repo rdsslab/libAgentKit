@@ -27,6 +27,7 @@ import {
 	looksLikeWebQuery,
 	cleanWebQuery,
 	checkGrounding,
+	checkSources,
 	formatHistoryRecap,
 } from "../src/policies.js";
 
@@ -212,6 +213,45 @@ test("policies: checkGrounding detecta cifras y entidades sin respaldo web", () 
 	assert.equal(wrong.coverage, 0);
 	assert.equal(wrong.confidence, "low");
 	assert.ok(wrong.checked.numbers >= 1);
+});
+
+test("policies: checkSources distingue citas reales de dominios inventados", () => {
+	const webResults = [
+		{ title: "Presidencia", url: "https://www.presidencia.gob.ec/", snippet: "Daniel Noboa" },
+		{ title: "Primicias", url: "https://www.primicias.ec/politica/elecciones/" },
+	];
+	const good = checkSources({
+		text: "Daniel Noboa. Fuente: [Presidencia](https://www.presidencia.gob.ec/).",
+		webResults,
+	});
+	assert.equal(good.ok, true);
+	assert.deepEqual(good.invalid, []);
+
+	const bad = checkSources({
+		text: "Luisinio. Fuente: [Ecuador](https://www.ecuador.gov.ec/).",
+		webResults,
+	});
+	assert.equal(bad.ok, false);
+	assert.deepEqual(bad.invalid, ["https://www.ecuador.gov.ec/"]);
+	assert.equal(bad.cleanedText.includes("ecuador.gov.ec"), false);
+	assert.equal(bad.cleanedText.includes("Ecuador"), true, "conserva la etiqueta del enlace");
+
+	const bare = checkSources({
+		text: "Según https://www.ecuador.gov.ec/ ...",
+		webResults,
+	});
+	assert.equal(bare.ok, false);
+	assert.equal(bare.cleanedText.includes("https://"), false);
+
+	const subpath = checkSources({
+		text: "https://www.primicias.ec/politica/elecciones/seccionales-2027/",
+		webResults,
+	});
+	assert.equal(subpath.ok, true);
+
+	const noCitations = checkSources({ text: "sin enlaces", webResults });
+	assert.equal(noCitations.ok, null);
+	assert.equal(noCitations.reason, "no cited URLs");
 });
 
 test("policies: formatHistoryRecap formats history", () => {

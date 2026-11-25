@@ -297,6 +297,70 @@ test("policies: prefilter decide casos obvios y deja la duda al modelo", () => {
 	assert.equal(url.search, true);
 });
 
+test("policies: una corrección explícita fuerza búsqueda sin consultar al router", async () => {
+	const cases = [
+		"La información no es correcta, busca otras fuentes",
+		"No es correcto, busca nuevamente el presidente del Ecuador",
+		"Intenta nuevamente con Daniel Noboa",
+		"That's wrong, check other sources about the president of Ecuador",
+	];
+	for (const text of cases) {
+		const decision = prefilterWebDecision({ text });
+		assert.equal(decision?.search, true, `"${text}" debe forzar búsqueda`);
+		assert.equal(decision?.source, "policy-yes");
+		assert.ok(decision.query.length > 8);
+	}
+	assert.equal(prefilterWebDecision({ text: "¿es correcto?" }), null);
+
+	const searched = [];
+	const routerCalls = [];
+	const { session } = makeSession({
+		webSearchFn: async ({ query }) => {
+			searched.push(query);
+			return { ok: false, source: null, results: [] };
+		},
+		webDecisionPrefilter: true,
+		webDecisionWithModel: {
+			askFn: async () => {
+				routerCalls.push(1);
+				return { text: '{"search":false,"query":""}' };
+			},
+		},
+	});
+	await session.ask("La información no es correcta, busca otras fuentes");
+	assert.deepEqual(routerCalls, [], "la corrección no llega al router");
+	assert.equal(searched.length, 1);
+});
+
+test("AgentSession: groundingPolicy block no persiste una respuesta sin respaldo", async () => {
+	const { session, events } = makeSession({
+		webSearchFn: async () => ({
+			ok: true,
+			source: "fixture",
+			results: [{
+				title: "Presidencia",
+				url: "https://www.presidencia.gob.ec/",
+				snippet: "Daniel Noboa es presidente del Ecuador.",
+			}],
+		}),
+		webDecisionPrefilter: true,
+		groundingPolicy: {
+			mode: "block",
+			fallback: () => "No verificado con las fuentes disponibles.",
+		},
+		askAgentFn: () => ({
+			text: "El presidente es Luisinio Gutiérrez. Fuente: [Ecuador](https://www.ecuador.gov.ec/).",
+		}),
+	});
+	const result = await session.ask("¿quién es el presidente del Ecuador?");
+	assert.equal(result.text, "No verificado con las fuentes disponibles.");
+	assert.equal(session.history[1].content, result.text);
+	assert.ok(!result.text.includes("ecuador.gov.ec"), "el fallback no repite la cita falsa");
+	assert.ok(!session.memory.episodes.some((row) => String(row.next?.content || "").includes("Luisinio")));
+	assert.equal(events.find((event) => event.type === "grounding").blocked, true);
+	assert.equal(events.filter((event) => event.type === "done").at(-1).grounding.blocked, true);
+});
+
 test("policies: los saludos anclados ampliados no consultan al router", () => {
 	const anchored = [
 		"¿cómo estás?",
